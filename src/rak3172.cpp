@@ -94,7 +94,7 @@ esp_err_t RAK3172_SendCommand(RAK3172_t* p_Device, String Command, String* p_Val
     }
 
     // Transmit the command.
-    ESP_LOGI(TAG, "Transmit command: %s", Command.c_str());
+    ESP_LOGD(TAG, "Transmit command: %s", Command.c_str());
     p_Device->p_Interface->print(Command + "\r\n");
 
     // Response expected. Read the value.
@@ -102,7 +102,7 @@ esp_err_t RAK3172_SendCommand(RAK3172_t* p_Device, String Command, String* p_Val
     {
         *p_Value = p_Device->p_Interface->readStringUntil('\n');
         p_Value->replace("\r", "");
-        ESP_LOGI(TAG, "    Value: %s", p_Value->c_str());
+        ESP_LOGD(TAG, "    Value: %s", p_Value->c_str());
     }
 
     // Receive the line feed before the status.
@@ -110,7 +110,7 @@ esp_err_t RAK3172_SendCommand(RAK3172_t* p_Device, String Command, String* p_Val
 
     // Receive the trailing status code.
     Status_Temp = p_Device->p_Interface->readStringUntil('\n');
-    ESP_LOGI(TAG, "    Status: %s", Status_Temp.c_str());
+    ESP_LOGD(TAG, "    Status: %s", Status_Temp.c_str());
 
     // Transmission is without error when 'OK' as status code and when no event data are received.
     if((Status_Temp.indexOf("OK") == -1) && (Status_Temp.indexOf("+EVT") == -1))
@@ -123,7 +123,7 @@ esp_err_t RAK3172_SendCommand(RAK3172_t* p_Device, String Command, String* p_Val
     {
         *p_Status = Status_Temp;
     }
-    ESP_LOGI(TAG, "    Error: %i", (int)Error);
+    ESP_LOGD(TAG, "    Error: %i", (int)Error);
 
     return Error;
 }
@@ -159,7 +159,7 @@ esp_err_t RAK3172_SetMode(RAK3172_t* p_Device, RAK3172_Mode_t Mode)
     Dummy.clear();
     if(Dummy.indexOf("OK") >= 0)
     {
-        ESP_LOGI(TAG, "Mode already changed");
+        ESP_LOGD(TAG, "Mode already changed");
 
         return ESP_OK;
     }
@@ -188,7 +188,7 @@ esp_err_t RAK3172_GetMode(RAK3172_t* p_Device)
 
     Error = RAK3172_SendCommand(p_Device, "AT+NWM=?", &Value, NULL);
 
-    ESP_LOGI(TAG, "Mode: %s", Value.c_str());
+    ESP_LOGD(TAG, "Mode: %s", Value.c_str());
 
     p_Device->Mode = (RAK3172_Mode_t)Value.toInt();
 
@@ -217,7 +217,7 @@ esp_err_t RAK3172_GetBaud(RAK3172_t* p_Device)
 
     Error = RAK3172_SendCommand(p_Device, "AT+BAUD=?", &Value, NULL);
 
-    ESP_LOGI(TAG, "Baudrate: %s", Value.c_str());
+    ESP_LOGD(TAG, "Baudrate: %s", Value.c_str());
 
     p_Device->Baudrate = (RAK3172_Baud_t)Value.toInt();
 

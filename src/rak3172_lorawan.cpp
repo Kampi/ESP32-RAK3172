@@ -79,13 +79,15 @@ esp_err_t RAK3172_InitLoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t Retrie
         }
     }
 
-    if(RAK3172_SetRetries(p_Device, Retries) ||
-       RAK3172_SendCommand(p_Device, "AT+NWM=1", NULL, NULL) ||
-       RAK3172_SendCommand(p_Device, "AT+CLASS=" + String(Class), NULL, NULL) ||
-       RAK3172_SetTxPwr(p_Device, TxPwr) ||
-       RAK3172_SendCommand(p_Device, "AT+ADR=1", NULL, NULL))
+    Error = RAK3172_SetRetries(p_Device, Retries) ||
+            RAK3172_SendCommand(p_Device, "AT+NWM=1", NULL, NULL) ||
+            RAK3172_SendCommand(p_Device, "AT+CLASS=" + String(Class), NULL, NULL) ||
+            RAK3172_SetTxPwr(p_Device, TxPwr) ||
+            RAK3172_SendCommand(p_Device, "AT+ADR=1", NULL, NULL);
+
+    if(Error)
     {
-        return ESP_FAIL;
+        return Error;
     }
 
     if(UseOTAA)
@@ -216,6 +218,7 @@ esp_err_t RAK3172_StopJoin(RAK3172_t* p_Device)
 esp_err_t RAK3172_Joined(RAK3172_t* p_Device, bool* p_Joined)
 {
     String Value;
+    esp_err_t Error;
 
     if(p_Joined == NULL)
     {
@@ -224,9 +227,10 @@ esp_err_t RAK3172_Joined(RAK3172_t* p_Device, bool* p_Joined)
 
     *p_Joined = false;
 
-    if(RAK3172_SendCommand(p_Device, "AT+NJS=?", &Value, NULL))
+    Error = RAK3172_SendCommand(p_Device, "AT+NJS=?", &Value, NULL);
+    if(Error)
     {
-        return ESP_FAIL;
+        return Error;
     }
 
     if(Value.compareTo("1") == 0)
@@ -248,6 +252,7 @@ esp_err_t RAK3172_Transmit(RAK3172_t* p_Device, uint8_t Port, const void* p_Buff
     String Payload;
     uint32_t Now;
     char Buffer[3];
+    esp_err_t Error;
 
     if((p_Buffer == NULL) || (Port == 0))
     {
@@ -282,15 +287,17 @@ esp_err_t RAK3172_Transmit(RAK3172_t* p_Device, uint8_t Port, const void* p_Buff
         return ESP_FAIL;
     }*/
 
-    if(RAK3172_SetConfirmation(p_Device, Confirmed))
+    Error = RAK3172_SetConfirmation(p_Device, Confirmed);
+    if(Error)
     {
-        return ESP_FAIL;
+        return Error;
     }
 
     // TODO: Use long data send when the packet size is greater than 242 bytes.
-    if(RAK3172_SendCommand(p_Device, "AT+SEND=" + String(Port) + ":" + Payload, NULL, Status))
+    Error = RAK3172_SendCommand(p_Device, "AT+SEND=" + String(Port) + ":" + Payload, NULL, Status);
+    if(Error)
     {
-        return ESP_FAIL;
+        return Error;
     }
 
     // The device is busy. Leave the function with an invalid state error.

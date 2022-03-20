@@ -135,43 +135,35 @@ esp_err_t RAK3172_FWVersion(RAK3172_t* p_Device, String* p_Version)
 
 esp_err_t RAK3172_SetMode(RAK3172_t* p_Device, RAK3172_Mode_t Mode)
 {
-    String Dummy;
+    String Status;
 
     if(!p_Device->isInitialized)
     {
         return ESP_ERR_INVALID_STATE;
     }
 
-    Dummy = "AT+NWM=" + String(Mode);
-
     // Transmit the command.
-    ESP_LOGD(TAG, "Transmit command: %s", Dummy.c_str());
-    p_Device->p_Interface->print(Dummy + "\r\n");
+    p_Device->p_Interface->print("AT+NWM=" + String(Mode) + "\r\n");
 
     // Receive the line feed before the status.
     p_Device->p_Interface->readStringUntil('\n');
 
     // Receive the trailing status code.
-    Dummy = p_Device->p_Interface->readStringUntil('\n');
-    ESP_LOGD(TAG, "    Status: %s", Dummy.c_str());
+    Status = p_Device->p_Interface->readStringUntil('\n');
 
     // 'OK' received, so the mode wasn´t change. Leave the function
-    Dummy.clear();
-    if(Dummy.indexOf("OK") >= 0)
+    Status.clear();
+    if(Status.indexOf("OK") >= 0)
     {
-        ESP_LOGD(TAG, "Mode already changed");
-
         return ESP_OK;
     }
 
     // Otherwise read the remaining lines.
-    Dummy.clear();
+    Status.clear();
     do
     {
-        Dummy += p_Device->p_Interface->readStringUntil('\n');
+        Status += p_Device->p_Interface->readStringUntil('\n');
     } while(p_Device->p_Interface->available() > 0);
-
-    ESP_LOGD(TAG, "    Response: %s", Dummy.c_str());
 
     return ESP_OK;
 }
@@ -187,8 +179,10 @@ esp_err_t RAK3172_GetMode(RAK3172_t* p_Device)
     }
 
     Error = RAK3172_SendCommand(p_Device, "AT+NWM=?", &Value, NULL);
-
-    ESP_LOGD(TAG, "Mode: %s", Value.c_str());
+    if(Error)
+    {
+        return Error;
+    }
 
     p_Device->Mode = (RAK3172_Mode_t)Value.toInt();
 
@@ -216,8 +210,10 @@ esp_err_t RAK3172_GetBaud(RAK3172_t* p_Device)
     }
 
     Error = RAK3172_SendCommand(p_Device, "AT+BAUD=?", &Value, NULL);
-
-    ESP_LOGD(TAG, "Baudrate: %s", Value.c_str());
+    if(Error)
+    {
+        return Error;
+    }
 
     p_Device->Baudrate = (RAK3172_Baud_t)Value.toInt();
 

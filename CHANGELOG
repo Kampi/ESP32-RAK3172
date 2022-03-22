@@ -5,7 +5,7 @@
 									Remove "Status" from "RAK3172_Transmit"
 									Add key handling for ABP mode
 									Add functions to read the RSSI and SNR value of the last packet
-									Working on P2P mode
+									Add P2P mode
 									Code refractoring
 									Update CHANGELOG
 									Change version number to 2.0.0

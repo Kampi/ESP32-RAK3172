@@ -1,3 +1,27 @@
+ /*
+ * rak3172.h
+ *
+ *  Copyright (C) Daniel Kampert, 2022
+ *	Website: www.kampis-elektroecke.de
+ *  File info: RAK3172 driver for ESP32.
+
+  GNU GENERAL PUBLIC LICENSE:
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+  Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
+ */
+
 #ifndef RAK3172_H_
 #define RAK3172_H_
 
@@ -126,6 +150,15 @@ typedef enum
     RAK_CR_2,                       /**< Coding rate 2. */
     RAK_CR_3,                       /**< Coding rate 3. */
 } RAK3172_CR_t;
+
+/** @brief Supported receive options.
+ */
+typedef enum
+{
+    RAK_REC_STOP        = 0,        /**< Stop receiving in LoRa P2P mode. */
+    RAK_REC_REPEAT      = 65534,    /**< Receive messages in a loop without timeout in LoRa P2P mode. */
+    RAK_REC_SINGLE      = 65535,    /**< Receive one message without timeout in LoRa P2P mode. */
+} RAK3172_RxOpt_t;
 
 /** @brief RAK3172 device object.
  */
@@ -688,15 +721,14 @@ esp_err_t RAK3172_P2P_Receive(RAK3172_t* p_Device, uint16_t Timeout, String* p_P
 
 /** @brief          Start the listening mode to receive LoRa P2P message.
  *  @param p_Device Pointer to RAK3172 device object
- *  @param Timeout  Timeout in milliseconds.
- *                  NOTE: 0 will stop the receiving, 65534 will disable the timeout and 65535 will disable the timeout and the device stops when a packet was received.
  *  @param p_Queue  Pointer to receive queue
- *  @param Single   Only receive a single message
+ *  @param Timeout  Timeout in milliseconds.
+ *                  NOTE: 0 will stop the receiving, 65534 will disable the timeout (only with firmware v1.0.3 and later) and 65535 will disable the timeout and the device stops when a packet was received.
  *  @return         ESP_OK when successful
  *                  ESP_FAIL when the receive task can´t get started
  *                  ESP_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-esp_err_t RAK3172_P2P_Listen(RAK3172_t* p_Device, QueueHandle_t* p_Queue, bool Single = false);
+esp_err_t RAK3172_P2P_Listen(RAK3172_t* p_Device, QueueHandle_t* p_Queue, uint16_t Timeout = RAK_REC_REPEAT);
 
 /** @brief          Stop the listening mode.
  *  @param p_Device Pointer to RAK3172 device object

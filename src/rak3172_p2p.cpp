@@ -1,3 +1,27 @@
+ /*
+ * rak3172_p2p.h
+ *
+ *  Copyright (C) Daniel Kampert, 2022
+ *	Website: www.kampis-elektroecke.de
+ *  File info: LoRa P2P module of the RAK3172 driver for ESP32.
+
+  GNU GENERAL PUBLIC LICENSE:
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+  Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
+ */
+
 #include <esp_sleep.h>
 #include <driver/uart.h>
 #include <esp32-hal-log.h>
@@ -8,14 +32,13 @@
 
 #include "../include/rak3172.h"
 
-/** @brief Receive task parameter object.
+/** @brief Receive task parameter object, initialized by the RAK3172_P2P_Listen function.
  */
 struct ReceiveParams_t {
     RAK3172_t* Device;                      /**< Pointer to RAK3172 device. */
     QueueHandle_t* Queue;                   /**< Pointer to message queue. */
-    bool Single;                            /**< #true when a single message should be received. */
     bool Active;                            /**< Task active. */
-    uint16_t Timeout;                       /**< */
+    uint16_t Timeout;                       /**< Receive timeout */
 };
 
 static ReceiveParams_t _Params;
@@ -63,19 +86,10 @@ static void receiveTask(void* p_Parameter)
                 if(xQueueSend(*Params->Queue, &Message, portMAX_DELAY) == pdPASS)
                 {
                     // Only a single message should be received.
-                    if(Params->Single)
+                    if(Params->Timeout != RAK_REC_REPEAT)
                     {
                         Params->Device->isBusy = false;
                         Params->Active = false;
-                    }
-                    // Start a new receiving process when more than one message should be received.
-                    else
-                    {
-                        ESP_LOGI(TAG, "Reschedule receiving...");
-
-                        Params->Device->isBusy = false;
-
-                        RAK3172_SendCommand(Params->Device, "AT+PRECV=" + String(Params->Timeout), NULL, NULL);
                     }
                 }
             }
@@ -403,8 +417,9 @@ esp_err_t RAK3172_P2P_Receive(RAK3172_t* p_Device, uint16_t Timeout, String* p_P
     } while(true);
 }
 
-esp_err_t RAK3172_P2P_Listen(RAK3172_t* p_Device, QueueHandle_t* p_Queue, bool Single)
+esp_err_t RAK3172_P2P_Listen(RAK3172_t* p_Device, QueueHandle_t* p_Queue, uint16_t Timeout)
 {
+    String Version;
     esp_err_t Error;
 
     if(p_Queue == NULL)
@@ -412,16 +427,13 @@ esp_err_t RAK3172_P2P_Listen(RAK3172_t* p_Device, QueueHandle_t* p_Queue, bool S
         return ESP_ERR_INVALID_ARG;
     }
 
-    if(Single)
+    Error = RAK3172_GetFWVersion(p_Device, &Version);
+    if(Error)
     {
-        _Params.Timeout = 65535;
-        _Params.Single = true;
+        return Error;
     }
-    else
-    {
-        _Params.Timeout = 65534;
-        _Params.Single = false;
-    }
+
+    _Params.Timeout = Timeout;
 
     Error = RAK3172_SendCommand(p_Device, "AT+PRECV=" + String(_Params.Timeout), NULL, NULL);
     if(Error)
@@ -429,6 +441,7 @@ esp_err_t RAK3172_P2P_Listen(RAK3172_t* p_Device, QueueHandle_t* p_Queue, bool S
         return Error;
     }
 
+    // Save the parameter for the event task.
     _Params.Device = p_Device;
     _Params.Queue = p_Queue;
 
@@ -452,7 +465,7 @@ esp_err_t RAK3172_P2P_Stop(RAK3172_t* p_Device)
 {
     esp_err_t Error;
 
-    Error = RAK3172_SendCommand(p_Device, "AT+PRECV=0", NULL, NULL);
+    Error = RAK3172_SendCommand(p_Device, "AT+PRECV=" + String(RAK_REC_STOP), NULL, NULL);
     if(Error)
     {
         return Error;

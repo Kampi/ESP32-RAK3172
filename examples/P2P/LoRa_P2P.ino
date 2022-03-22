@@ -4,6 +4,7 @@
 
 #include "LoRaP2P_Default.h"
 
+static uint8_t Buffer[] = {1, 2, 3};
 static RAK3172_t Device;
 static QueueHandle_t Queue;
 
@@ -74,7 +75,10 @@ void loop(void)
     else
     {
         Serial.println("[INFO] Not listening...");
+
+        Buffer[1]++;
+        RAK3172_P2P_Transmit(&Device, Buffer, 2);
     }
 
-    delay(10);
+    delay(1000);
 }

@@ -2,7 +2,7 @@
 
 #include <rak3172.h>
 
-#include "LoRaP2P_Default.h"
+#include "LoRaWAN_Default.h"
 
 static RAK3172_t Device;
 static QueueHandle_t Queue;
@@ -18,36 +18,71 @@ void setup(void)
 
     Serial.begin(115200);
 
-    if(RAK3172_Init_P2P(&Device, 868000000, RAK_PSF_9, RAK_BW_125, RAK_CR_0, 8, 15) == ESP_OK)
+    if(RAK3172_Init_LoRaWAN(&Device, 16, 3, RAK_JOIN_OTAA, (uint8_t*)DEVEUI, (uint8_t*)APPEUI, (uint8_t*)APPKEY, 'A', RAK_BAND_EU868, RAK_SUB_BAND_NONE) == ESP_OK)
     {
-        Queue = xQueueCreate(32, sizeof(RAK3172_Rx_t));
-        RAK3172_P2P_Listen(&Device, &Queue);
     }
     else
     {
-        Serial.println("[ERROR] Can not initialize LoRa module in P2P mode!");
+        Serial.println("[ERROR] Can not initialize LoRa module in LoRaWAN mode!");
+
+        return;
     }
 
 }
 
 void loop(void)
 {
-    if(RAK3172_P2P_isListening(&Device))
-    {
-        RAK3172_Rx_t Message;
+    bool isJoined;
 
-        if(xQueueReceive(Queue, &Message, 0) == pdTRUE)
+    if(RAK3172_Joined(&Device, &isJoined))
+    {
+        Serial.println("[ERROR] Can not read LoRa module!");
+    }
+
+    if(!isJoined)
+    {
+        Serial.println("[INFO] Not joined. Rejoin...");
+
+        if(RAK3172_StartJoin(&Device, 0, LORAWAN_JOIN_ATTEMPTS, true, LORAWAN_MAX_JOIN_INTERVAL_S, NULL) != ESP_OK)
         {
-            Serial.println("[INFO] Received:");
-            Serial.printf("    Payload: %s\n\r", Message.Payload.c_str());
-            Serial.printf("    RSSI: %i\n\r", Message.RSSI);
-            Serial.printf("    SNR: %i\n\r", Message.SNR);
+            Serial.println("[ERROR] Can not join LoRaWAN network!");
+
+            RAK3172_StopJoin(&Device);
+        }
+        else
+        {
+            String Payload;
+
+            Payload = "{}";
+
+            if(RAK3172_LoRaWAN_Transmit(&Device, 1, Payload.c_str(), Payload.length(), LORAWAN_TX_TIMEOUT_S, true, NULL) != ESP_OK)
+            {
+                Serial.println("[ERROR] Can not transmit LoRa message!");
+            }
+            else
+            {
+                int SNR;
+                int RSSI;
+                esp_err_t Error;
+
+                Serial.println("[INFO] Message transmitted...");
+
+                Error = RAK3172_LoRaWAN_Receive(&Device, &Payload, &RSSI, &SNR, LORAWAN_RX_TIMEOUT_S);
+                if(Error == ESP_OK)
+                {
+                    Serial.println("[INFO] Message received...");
+                }
+                else if(Error == ESP_ERR_TIMEOUT)
+                {
+                    Serial.println("[INFO] No message received...");
+                }
+                else if(Error == ESP_ERR_INVALID_STATE)
+                {
+                    Serial.println("[ERROR] Device not joined!");
+                }
+            }
         }
     }
-    else
-    {
-        Serial.println("[INFO] Not listening...");
-    }
 
-    delay(100);
+    delay(1000);
 }

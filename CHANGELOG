@@ -1,0 +1,11 @@
+1.0.0			19.03.2022			Initial release
+									Update CHANGELOG
+									Change version number to 1.0.0
+2.0.0								Update documentation
+									Remove "Status" from "RAK3172_Transmit"
+									Add key handling for ABP mode
+									Add functions to read the RSSI and SNR value of the last packet
+									Working on P2P mode
+									Code refractoring
+									Update CHANGELOG
+									Change version number to 2.0.0

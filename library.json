@@ -1,13 +1,13 @@
 {
   "name": "RAK3172",
-  "version": "2.0.0",
-  "keywords": "Arduino, rak3172, lorawan",
-  "description": "RAK3172 driver for the Arduino framework.",
+  "version": "2.1.0",
+  "keywords": "rak3172, lorawan, esp32",
+  "description": "RAK3172 driver for the ESP32.",
   "repository": {
     "type": "git",
     "url": "https://gitlab.server-kampert.de/esp32/libraries/rak3172"
   },
-  "frameworks": "Arduino",
+  "frameworks": "esp-idf",
   "platforms": "*",
   "build": {
     "flags": [

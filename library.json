@@ -1,7 +1,7 @@
 {
   "name": "RAK3172",
-  "version": "2.1.0",
-  "keywords": "rak3172, lorawan, esp32",
+  "version": "3.0.0",
+  "keywords": "rak3172, lorawan, esp32, esp-idf",
   "description": "RAK3172 driver for the ESP32.",
   "repository": {
     "type": "git",

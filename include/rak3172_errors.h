@@ -33,26 +33,26 @@ typedef int RAK3172_Error_t;
 
 /** @brief No error.
  */
-#define RAK3172_OK                      0xA000
+#define RAK3172_OK                      RAK3172_ERR_BASE + 0
 
 /** @brief Invalid function argument.
  */
-#define RAK3172_INVALID_ARG             0xA001
+#define RAK3172_INVALID_ARG             RAK3172_ERR_BASE + 1
 
 /** @brief The when the interface is not initialized.
  */
-#define RAK3172_INVALID_STATE           0xA002
+#define RAK3172_INVALID_STATE           RAK3172_ERR_BASE + 2
 
 /** @brief When an event happens, when the status is not "OK" or when the device is busy.
  */
-#define RAK3172_FAIL                    0xA003
+#define RAK3172_FAIL                    RAK3172_ERR_BASE + 3
 
 /** @brief When the number of JOIN attemps has expired.
  */
-#define RAK3172_TIMEOUT                 0xA004
+#define RAK3172_TIMEOUT                 RAK3172_ERR_BASE + 4
 
 /** @brief When a send confirmation failed or when the device is busy.
  */
-#define RAK3172_INVALID_RESPONSE        0xA005
+#define RAK3172_INVALID_RESPONSE        RAK3172_ERR_BASE + 5
 
 #endif /* RAK3172_ERRORS_H_ */

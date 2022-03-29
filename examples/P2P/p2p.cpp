@@ -54,7 +54,7 @@ static void applicationTask(void* p_Parameter)
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     _ListenQueue = xQueueCreate(16, sizeof(RAK3172_Rx_t));
-    Error = RAK3172_P2P_Listen(&_Device, &_ListenQueue, RAK_REC_REPEAT);
+    Error = RAK3172_P2P_Listen(&_Device, &_ListenQueue, RAK_REC_SINGLE);
     if(Error != RAK3172_OK)
     {
         ESP_LOGE(TAG, "Can not enter LoRa listening mode! Error: 0x%04X", Error);
@@ -62,16 +62,27 @@ static void applicationTask(void* p_Parameter)
 
     while(true)
     {
-        RAK3172_Rx_t Obj;
+        RAK3172_Rx_t* Obj;
 
         esp_task_wdt_reset();
 
-        if(xQueueReceive(_ListenQueue, (void*)&Obj, 0) == pdTRUE)
+        if(xQueueReceive(_ListenQueue, &Obj, 0) == pdTRUE)
         {
             ESP_LOGI(TAG, "Message received:");
-            ESP_LOGI(TAG, "     RSSI: %i", Obj.RSSI);
-            ESP_LOGI(TAG, "     SNR: %i", Obj.SNR);
-            ESP_LOGI(TAG, "     Payload: %s", Obj.Payload.c_str());
+            ESP_LOGI(TAG, "     RSSI: %i", Obj->RSSI);
+            ESP_LOGI(TAG, "     SNR: %i", Obj->SNR);
+            ESP_LOGI(TAG, "     Payload: %s", Obj->Payload.c_str());
+
+            delete Obj;
+        }
+
+        if(RAK3172_P2P_isListening(&_Device))
+        {
+            ESP_LOGI(TAG, "Listening...");
+        }
+        else
+        {
+            ESP_LOGI(TAG, "Not listening...");
         }
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -93,9 +104,7 @@ static void StartApplication(void)
 
 extern "C" void app_main(void)
 {
-    #ifdef DEBUG
-        ESP_LOGI(TAG, "IDF: %s", esp_get_idf_version());
-    #endif
+    ESP_LOGI(TAG, "IDF: %s", esp_get_idf_version());
 
 	StartApplication();
 }

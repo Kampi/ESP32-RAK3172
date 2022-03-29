@@ -1,13 +1,13 @@
 {
   "name": "RAK3172",
   "version": "3.0.0",
-  "keywords": "rak3172, lorawan, esp32, esp-idf",
-  "description": "RAK3172 driver for the ESP32.",
+  "keywords": "esp-idf, rak3172, lorawan",
+  "description": "RAK3172 driver for the esp-idf framework.",
   "repository": {
     "type": "git",
     "url": "https://gitlab.server-kampert.de/esp32/libraries/rak3172"
   },
-  "frameworks": "esp-idf",
+  "frameworks": "espidf",
   "platforms": "*",
   "build": {
     "flags": [

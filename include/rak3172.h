@@ -28,8 +28,8 @@
 #include <driver/gpio.h>
 #include <driver/uart.h>
 
-#include "rak3172_defs.h"
-#include "rak3172_errors.h"
+#include "Definitions/rak3172_defs.h"
+#include "Definitions/rak3172_errors.h"
 
 /**
  * 
@@ -565,15 +565,17 @@ RAK3172_Error_t RAK3172_P2P_Transmit(RAK3172_t* p_Device, const uint8_t* p_Buffe
  *  @param p_Payload    Pointer to message payload string
  *  @param p_RSSI       (Optional) Pointer to RSSI value
  *  @param p_SNR        (Optional) Pointer to SNR value
+ *  @param Listen       (Optional) Listen timeout in milliseconds
  *  @return             RAK3172_OK when successful
  *                      RAK3172_TIMEOUT when a timeout was received
  *                      RAK3172_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* p_Device, uint16_t Timeout, std::string* p_Payload, int8_t* p_RSSI = NULL, int8_t* p_SNR = NULL);
+RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* p_Device, uint16_t Timeout, std::string* p_Payload, int8_t* p_RSSI = NULL, int8_t* p_SNR = NULL, uint32_t Listen = 100);
 
 /** @brief          Start the listening mode to receive LoRa P2P message.
  *  @param p_Device Pointer to RAK3172 device object
- *  @param p_Queue  Pointer to receive queue with RAK3172_Rx_t objects
+ *  @param p_Queue  Pointer to receive queue with RAK3172_Rx_t* objects
+ *                  NOTE: Make sure you perform a "delete" on these objects after the operation to avoid memory leaks!
  *  @param Timeout  (Optional) Timeout in milliseconds.
  *                  NOTE: 0 will stop the receiving, 65534 will disable the timeout (only with firmware v1.0.3 and later) and 65535 will disable the timeout and the device stops when a packet was received.
  *  @return         RAK3172_OK when successful

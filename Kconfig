@@ -48,7 +48,7 @@ menu "RAK3172"
                 RAK3172 UART interface Tx pin.
     endmenu
 
-    menu "Receive task"
+    menu "FreeRTOS"
         config RAK3172_TASK_PRIO
             int "Receive task priority"
             range 12 25
@@ -69,6 +69,12 @@ menu "RAK3172"
             default 8
             help
                 Queue length for the UART receive buffer.
+
+        config RAK3172_CORE_AFFINITY
+            bool "Use core affinity"
+            default n
+            help
+                Enable this option if you want to use a specific core for the driver.
     endmenu
 
 endmenu

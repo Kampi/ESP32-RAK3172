@@ -26,6 +26,7 @@
 
 #include <algorithm>
 
+#include "sdkconfig.h"
 #include "../include/rak3172.h"
 
 #ifndef CONFIG_RAK3172_TASK_PRIO
@@ -59,14 +60,14 @@ static const char* TAG = "RAK3172";
 /** @brief          UART receive task.
  *  @param p_Arg    Pointer to task arguments
  */
-static void RAK3172_EventTask(void* p_Arg)
+static void eventTask(void* p_Arg)
 {
     uart_event_t Event;
     RAK3172_t* Device = (RAK3172_t*)p_Arg;
 
     while(true)
     {
-        if(xQueueReceive(_RAK3172_UARTEvent_Queue, (void*)&Event, (TickType_t)portMAX_DELAY))
+        if(xQueueReceive(_RAK3172_UARTEvent_Queue, (void*)&Event, portMAX_DELAY))
         {
             size_t BufferedSize;
             uint32_t PatternPos;
@@ -81,7 +82,7 @@ static void RAK3172_EventTask(void* p_Arg)
 
                     PatternPos = uart_pattern_pop_pos(Device->Interface);
 
-                    ESP_LOGI(TAG, "     Pattern detected at position %u. Use buffered size: %u", PatternPos, BufferedSize);
+                    ESP_LOGD(TAG, "     Pattern detected at position %u. Use buffered size: %u", PatternPos, BufferedSize);
 
                     if(PatternPos == -1)
                     {
@@ -91,21 +92,24 @@ static void RAK3172_EventTask(void* p_Arg)
                     {
                         std::string* Response = new std::string();
 
-                        uart_read_bytes(Device->Interface, Device->Internal.RxBuffer, PatternPos, 100 / portTICK_PERIOD_MS);
-
-                        // Copy the data from the buffer into the string.
-                        for(uint32_t i = 0; i < PatternPos; i++)
+                        if(Response != NULL)
                         {
-                            char Character = (char)Device->Internal.RxBuffer[i];
+                            uart_read_bytes(Device->Interface, Device->Internal.RxBuffer, PatternPos, 100 / portTICK_PERIOD_MS);
 
-                            if((Character != '\n') && (Character != '\r'))
+                            // Copy the data from the buffer into the string.
+                            for(uint32_t i = 0; i < PatternPos; i++)
                             {
-                                *Response += Character;
-                            }
-                        }
+                                char Character = (char)Device->Internal.RxBuffer[i];
 
-                        ESP_LOGI(TAG, "     Response: %s", Response->c_str());
-                        xQueueSend(Device->Internal.Rx_Queue, &Response, 0);
+                                if((Character != '\n') && (Character != '\r'))
+                                {
+                                    *Response += Character;
+                                }
+                            }
+
+                            ESP_LOGD(TAG, "     Response: %s", Response->c_str());
+                            xQueueSend(Device->Internal.Rx_Queue, &Response, 0);
+                        }
                     }
 
                     break;
@@ -136,10 +140,10 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
     _UART_Config.baud_rate = p_Device->Baudrate;
 
     if(uart_driver_install(p_Device->Interface, CONFIG_RAK3172_BUFFER_SIZE * 2, CONFIG_RAK3172_BUFFER_SIZE * 2, CONFIG_RAK3172_QUEUE_LENGTH, &_RAK3172_UARTEvent_Queue, 0) ||
-        uart_param_config(p_Device->Interface, &_UART_Config) ||
-        uart_set_pin(p_Device->Interface, p_Device->Tx, p_Device->Rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) ||
-        uart_enable_pattern_det_baud_intr(p_Device->Interface, '\n', 1, 9, 0, 0) ||
-        uart_pattern_queue_reset(p_Device->Interface, CONFIG_RAK3172_QUEUE_LENGTH))
+       uart_param_config(p_Device->Interface, &_UART_Config) ||
+       uart_set_pin(p_Device->Interface, p_Device->Tx, p_Device->Rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) ||
+       uart_enable_pattern_det_baud_intr(p_Device->Interface, '\n', 1, 9, 0, 0) ||
+       uart_pattern_queue_reset(p_Device->Interface, CONFIG_RAK3172_QUEUE_LENGTH))
     {
         return RAK3172_INVALID_STATE;
     }
@@ -161,33 +165,49 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
         return RAK3172_INVALID_STATE;
     }
 
-    xTaskCreate(RAK3172_EventTask, "RAK3172_EventTask", CONFIG_RAK3172_BUFFER_SIZE * 2, p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device->Internal.Handle);
+    xTaskCreate(eventTask, "eventTask", CONFIG_RAK3172_BUFFER_SIZE * 2, p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device->Internal.Handle);
     if(p_Device->Internal.Handle == NULL)
     {
+        free(p_Device->Internal.RxBuffer);
+
         return RAK3172_INVALID_STATE;
     }
-
-    p_Device->Internal.isInitialized = true;
 
     Error = RAK3172_SoftReset(p_Device);
     if(Error != RAK3172_OK)
     {
+        free(p_Device->Internal.RxBuffer);
+
         return Error;
     }
 
     Error = RAK3172_GetFWVersion(p_Device, &p_Device->Firmware);
     if(Error != RAK3172_OK)
     {
+        free(p_Device->Internal.RxBuffer);
+
         return Error;
     }
     
     Error = RAK3172_GetSerialNumber(p_Device, &p_Device->Serial);
     if(Error != RAK3172_OK)
     {
+        free(p_Device->Internal.RxBuffer);
+
         return Error;
     }
 
-    return RAK3172_GetMode(p_Device);
+    Error = RAK3172_GetMode(p_Device);
+    if(Error != RAK3172_OK)
+    {
+        free(p_Device->Internal.RxBuffer);
+
+        return Error;
+    }
+
+    p_Device->Internal.isInitialized = true;
+
+    return RAK3172_OK;
 }
 
 void RAK3172_Deinit(RAK3172_t* p_Device)
@@ -369,43 +389,33 @@ RAK3172_Error_t RAK3172_GetSerialNumber(RAK3172_t* p_Device, std::string* p_Seri
 RAK3172_Error_t RAK3172_GetRSSI(RAK3172_t* p_Device, int* p_RSSI)
 {
     std::string Value;
-    RAK3172_Error_t Error;
 
     if(p_RSSI == NULL)
     {
         return RAK3172_INVALID_ARG;
     }
 
-    Error = RAK3172_SendCommand(p_Device, "AT+RSSI=?", &Value, NULL);
-    if(Error != RAK3172_OK)
-    {
-        return Error;
-    }
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+RSSI=?", &Value, NULL));
 
     *p_RSSI = std::stoi(Value);
 
-    return Error;
+    return RAK3172_OK;
 }
 
 RAK3172_Error_t RAK3172_GetSNR(RAK3172_t* p_Device, int* p_SNR)
 {
     std::string Value;
-    RAK3172_Error_t Error;
 
     if(p_SNR == NULL)
     {
         return RAK3172_INVALID_ARG;
     }
 
-    Error = RAK3172_SendCommand(p_Device, "AT+SNR=?", &Value, NULL);
-    if(Error != RAK3172_OK)
-    {
-        return Error;
-    }
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+SNR=?", &Value, NULL));
 
     *p_SNR = std::stoi(Value);
 
-    return Error;
+    return RAK3172_OK;
 }
 
 RAK3172_Error_t RAK3172_SetMode(RAK3172_t* p_Device, RAK3172_Mode_t Mode)
@@ -463,22 +473,17 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* p_Device, RAK3172_Mode_t Mode)
 RAK3172_Error_t RAK3172_GetMode(RAK3172_t* p_Device)
 {
     std::string Value;
-    RAK3172_Error_t Error = RAK3172_OK;
 
     if(!p_Device->Internal.isInitialized)
     {
         return RAK3172_INVALID_RESPONSE;
     }
 
-    Error = RAK3172_SendCommand(p_Device, "AT+NWM=?", &Value, NULL);
-    if(Error != RAK3172_OK)
-    {
-        return Error;
-    }
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+NWM=?", &Value, NULL));
 
     p_Device->Mode = (RAK3172_Mode_t)std::stoi(Value);
 
-    return Error;
+    return RAK3172_OK;
 }
 
 RAK3172_Error_t RAK3172_SetBaud(RAK3172_t* p_Device, RAK3172_Baud_t Baud)
@@ -499,20 +504,15 @@ RAK3172_Error_t RAK3172_SetBaud(RAK3172_t* p_Device, RAK3172_Baud_t Baud)
 RAK3172_Error_t RAK3172_GetBaud(RAK3172_t* p_Device, RAK3172_Baud_t* p_Baud)
 {
     std::string Value;
-    RAK3172_Error_t Error = RAK3172_OK;
 
     if(!p_Device->Internal.isInitialized)
     {
         return RAK3172_INVALID_RESPONSE;
     }
 
-    Error = RAK3172_SendCommand(p_Device, "AT+BAUD=?", &Value, NULL);
-    if(Error != RAK3172_OK)
-    {
-        return Error;
-    }
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+BAUD=?", &Value, NULL));
 
     *p_Baud = (RAK3172_Baud_t)std::stoi(Value);
 
-    return Error;
+    return RAK3172_OK;
 }

@@ -101,9 +101,7 @@ static void StartApplication(void)
 
 extern "C" void app_main(void)
 {
-    #ifdef DEBUG
-        ESP_LOGI(TAG, "IDF: %s", esp_get_idf_version());
-    #endif
+    ESP_LOGI(TAG, "IDF: %s", esp_get_idf_version());
 
 	StartApplication();
 }

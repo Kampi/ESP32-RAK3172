@@ -774,7 +774,7 @@ RAK3172_Error_t RAK3172_SetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t DR)
 
 RAK3172_Error_t RAK3172_GetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t* p_DR)
 {
-    String Value;
+    std::string Value;
     esp_err_t Error = ESP_OK;
 
     if(p_DR == NULL)

@@ -752,7 +752,7 @@ RAK3172_Error_t RAK3172_GetDuty(RAK3172_t* p_Device, uint8_t* p_Duty)
 
     if((Band != RAK_BAND_EU868) && (Band != RAK_BAND_RU864) && (Band != RAK_BAND_EU433))
     {
-        return RAK3172_INVALID_RESPONSE;
+        return RAK3172_INVALID_ARG;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+DUTYTIME=?", &Value, NULL));
@@ -760,4 +760,31 @@ RAK3172_Error_t RAK3172_GetDuty(RAK3172_t* p_Device, uint8_t* p_Duty)
     *p_Duty = (uint8_t)std::stoi(Value);
 
     return RAK3172_OK;
+}
+
+RAK3172_Error_t RAK3172_SetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t DR)
+{
+    if(DR > RAK_DR_7)
+    {
+        return RAK3172_INVALID_ARG;
+    }
+
+    return RAK3172_SendCommand(p_Device, "AT+DR=" + std::to_string(DR), NULL, NULL);
+}
+
+RAK3172_Error_t RAK3172_GetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t* p_DR)
+{
+    String Value;
+    esp_err_t Error = ESP_OK;
+
+    if(p_DR == NULL)
+    {
+        return RAK3172_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+DR=?", &Value, NULL));
+
+    *p_DR = (RAK3172_DataRate_t)std::stoi(Value);
+
+    return Error;
 }

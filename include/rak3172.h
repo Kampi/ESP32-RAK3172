@@ -419,6 +419,24 @@ RAK3172_Error_t RAK3172_GetRSSI(RAK3172_t* p_Device, int8_t* p_RSSI);
  */
 RAK3172_Error_t RAK3172_GetDuty(RAK3172_t* p_Device, uint8_t* p_Duty);
 
+/** @brief          Set the data rate of the LoRa module.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param DR       Data rate
+ *  @return         ESP_OK when successful
+ *                  RAK3172_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_INVALID_STATE the when the interface is not initialized
+ */
+RAK3172_Error_t RAK3172_SetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t DR);
+
+/** @brief          Get the data rate of the LoRa module.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_DR     Pointer to data rate
+ *  @return         RAK3172_OK when successful
+ *                  RAK3172_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_INVALID_STATE the when the interface is not initialized
+ */
+RAK3172_Error_t RAK3172_GetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t* p_DR);
+
 /**
  * 
  * RAK3172 P2P functions.

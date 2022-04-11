@@ -428,12 +428,6 @@ esp_err_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, String* p_Payload, int* p
         return ESP_ERR_INVALID_ARG;
     }
 
-    Error = RAK3172_Joined(p_Device, &Joined);
-    if(Error)
-    {
-        return Error;
-    }
-
     if(!Joined)
     {
         return ESP_ERR_INVALID_STATE;

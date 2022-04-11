@@ -420,19 +420,11 @@ esp_err_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, String* p_Payload, int* p
 {
     String Line;
     uint32_t Now;
-    esp_err_t Error;
-    bool Joined;
 
     if((p_Payload == NULL) || (Timeout <= 1))
     {
         return ESP_ERR_INVALID_ARG;
     }
-
-    if(!Joined)
-    {
-        return ESP_ERR_INVALID_STATE;
-    }
-
 
     Now = millis();
     do

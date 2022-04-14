@@ -398,19 +398,11 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, cons
 
 RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, std::string* p_Payload, int* p_RSSI, int* p_SNR, uint32_t Timeout)
 {
-    bool Joined;
     uint32_t Now;
 
     if((p_Payload == NULL) || (Timeout <= 1))
     {
         return RAK3172_INVALID_ARG;
-    }
-
-    RAK3172_ERROR_CHECK(RAK3172_Joined(p_Device, &Joined));
-
-    if(!Joined)
-    {
-        return RAK3172_INVALID_STATE;
     }
 
     Now = esp_timer_get_time() / 1000ULL;

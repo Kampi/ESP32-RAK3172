@@ -5,8 +5,8 @@ set(COMPONENT_SRCS
     )
 
 set(COMPONENT_ADD_INCLUDEDIRS
-  include
-  )
+	"include"
+	)
 
 set(COMPONENT_PRIV_REQUIRES freertos)
 

@@ -100,9 +100,7 @@ RAK3172_Error_t RAK3172_Init_LoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t
     Command += Class;
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, Command, NULL, NULL));
 
-    Command = "AT+ADR=";
-    Command += std::to_string(UseADR);
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, Command, NULL, NULL));
+	RAK3172_ERROR_CHECK(RAK3172_SetADR(p_Device, UseADR);
     RAK3172_ERROR_CHECK(RAK3172_SetBand(p_Device, Band));
 
     if(Subband != RAK_SUB_BAND_NONE)
@@ -767,7 +765,6 @@ RAK3172_Error_t RAK3172_SetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t DR)
 RAK3172_Error_t RAK3172_GetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t* p_DR)
 {
     std::string Value;
-    esp_err_t Error = ESP_OK;
 
     if(p_DR == NULL)
     {
@@ -778,5 +775,26 @@ RAK3172_Error_t RAK3172_GetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t* p_D
 
     *p_DR = (RAK3172_DataRate_t)std::stoi(Value);
 
-    return Error;
+    return RAK3172_OK;
+}
+
+RAK3172_Error_t RAK3172_SetADR(RAK3172_t* p_Device, bool Enable)
+{
+    return RAK3172_SendCommand(p_Device, "AT+ADR=" + String(Enable), NULL, NULL);
+}
+
+RAK3172_Error_t RAK3172_GetADR(RAK3172_t* p_Device, bool* p_Enable)
+{
+    std::string Value;
+
+    if(p_Enable == NULL)
+    {
+        return RAK3172_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ADR=?", &Value, NULL));
+
+    *p_Enable = (bool)Value.toInt();
+
+    return RAK3172_OK
 }

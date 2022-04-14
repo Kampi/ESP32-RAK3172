@@ -437,6 +437,24 @@ RAK3172_Error_t RAK3172_SetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t DR);
  */
 RAK3172_Error_t RAK3172_GetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t* p_DR);
 
+/** @brief          Enable / Disable the adaptive data rate.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param Enable   Pointer to data rate
+ *  @return         RAK3172_OK when successful
+ *                  RAK3172_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_INVALID_STATE the when the interface is not initialized
+ */
+RAK3172_Error_t RAK3172_SetADR(RAK3172_t* p_Device, bool Enable);
+
+/** @brief          Get the status of the adaptive data rate option.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Enable Pointer to adaptive data rate status
+ *  @return         RAK3172_OK when successful
+ *                  RAK3172_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_INVALID_STATE the when the interface is not initialized
+ */
+RAK3172_Error_t RAK3172_GetADR(RAK3172_t* p_Device, bool* p_Enable);
+
 /**
  * 
  * RAK3172 P2P functions.

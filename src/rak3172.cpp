@@ -168,46 +168,44 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
     xTaskCreate(eventTask, "eventTask", CONFIG_RAK3172_BUFFER_SIZE * 2, p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device->Internal.Handle);
     if(p_Device->Internal.Handle == NULL)
     {
-        free(p_Device->Internal.RxBuffer);
+        Error = RAK3172_INVALID_STATE;
 
-        return RAK3172_INVALID_STATE;
+        goto RAK3172_Init_Error;
     }
+
+    p_Device->Internal.isInitialized = true;
 
     Error = RAK3172_SoftReset(p_Device);
     if(Error != RAK3172_OK)
     {
-        free(p_Device->Internal.RxBuffer);
-
-        return Error;
+        goto RAK3172_Init_Error;
     }
 
     Error = RAK3172_GetFWVersion(p_Device, &p_Device->Firmware);
     if(Error != RAK3172_OK)
     {
-        free(p_Device->Internal.RxBuffer);
-
-        return Error;
+        goto RAK3172_Init_Error;
     }
     
     Error = RAK3172_GetSerialNumber(p_Device, &p_Device->Serial);
     if(Error != RAK3172_OK)
     {
-        free(p_Device->Internal.RxBuffer);
-
-        return Error;
+        goto RAK3172_Init_Error;
     }
 
     Error = RAK3172_GetMode(p_Device);
     if(Error != RAK3172_OK)
     {
-        free(p_Device->Internal.RxBuffer);
-
-        return Error;
+        goto RAK3172_Init_Error;
     }
 
-    p_Device->Internal.isInitialized = true;
-
     return RAK3172_OK;
+
+RAK3172_Init_Error:
+    free(p_Device->Internal.RxBuffer);
+	p_Device->Internal.isInitialized = false;
+
+	return Error;
 }
 
 void RAK3172_Deinit(RAK3172_t* p_Device)
@@ -312,6 +310,11 @@ RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, st
         ESP_LOGE(TAG, "Device busy!");
 
         return RAK3172_FAIL;
+    }
+
+    if(p_Device->isInitialized == false)
+    {
+        return RAK3172_INVALID_STATE;
     }
 
     // Transmit the command.

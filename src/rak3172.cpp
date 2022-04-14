@@ -210,7 +210,7 @@ RAK3172_Init_Error:
 
 void RAK3172_Deinit(RAK3172_t* p_Device)
 {
-    if(!p_Device->Internal.isInitialized)
+    if(p_Device->Internal.isInitialized == false)
     {
         return;
     }
@@ -260,6 +260,16 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout)
 {
     std::string Command;
     std::string* Response = NULL;
+
+	if(p_Device == NULL)
+	{
+        return RAK3172_INVALID_ARG;
+	}
+	
+	if(p_Device->Internal.isInitialized == false)
+	{
+        return RAK3172_INVALID_STATE;
+	}
 
     ESP_LOGI(TAG, "Performing software reset...");
 
@@ -383,7 +393,7 @@ RAK3172_Error_t RAK3172_GetSerialNumber(RAK3172_t* p_Device, std::string* p_Seri
 {
     if(p_Serial == NULL)
     {
-        return RAK3172_INVALID_RESPONSE;
+        return RAK3172_INVALID_ARG;
     }
 
     return RAK3172_SendCommand(p_Device, "AT+SN=?", p_Serial, NULL);
@@ -431,7 +441,7 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* p_Device, RAK3172_Mode_t Mode)
         return RAK3172_INVALID_ARG;
     }
 
-    if(!p_Device->Internal.isInitialized)
+    if(p_Device->Internal.isInitialized == false)
     {
         return RAK3172_INVALID_RESPONSE;
     }
@@ -477,11 +487,6 @@ RAK3172_Error_t RAK3172_GetMode(RAK3172_t* p_Device)
 {
     std::string Value;
 
-    if(!p_Device->Internal.isInitialized)
-    {
-        return RAK3172_INVALID_RESPONSE;
-    }
-
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+NWM=?", &Value, NULL));
 
     p_Device->Mode = (RAK3172_Mode_t)std::stoi(Value);
@@ -491,11 +496,6 @@ RAK3172_Error_t RAK3172_GetMode(RAK3172_t* p_Device)
 
 RAK3172_Error_t RAK3172_SetBaud(RAK3172_t* p_Device, RAK3172_Baud_t Baud)
 {
-    if(!p_Device->Internal.isInitialized)
-    {
-        return RAK3172_INVALID_RESPONSE;
-    }
-
     if(p_Device->Baudrate == Baud)
     {
         return RAK3172_OK;
@@ -507,11 +507,6 @@ RAK3172_Error_t RAK3172_SetBaud(RAK3172_t* p_Device, RAK3172_Baud_t Baud)
 RAK3172_Error_t RAK3172_GetBaud(RAK3172_t* p_Device, RAK3172_Baud_t* p_Baud)
 {
     std::string Value;
-
-    if(!p_Device->Internal.isInitialized)
-    {
-        return RAK3172_INVALID_RESPONSE;
-    }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+BAUD=?", &Value, NULL));
 

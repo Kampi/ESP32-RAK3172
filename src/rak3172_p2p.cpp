@@ -145,7 +145,7 @@ RAK3172_Error_t RAK3172_SetFrequency(RAK3172_t* p_Device, uint32_t Freq)
 {
     if((Freq > 960000000) || (Freq < 150000000))
     {
-        return RAK3172_INVALID_RESPONSE;
+        return RAK3172_INVALID_ARG;
     }
 
     return RAK3172_SendCommand(p_Device, "AT+PFREQ=" + std::to_string(Freq), NULL, NULL);

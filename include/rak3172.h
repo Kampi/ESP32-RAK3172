@@ -68,15 +68,13 @@ const std::string RAK3172_LibVersion(void);
  *  @param p_Device Pointer to RAK3172 device object
  *  @param Command  RAK3172 command
  *  @param p_Value  (Optional) Pointer to returned value.
- *                  NOTE: Only needed when a read command should be executed.
  *  @param p_Status (Optional) Pointer to status string
- *                  NOTE: Can be set to #NULL when not needed.
  *  @return         RAK3172_OK when successful
  *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_FAIL when an event happens, when the status is not "OK" or when the device is busy
  *                  RAK3172_TIMEOUT when a receive timeout occurs
  */
-RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, std::string* p_Value, std::string* p_Status);
+RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, std::string* p_Value = NULL, std::string* p_Status = NULL);
 
 /** @brief              Get the firmware version of the RAK3172 SoM.
  *  @param p_Device     Pointer to RAK3172 device object
@@ -171,7 +169,7 @@ RAK3172_Error_t RAK3172_GetBaud(RAK3172_t* p_Device, RAK3172_Baud_t* p_Baud);
  *                  OTAA: APPKEY (8 Bytes)
  *                  ABP: DEVADDR (4 bytes)
  *  @param Band     LoRa frequency band
- *  @param Subband  LoRa sub band
+ *  @param Subband  (Optional) LoRa sub band
  *                  NOTE: Only needed when US915, AU915 or CN470 band is used. Otherwise set it to RAK_SUB_BAND_NONE!
  *  @param Class    Device class (A, B or C)
  *  @param UseADR   (Optional) Enable adaptive data rate
@@ -179,7 +177,7 @@ RAK3172_Error_t RAK3172_GetBaud(RAK3172_t* p_Device, RAK3172_Baud_t* p_Baud);
  *  @return         RAK3172_OK when successful
  *                  RAK3172_INVALID_ARG when an invalid argument was passed
  */
-RAK3172_Error_t RAK3172_Init_LoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t Retries, RAK3172_JoinMode_t JoinMode, const uint8_t* p_Key1, const uint8_t* p_Key2, const uint8_t* p_Key3, char Class, RAK3172_Band_t Band, RAK3172_SubBand_t Subband, bool UseADR = true, uint32_t Timeout = 10);
+RAK3172_Error_t RAK3172_Init_LoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t Retries, RAK3172_JoinMode_t JoinMode, const uint8_t* p_Key1, const uint8_t* p_Key2, const uint8_t* p_Key3, char Class, RAK3172_Band_t Band, RAK3172_SubBand_t Subband = NULL, bool UseADR = true, uint32_t Timeout = 10);
 
 /** @brief              Set the keys for OTAA mode.
  *  @param p_Device     Pointer to RAK3172 device object
@@ -208,7 +206,7 @@ RAK3172_Error_t RAK3172_SetABPKeys(RAK3172_t* p_Device, const uint8_t* p_APPSKEY
  *                          NOTE: Set to 0 to disable the timeout function
  *  @param Attempts         (Optional) No. of join attempts
  *  @param EnableAutoJoin   (Optional) Enable auto join after power up
- *  @param Interval         Reattempt interval
+ *  @param Interval         (Optional) Reattempt interval
  *  @param on_Wait          (Optional) Hook for a custom wait function
  *                          NOTE: The function call is time critical. Prevent long wait periods!
  *  @return                 RAK3172_OK when joined

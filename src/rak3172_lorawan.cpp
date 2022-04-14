@@ -43,7 +43,7 @@ RAK3172_Error_t RAK3172_Init_LoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t
     RAK3172_ERROR_CHECK(RAK3172_SetMode(p_Device, RAK_MODE_LORAWAN));
 
     // Check if echo mode is enabled.
-    RAK3172_SendCommand(p_Device, "AT", NULL, &Dummy);
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT", NULL, &Dummy));
     ESP_LOGD(TAG, "Response from 'AT': %s", Dummy.c_str());
     if(Dummy.find("OK") == std::string::npos)
     {
@@ -322,7 +322,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, cons
 
     RAK3172_ERROR_CHECK(RAK3172_Joined(p_Device, &Joined));
 
-    if(!Joined)
+    if(Joined == false)
     {
         return RAK3172_INVALID_STATE;
     }

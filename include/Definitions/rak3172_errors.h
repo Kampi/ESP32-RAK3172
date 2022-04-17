@@ -27,7 +27,7 @@
 
 #include <stdint.h>
 
-typedef int RAK3172_Error_t;
+typedef uint32_t RAK3172_Error_t;
 
 /** @brief RAK3172 error base.
  */
@@ -35,30 +35,30 @@ typedef int RAK3172_Error_t;
 
 /** @brief No error.
  */
-#define RAK3172_OK                      RAK3172_ERR_BASE + 0
+#define RAK3172_OK                      (RAK3172_ERR_BASE + 0)
 
 /** @brief Invalid function argument.
  */
-#define RAK3172_INVALID_ARG             RAK3172_ERR_BASE + 1
+#define RAK3172_INVALID_ARG             (RAK3172_ERR_BASE + 1)
 
 /** @brief The when the interface is not initialized.
  */
-#define RAK3172_INVALID_STATE           RAK3172_ERR_BASE + 2
+#define RAK3172_INVALID_STATE           (RAK3172_ERR_BASE + 2)
 
 /** @brief When an event happens, when the status is not "OK" or when the device is busy.
  */
-#define RAK3172_FAIL                    RAK3172_ERR_BASE + 3
+#define RAK3172_FAIL                    (RAK3172_ERR_BASE + 3)
 
 /** @brief When the number of JOIN attemps has expired.
  */
-#define RAK3172_TIMEOUT                 RAK3172_ERR_BASE + 4
+#define RAK3172_TIMEOUT                 (RAK3172_ERR_BASE + 4)
 
 /** @brief When a send confirmation failed or when the device is busy.
  */
-#define RAK3172_INVALID_RESPONSE        RAK3172_ERR_BASE + 5
+#define RAK3172_INVALID_RESPONSE        (RAK3172_ERR_BASE + 5)
 
 /** @brief Mo memory for memory allocation available.
  */
-#define RAK3172_NO_MEM                  RAK3172_ERR_BASE + 5
+#define RAK3172_NO_MEM                  (RAK3172_ERR_BASE + 5)
 
 #endif /* RAK3172_ERRORS_H_ */

@@ -439,13 +439,16 @@ RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, std::string* p_Payl
             // Then get the data and leave the function.
             if(Line->find("UNICAST") != std::string::npos)
             {
-                //Line = p_Device->p_Interface->readStringUntil('\n');
-                ESP_LOGD(TAG, "    Payload: %s", Line->c_str());
+                if(xQueueReceive(p_Device->Internal.Rx_Queue, &Line, 100 / portTICK_PERIOD_MS) == pdPASS)
+                {
+                    ESP_LOGD(TAG, "    Payload: %s", Line->c_str());
 
-                // Clean up the payload string ("+EVT:Port:Payload")
-                //  - Remove the "+EVT" indicator
-                //  - Remove the port number
-                *p_Payload = Line->substr(Line->find_last_of(":") + 1, Line->length());
+                    // Clean up the payload string ("+EVT:Port:Payload")
+                    //  - Remove the "+EVT" indicator
+                    //  - Remove the port number
+				    //	- Remove the trailing \n and \r
+                    *p_Payload = Line->substr(Line->find_last_of(":") + 1, Line->length() - 2);
+                }
 
                 return RAK3172_OK;
             }

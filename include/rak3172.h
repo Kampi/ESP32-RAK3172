@@ -177,7 +177,7 @@ RAK3172_Error_t RAK3172_GetBaud(RAK3172_t* p_Device, RAK3172_Baud_t* p_Baud);
  *  @return         RAK3172_OK when successful
  *                  RAK3172_INVALID_ARG when an invalid argument was passed
  */
-RAK3172_Error_t RAK3172_Init_LoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t Retries, RAK3172_JoinMode_t JoinMode, const uint8_t* p_Key1, const uint8_t* p_Key2, const uint8_t* p_Key3, char Class, RAK3172_Band_t Band, RAK3172_SubBand_t Subband = NULL, bool UseADR = true, uint32_t Timeout = 10);
+RAK3172_Error_t RAK3172_Init_LoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t Retries, RAK3172_JoinMode_t JoinMode, const uint8_t* p_Key1, const uint8_t* p_Key2, const uint8_t* p_Key3, char Class, RAK3172_Band_t Band, RAK3172_SubBand_t Subband = RAK_SUB_BAND_NONE, bool UseADR = true, uint32_t Timeout = 10);
 
 /** @brief              Set the keys for OTAA mode.
  *  @param p_Device     Pointer to RAK3172 device object

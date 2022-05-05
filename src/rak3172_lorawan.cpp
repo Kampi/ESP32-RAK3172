@@ -100,7 +100,7 @@ RAK3172_Error_t RAK3172_Init_LoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t
     Command += Class;
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, Command, NULL, NULL));
 
-	RAK3172_ERROR_CHECK(RAK3172_SetADR(p_Device, UseADR);
+	RAK3172_ERROR_CHECK(RAK3172_SetADR(p_Device, UseADR));
     RAK3172_ERROR_CHECK(RAK3172_SetBand(p_Device, Band));
 
     if(Subband != RAK_SUB_BAND_NONE)
@@ -439,16 +439,13 @@ RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, std::string* p_Payl
             // Then get the data and leave the function.
             if(Line->find("UNICAST") != std::string::npos)
             {
-                if(xQueueReceive(p_Device->Internal.Rx_Queue, &Line, 100 / portTICK_PERIOD_MS) == pdPASS)
-                {
-                    ESP_LOGD(TAG, "    Payload: %s", Line->c_str());
+                //Line = p_Device->p_Interface->readStringUntil('\n');
+                ESP_LOGD(TAG, "    Payload: %s", Line->c_str());
 
-                    // Clean up the payload string ("+EVT:Port:Payload")
-                    //  - Remove the "+EVT" indicator
-                    //  - Remove the port number
-				    //	- Remove the trailing \n and \r
-                    *p_Payload = Line->substr(Line->find_last_of(":") + 1, Line->length() - 2);
-                }
+                // Clean up the payload string ("+EVT:Port:Payload")
+                //  - Remove the "+EVT" indicator
+                //  - Remove the port number
+                *p_Payload = Line->substr(Line->find_last_of(":") + 1, Line->length());
 
                 return RAK3172_OK;
             }
@@ -783,7 +780,7 @@ RAK3172_Error_t RAK3172_GetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t* p_D
 
 RAK3172_Error_t RAK3172_SetADR(RAK3172_t* p_Device, bool Enable)
 {
-    return RAK3172_SendCommand(p_Device, "AT+ADR=" + String(Enable), NULL, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+ADR=" + std::to_string(Enable), NULL, NULL);
 }
 
 RAK3172_Error_t RAK3172_GetADR(RAK3172_t* p_Device, bool* p_Enable)
@@ -797,7 +794,7 @@ RAK3172_Error_t RAK3172_GetADR(RAK3172_t* p_Device, bool* p_Enable)
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ADR=?", &Value, NULL));
 
-    *p_Enable = (bool)Value.toInt();
+    *p_Enable = (bool)std::stoi(Value);
 
     return RAK3172_OK;
 }

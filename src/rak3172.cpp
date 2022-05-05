@@ -322,7 +322,7 @@ RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, st
         return RAK3172_FAIL;
     }
 
-    if(p_Device->isInitialized == false)
+    if(p_Device->Internal.isInitialized == false)
     {
         return RAK3172_INVALID_STATE;
     }

@@ -799,5 +799,5 @@ RAK3172_Error_t RAK3172_GetADR(RAK3172_t* p_Device, bool* p_Enable)
 
     *p_Enable = (bool)Value.toInt();
 
-    return RAK3172_OK
+    return RAK3172_OK;
 }

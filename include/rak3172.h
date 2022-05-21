@@ -25,9 +25,6 @@
 #ifndef RAK3172_H_
 #define RAK3172_H_
 
-#include <driver/gpio.h>
-#include <driver/uart.h>
-
 #include "Definitions/rak3172_defs.h"
 #include "Definitions/rak3172_errors.h"
 
@@ -36,6 +33,11 @@
  * RAK3172 common functions.
  * 
  */
+
+/** @brief  Get the version number of the RAK3172 library.
+ *  @return Library version
+ */
+const std::string RAK3172_LibVersion(void);
 
 /** @brief          Initialize the receiving task and initialize the RAK3172 SoM.
  *  @param p_Device Pointer to RAK3172 device object
@@ -58,11 +60,6 @@ void RAK3172_Deinit(RAK3172_t* p_Device);
  *                  RAK3172_INVALID_STATE the when the interface is not initialized
  */
 RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout = 10);
-
-/** @brief  Get the version number of the RAK3172 library.
- *  @return Library version
- */
-const std::string RAK3172_LibVersion(void);
 
 /** @brief          Transmit an AT command to the RAK3172 module.
  *  @param p_Device Pointer to RAK3172 device object

@@ -24,6 +24,8 @@
 
 #include <esp_log.h>
 
+#include <sdkconfig.h>
+
 #include "../include/rak3172.h"
 
 static const char* TAG = "RAK3172_LoRaWAN";

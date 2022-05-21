@@ -26,8 +26,12 @@
 
 #include <algorithm>
 
-#include "sdkconfig.h"
+#include <sdkconfig.h>
+
 #include "../include/rak3172.h"
+
+#define STRINGIFY(s)                        STR(s)
+#define STR(s)                              #s
 
 #ifndef CONFIG_RAK3172_TASK_PRIO
     #define CONFIG_RAK3172_TASK_PRIO        12
@@ -123,6 +127,11 @@ static void eventTask(void* p_Arg)
     }
 }
 
+const std::string RAK3172_LibVersion(void)
+{
+    return std::string(STRINGIFY(RAK3172_LIB_MAJOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_MINOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_BUILD));
+}
+
 RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
 {
     RAK3172_Error_t Error;
@@ -202,7 +211,7 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
     return RAK3172_OK;
 
 RAK3172_Init_Error:
-    free(p_Device->Internal.RxBuffer);
+	free(p_Device->Internal.RxBuffer);
 	p_Device->Internal.isInitialized = false;
 
 	return Error;
@@ -298,11 +307,6 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout)
     ESP_LOGI(TAG, "SW reset successful");
 
     return RAK3172_OK;
-}
-
-const std::string RAK3172_LibVersion(void)
-{
-    return "3.0.0";
 }
 
 RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, std::string* p_Value, std::string* p_Status)

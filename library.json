@@ -11,11 +11,17 @@
   "platforms": "*",
   "build": {
     "flags": [
-      "-Iinclude"
+      "-Iinclude",
+      "-DRAK3172_LIB_MAJOR=3",
+      "-DRAK3172_LIB_MINOR=0",
+      "-DRAK3172_LIB_BUILD=0"
     ],
     "includeDir": ".",
     "srcDir": ".",
-    "srcFilter": ["-<*>", "+<src>"]
+    "srcFilter": [
+		"-<*>",
+		"+<src>"
+	]
   },
   "dependencies": [
   ]

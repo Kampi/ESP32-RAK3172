@@ -802,5 +802,3 @@ RAK3172_Error_t RAK3172_GetADR(RAK3172_t* p_Device, bool* p_Enable)
 
     return RAK3172_OK;
 }
-
-#endif

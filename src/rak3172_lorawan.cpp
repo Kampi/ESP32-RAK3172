@@ -22,9 +22,11 @@
   Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
 
-#include <esp_log.h>
-
 #include <sdkconfig.h>
+
+#ifdef CONFIG_RAK3172_WITH_LORAWAN
+
+#include <esp_log.h>
 
 #include "../include/rak3172.h"
 
@@ -800,3 +802,5 @@ RAK3172_Error_t RAK3172_GetADR(RAK3172_t* p_Device, bool* p_Enable)
 
     return RAK3172_OK;
 }
+
+#endif

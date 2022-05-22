@@ -1,4 +1,18 @@
 menu "RAK3172"
+    menu "Modes"
+        config RAK3172_WITH_LORAWAN
+            bool "Include LoRaWAN"
+            default y
+            help
+                Enable this option if you want to use the LoRaWAN mode.
+
+        config RAK3172_WITH_P2P
+            bool "Include P2P"
+            default n
+            help
+                Enable this option if you want to use the LoRa P2P mode.
+    endmenu
+
     menu "Interface"
         config RAK3172_UART
             int "UART port number"
@@ -9,7 +23,7 @@ menu "RAK3172"
                 See UART documentation for available port numbers.
 
         config RAK3172_DEFAULT_BAUD
-            choice
+            choice RAK3172_BAUD
                 prompt "UART default baud rate"
                 default RAK3172_BAUD_9600
 
@@ -34,18 +48,25 @@ menu "RAK3172"
 
     menu "Pins"
         config RAK3172_RX
-            int "UART Rx pin"
+            int "RAK3172 Rx pin"
             range 0 32
             default 12
             help
                 RAK3172 UART interface Rx pin.
 
         config RAK3172_TX
-            int "UART Tx pin"
+            int "RAK3172 Tx pin"
             range 0 32
             default 14
             help
                 RAK3172 UART interface Tx pin.
+
+        config RAK3172_RESET
+            int "RAK3172 Tx pin"
+            range 0 32
+            default 15
+            help
+                RAK3172 reset pin.
     endmenu
 
     menu "FreeRTOS"

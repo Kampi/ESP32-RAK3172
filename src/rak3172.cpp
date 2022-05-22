@@ -64,7 +64,7 @@ static const char* TAG = "RAK3172";
 /** @brief          UART receive task.
  *  @param p_Arg    Pointer to task arguments
  */
-static void eventTask(void* p_Arg)
+static void RAK3172_UART_EventTask(void* p_Arg)
 {
     uart_event_t Event;
     RAK3172_t* Device = (RAK3172_t*)p_Arg;
@@ -144,9 +144,31 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
 
     p_Device->Internal.isInitialized = false;
 
-    ESP_LOGI(TAG, "Use library version: %s", RAK3172_LibVersion().c_str());
+    esp_log_level_set("uart", ESP_LOG_NONE);
 
     _UART_Config.baud_rate = p_Device->Baudrate;
+
+    ESP_LOGI(TAG, "UART config:");
+    ESP_LOGI(TAG, "     Interface: %u", p_Device->Interface);
+    ESP_LOGI(TAG, "     Buffer size: %u",CONFIG_RAK3172_BUFFER_SIZE);
+    ESP_LOGI(TAG, "     Queue length: %u", CONFIG_RAK3172_QUEUE_LENGTH);
+    ESP_LOGI(TAG, "     Rx: %u", p_Device->Rx);
+    ESP_LOGI(TAG, "     Tx: %u", p_Device->Tx);
+    ESP_LOGI(TAG, "     Baudrate: %u", p_Device->Baudrate);
+    ESP_LOGI(TAG, "Use library version: %s", RAK3172_LibVersion().c_str());
+
+    ESP_LOGI(TAG, "Modes:");
+    #ifdef CONFIG_RAK3172_WITH_LORAWAN
+        ESP_LOGI(TAG, "     [x] LoRaWAN");
+    #else
+        ESP_LOGI(TAG, "     [ ] LoRaWAN");
+    #endif
+
+    #ifdef CONFIG_RAK3172_WITH_P2P
+        ESP_LOGI(TAG, "     [x] P2P");
+    #else
+        ESP_LOGI(TAG, "     [ ] P2P");
+    #endif
 
     if(uart_driver_install(p_Device->Interface, CONFIG_RAK3172_BUFFER_SIZE * 2, CONFIG_RAK3172_BUFFER_SIZE * 2, CONFIG_RAK3172_QUEUE_LENGTH, &_RAK3172_UARTEvent_Queue, 0) ||
        uart_param_config(p_Device->Interface, &_UART_Config) ||
@@ -174,7 +196,7 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
         return RAK3172_INVALID_STATE;
     }
 
-    xTaskCreate(eventTask, "eventTask", CONFIG_RAK3172_BUFFER_SIZE * 2, p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device->Internal.Handle);
+    xTaskCreate(RAK3172_UART_EventTask, "RAK3172_EventTask", CONFIG_RAK3172_BUFFER_SIZE * 2, p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device->Internal.Handle);
     if(p_Device->Internal.Handle == NULL)
     {
         Error = RAK3172_INVALID_STATE;
@@ -274,8 +296,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout)
 	{
         return RAK3172_INVALID_ARG;
 	}
-	
-	if(p_Device->Internal.isInitialized == false)
+	else if(p_Device->Internal.isInitialized == false)
 	{
         return RAK3172_INVALID_STATE;
 	}
@@ -291,7 +312,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout)
     {
         if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, (Timeout * 1000ULL) / portTICK_PERIOD_MS) != pdPASS)
         {
-            ESP_LOGE(TAG, "Module reset timeout!");
+            ESP_LOGE(TAG, "     Module reset timeout!");
 
             return RAK3172_TIMEOUT;
         }
@@ -304,7 +325,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout)
         delete Response;
     } while(true);
 
-    ESP_LOGI(TAG, "SW reset successful");
+    ESP_LOGI(TAG, "     SW reset successful");
 
     return RAK3172_OK;
 }
@@ -444,8 +465,7 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* p_Device, RAK3172_Mode_t Mode)
     {
         return RAK3172_INVALID_ARG;
     }
-
-    if(p_Device->Internal.isInitialized == false)
+    else if(p_Device->Internal.isInitialized == false)
     {
         return RAK3172_INVALID_RESPONSE;
     }

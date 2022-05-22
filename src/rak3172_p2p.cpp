@@ -21,6 +21,9 @@
 
   Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
+#include <sdkconfig.h>
+
+#ifdef CONFIG_RAK3172_WITH_P2P
 
 #include <esp_log.h>
 #include <esp_sleep.h>
@@ -29,8 +32,6 @@
 #include <freertos/task.h>
 #include <freertos/event_groups.h>
 #include <freertos/queue.h>
-
-#include <sdkconfig.h>
 
 #include "../include/rak3172.h"
 
@@ -325,8 +326,6 @@ RAK3172_Error_t RAK3172_P2P_Transmit(RAK3172_t* p_Device, const uint8_t* p_Buffe
 
 RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* p_Device, uint16_t Timeout, std::string* p_Payload, int8_t* p_RSSI, int8_t* p_SNR, uint32_t Listen)
 {
-    RAK3172_Error_t Error;
-
     if((p_Payload == NULL) || (Timeout > 65534))
     {
         return RAK3172_INVALID_ARG;
@@ -443,3 +442,5 @@ bool RAK3172_P2P_isListening(RAK3172_t* p_Device)
 
     return p_Device->Internal.isBusy;
 }
+
+#endif

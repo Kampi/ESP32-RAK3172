@@ -25,6 +25,9 @@
 #ifndef RAK3172_DEFS_H_
 #define RAK3172_DEFS_H_
 
+#include <driver/uart.h>
+#include <driver/gpio.h>
+
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/event_groups.h>

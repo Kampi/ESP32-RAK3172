@@ -16,7 +16,7 @@ LoRaWAN / LoRa P2P driver for the RAK3172 SoM.
 - Add the library to the `lib_deps`parameter
 ```
 lib_deps =
-    git@gitlab.server-kampert.de:esp32/libraries/rak3172.git
+    https://gitlab.server-kampert.de/esp32/libraries/rak3172.git
 ```
 - Copy the `Kconfig` file into the `src` directory
 - Rename `Kconfig` to `Kconfig.projbuild`

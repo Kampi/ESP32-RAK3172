@@ -5,7 +5,6 @@
 #include "LoRaWAN_Default.h"
 
 static RAK3172_t Device;
-static QueueHandle_t Queue;
 
 void setup(void)
 {

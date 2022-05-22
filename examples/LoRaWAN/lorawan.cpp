@@ -67,7 +67,7 @@ static void applicationTask(void* p_Parameter)
             char Payload[] = {'{', '}'};
 
             Error = RAK3172_LoRaWAN_Transmit(&_Device, 1, Payload, sizeof(Payload), LORAWAN_TX_TIMEOUT_S, true, NULL);
-            if(Error != RAK3172_OK)
+            if(Error == RAK3172_INVALID_RESPONSE)
             {
                 ESP_LOGE(TAG, "Can not transmit message network!");
             }

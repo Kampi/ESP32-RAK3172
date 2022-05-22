@@ -129,7 +129,7 @@ RAK3172_Error_t RAK3172_Init_P2P(RAK3172_t* p_Device, uint32_t Frequency, RAK317
 
     p_Device->Internal.isBusy = false;
 
-    ESP_LOGI(TAG, "     Use configuration: %s", Value.c_str());
+    ESP_LOGD(TAG, "     Use configuration: %s", Value.c_str());
 
     return RAK3172_SendCommand(p_Device, "AT+P2P=" + Value, NULL, NULL);
 }

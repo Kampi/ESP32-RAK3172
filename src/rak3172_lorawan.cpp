@@ -27,6 +27,7 @@
 #ifdef CONFIG_RAK3172_WITH_LORAWAN
 
 #include <esp_log.h>
+#include <esp_sleep.h>
 
 #include "../include/rak3172.h"
 
@@ -87,7 +88,7 @@ RAK3172_Error_t RAK3172_Init_LoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t
         }
         delete Response;
 
-        ESP_LOGI(TAG, "Response from 'AT': %s", Response->c_str());
+        ESP_LOGD(TAG, "Response from 'AT': %s", Response->c_str());
 
         // Error during initialization when everything else except 'OK' is received.
         if(Response->find("OK") == std::string::npos)
@@ -272,7 +273,9 @@ RAK3172_Error_t RAK3172_StartJoin(RAK3172_t* p_Device, uint32_t Timeout, uint8_t
             return RAK3172_TIMEOUT;
         }
 
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        esp_sleep_enable_timer_wakeup(100 * 1000ULL);
+        esp_light_sleep_start();
+        vTaskDelay(10 / portTICK_RATE_MS);
     } while(true);
 }
 
@@ -391,7 +394,9 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, cons
                 return RAK3172_TIMEOUT;
             }
 
-            vTaskDelay(100 / portTICK_PERIOD_MS);
+            esp_sleep_enable_timer_wakeup(100 * 1000ULL);
+            esp_light_sleep_start();
+            vTaskDelay(10 / portTICK_RATE_MS);
         } while(true);
     }
 
@@ -464,7 +469,9 @@ RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, std::string* p_Payl
             return RAK3172_TIMEOUT;
         }
 
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        esp_sleep_enable_timer_wakeup(100 * 1000ULL);
+        esp_light_sleep_start();
+        vTaskDelay(10 / portTICK_RATE_MS);
     } while(true);
 }
 

@@ -212,6 +212,8 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
         goto RAK3172_Init_Error;
     }
 
+    vTaskDelay(1000 / portTICK_RATE_MS);
+
     Error = RAK3172_GetFWVersion(p_Device, &p_Device->Firmware);
     if(Error != RAK3172_OK)
     {
@@ -353,7 +355,7 @@ RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, st
     }
 
     // Transmit the command.
-    ESP_LOGI(TAG, "Transmit command: %s", Command.c_str());
+    ESP_LOGD(TAG, "Transmit command: %s", Command.c_str());
     uart_write_bytes(p_Device->Interface, (const char*)Command.c_str(), Command.length());
     uart_write_bytes(p_Device->Interface, "\r\n", 2);
 
@@ -368,7 +370,7 @@ RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, st
         *p_Value = *Response;
         delete Response;
 
-        ESP_LOGI(TAG, "     Value: %s", p_Value->c_str());
+        ESP_LOGD(TAG, "     Value: %s", p_Value->c_str());
     }
 
     // Receive the line feed before the status.
@@ -384,7 +386,7 @@ RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, st
         return RAK3172_TIMEOUT;
     }
 
-    ESP_LOGI(TAG, "     Status: %s", Response->c_str());
+    ESP_LOGD(TAG, "     Status: %s", Response->c_str());
 
     // Transmission is without error when 'OK' as status code and when no event data are received.
     if((Response->find("OK") == std::string::npos) && (Response->find("+EVT") == std::string::npos))

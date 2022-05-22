@@ -9,8 +9,10 @@
 									Update documentation
 									Update CHANGELOG
 									Change version number to 2.0.0
-3.0.0								Fix missing path in "CMakeLists.txt"
+3.0.0			22.05.2022			Fix missing path in "CMakeLists.txt"
 									Replace Arduino code with esp-idf
+									Add option to enable / disable LoRaWAN or P2P mode
+									Add ADR support to LoRaWAN driver
 									Code refractoring
 									Update documentation
 									Update CHANGELOG

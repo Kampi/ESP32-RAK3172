@@ -1,4 +1,10 @@
 menu "RAK3172"
+    config RAK3172_USE_RUI3
+        bool "Include RUI3"
+        default n
+        help
+            Enable support for the new RUI3 based interface.
+
     menu "Modes"
         config RAK3172_WITH_LORAWAN
             bool "Include LoRaWAN"

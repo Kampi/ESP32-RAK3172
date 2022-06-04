@@ -36,6 +36,8 @@
     #include "rak3172_lorawan.h"
 #endif
 
+#define RAK3172_NO_TIMEOUT                      0
+
 /** @brief  Get the version number of the RAK3172 library.
  *  @return Library version
  */
@@ -62,6 +64,12 @@ void RAK3172_Deinit(RAK3172_t* p_Device);
  *                  RAK3172_INVALID_STATE the when the interface is not initialized
  */
 RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout = 10);
+
+#ifdef RAK3172_RESET_USE_HW
+    /** @brief  
+     */
+    void RAK3172_HardReset(RAK3172_t* p_Device);
+#endif
 
 /** @brief          Transmit an AT command to the RAK3172 module.
  *  @param p_Device Pointer to RAK3172 device object

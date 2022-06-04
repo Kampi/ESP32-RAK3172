@@ -1,9 +1,10 @@
 menu "RAK3172"
+
     config RAK3172_USE_RUI3
-        bool "Include RUI3"
-        default n
+        bool "RUI3 support"
+        default y
         help
-            Enable support for the new RUI3 based interface.
+            Enable support for a RUI3 based communication interface.
 
     menu "Modes"
         config RAK3172_WITH_LORAWAN
@@ -19,19 +20,18 @@ menu "RAK3172"
                 Enable this option if you want to use the LoRa P2P mode.
     endmenu
 
-    menu "Interface"
-        config RAK3172_UART
-            int "UART port number"
+    menu "UART"
+        config RAK3172_UART_PORT
+            int "Port number"
             range 0 2
             default 1
             help
                 UART communication port number for the driver.
                 See UART documentation for available port numbers.
 
-        config RAK3172_DEFAULT_BAUD
-            choice RAK3172_BAUD
-                prompt "UART default baud rate"
-                default RAK3172_BAUD_9600
+        choice RAK3172_UART_DEFAULT_BAUD
+            prompt "Default baud rate"
+            default RAK3172_BAUD_115200
 
             config RAK3172_BAUD_4800
                 bool "4800"
@@ -39,36 +39,63 @@ menu "RAK3172"
             config RAK3172_BAUD_9600
                 bool "9600"
 
+            config RAK3172_BAUD_19200
+                bool "19200"
+
+            config RAK3172_BAUD_38400
+                bool "38400"
+
+            config RAK3172_BAUD_57600
+                bool "57600"
+
             config RAK3172_BAUD_115200
                 bool "115200"
 
-            endchoice
+        endchoice
 
-        config RAK3172_BAUD
+        config RAK3172_UART_BAUD
             int
-            default 9600
+            default 115200
             default 4800 if RAK3172_BAUD_4800
             default 9600 if RAK3172_BAUD_9600
+            default 19200 if RAK3172_BAUD_19200
+            default 38400 if RAK3172_BAUD_38400
+            default 57600 if RAK3172_BAUD_57600
             default 115200 if RAK3172_BAUD_115200
-    endmenu
 
-    menu "Pins"
-        config RAK3172_RX
+        config RAK3172_UART_RX
             int "RAK3172 Rx pin"
             range 0 32
             default 12
             help
-                RAK3172 UART interface Rx pin.
+                Rx pin used by the UART interface.
 
-        config RAK3172_TX
+        config RAK3172_UART_TX
             int "RAK3172 Tx pin"
             range 0 32
             default 14
             help
-                RAK3172 UART interface Tx pin.
+                Tx pin used by the UART interface.
 
-        config RAK3172_RESET
-            int "RAK3172 Tx pin"
+    endmenu
+
+    menu "Reset"
+        config RAK3172_RESET_USE_HW
+            bool "Hardware reset"
+            default n
+            help
+                Enable this option if you want to use the hardware reset.
+
+        config RAK3172_RESET_INVERT
+            bool "Invert reset"
+            depends on RAK3172_RESET_USE_HW
+            default n
+            help
+                Enable this option if you want to invert the reset (active-high instead of active-low).
+
+        config RAK3172_RESET_PIN
+            int "RAK3172 Reset pin"
+            depends on RAK3172_RESET_USE_HW
             range 0 32
             default 15
             help
@@ -83,22 +110,22 @@ menu "RAK3172"
             help
                 Task priority for the UART receive task.
 
-        config RAK3172_BUFFER_SIZE
+        config RAK3172_TASK_BUFFER_SIZE
             int "Buffer size"
             range 1024 2048
             default 1024
             help
                 Buffer size for the UART receive buffer.
 
-        config RAK3172_QUEUE_LENGTH
+        config RAK3172_TASK_QUEUE_LENGTH
             int "Queue length"
             range 4 16
             default 8
             help
                 Queue length for the UART receive buffer.
 
-        config RAK3172_CORE_AFFINITY
-            bool "Use core affinity"
+        config RAK3172_TASK_CORE_AFFINITY
+            bool "Use receive task core affinity"
             default n
             help
                 Enable this option if you want to use a specific core for the driver.

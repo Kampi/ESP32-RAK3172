@@ -76,12 +76,14 @@ RAK3172_Error_t RAK3172_Init_LoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t
         }
         delete Response;
 
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, 100 / portTICK_PERIOD_MS) != pdPASS)
-        {
-            return RAK3172_TIMEOUT;
-        }
-        delete Response;
-    
+        #ifndef CONFIG_RAK3172_USE_RUI3
+            if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, 100 / portTICK_PERIOD_MS) != pdPASS)
+            {
+                return RAK3172_TIMEOUT;
+            }
+            delete Response;
+        #endif
+
         if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, 100 / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_TIMEOUT;
@@ -235,7 +237,7 @@ RAK3172_Error_t RAK3172_StartJoin(RAK3172_t* p_Device, uint32_t Timeout, uint8_t
 
         if(xQueueReceive(p_Device->Internal.Rx_Queue, &Line, 100 / portTICK_PERIOD_MS) == pdPASS)
         {
-            ESP_LOGD(TAG, "Join event: %s", Line->c_str());
+            ESP_LOGI(TAG, "Join event: %s", Line->c_str());
 
             if(on_Wait)
             {

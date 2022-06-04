@@ -178,6 +178,10 @@ typedef struct
     uart_port_t Interface;          /**< Serial interface used by the device RAK3172 driver. */
     gpio_num_t Rx;                  /**< Rx pin number. */
     gpio_num_t Tx;                  /**< Tx pin number. */
+    #ifdef RAK3172_RESET_USE_HW
+        gpio_num_t Reset;           /**< Reset pin number. */
+        bool isResetInverted;       /**< */
+    #endif
 	RAK3172_Baud_t Baudrate;		/**< Baud rate for the module communication. */
     RAK3172_Mode_t Mode;            /**< Current device mode. */
     std::string Firmware;           /**< Firmware version string. */

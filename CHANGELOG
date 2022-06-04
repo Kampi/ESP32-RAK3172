@@ -22,6 +22,9 @@
 									Add option for UART to support ESP32 power management modes
 									Fix error in splash screen handling in function "RAK3172_SetMode"
 									Add option to enable / disable a hardware reset
+									Add support for core affinity
+									Rename error codes
 									Clean up Kconfig
+									Code optimizations
 									Update CHANGELOG
 									Change version number to 3.1.0

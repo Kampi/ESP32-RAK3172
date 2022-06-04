@@ -19,9 +19,9 @@
     "includeDir": ".",
     "srcDir": ".",
     "srcFilter": [
-		"-<*>",
-		"+<src>"
-	]
+		  "-<*>",
+		  "+<src>"
+	  ]
   },
   "dependencies": [
   ]

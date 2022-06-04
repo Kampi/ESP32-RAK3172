@@ -40,80 +40,80 @@
  *  @param Power        Transmission power in dBm
  *                      NOTE: Only values between 5 and 22 are allowed!
  *  @param Timeout      (Optional) Timeout for the device reset in seconds
- *  @return             RAK3172_OK when successful
- *                      RAK3172_INVALID_ARG when an invalid argument was passed
+ *  @return             RAK3172_ERR_OK when successful
+ *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  */
 RAK3172_Error_t RAK3172_Init_P2P(RAK3172_t* p_Device, uint32_t Frequency, RAK3172_PSF_t Spread, RAK3172_BW_t Bandwidth, RAK3172_CR_t CodeRate, uint16_t Preamble, uint8_t Power, uint32_t Timeout = 10);
 
 /** @brief          Read the P2P configuration from the device.
  *  @param p_Device Pointer to RAK3172 device object
  *  @param p_Config Pointer to configuration string
- *  @return         RAK3172_OK when successful
- *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_GetConfig(RAK3172_t* p_Device, std::string* p_Config);
 
 /** @brief          Set the P2P mode frequency.
  *  @param p_Device Pointer to RAK3172 device object
  *  @param Freq     Transmission frequency
- *  @return         RAK3172_OK when successful
- *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_SetFrequency(RAK3172_t* p_Device, uint32_t Freq);
 
 /** @brief          Get the P2P mode frequency.
  *  @param p_Device Pointer to RAK3172 device object
  *  @param p_Freq   Pointer to frequency value
- *  @return         RAK3172_OK when successful
- *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_GetFrequency(RAK3172_t* p_Device, uint32_t* p_Freq);
 
 /** @brief          Set the P2P mode spreading factor.
  *  @param p_Device Pointer to RAK3172 device object
  *  @param Spread   Spreading factor
- *  @return         RAK3172_OK when successful
- *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_SetSpreading(RAK3172_t* p_Device, RAK3172_PSF_t Spread);
 
 /** @brief          Get the P2P mode spreading factor.
  *  @param p_Device Pointer to RAK3172 device object
  *  @param p_Spread Pointer to spreading factor
- *  @return         RAK3172_OK when successful
- *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_GetSpreading(RAK3172_t* p_Device, RAK3172_PSF_t* p_Spread);
 
 /** @brief              Set the P2P mode bandwidth.
  *  @param p_Device     Pointer to RAK3172 device object
  *  @param Bandwidth    Transmission bandwidth
- *  @return             RAK3172_OK when successful
- *                      RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return             RAK3172_ERR_OK when successful
+ *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_SetBandwidth(RAK3172_t* p_Device, RAK3172_BW_t Bandwidth);
 
 /** @brief              Get the P2P bandwidth.
  *  @param p_Device     Pointer to RAK3172 device object
  *  @param p_Bandwidth  Pointer to transmission bandwith
- *  @return             RAK3172_OK when successful
- *                      RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return             RAK3172_ERR_OK when successful
+ *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_GetBandwidth(RAK3172_t* p_Device, RAK3172_BW_t* p_Bandwidth);
 
 /** @brief          Set the P2P mode code rate.
  *  @param p_Device Pointer to RAK3172 device object
  *  @param CodeRate Transmission code rate
- *  @return         RAK3172_OK when successful
- *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_SetCodeRate(RAK3172_t* p_Device, RAK3172_CR_t CodeRate);
 
 /** @brief              Get the P2P mode code rate.
  *  @param p_Device     Pointer to RAK3172 device object
  *  @param p_CodeRate   Pointer to transmission code rate
- *  @return             RAK3172_OK when successful
- *                      RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return             RAK3172_ERR_OK when successful
+ *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_GetCodeRate(RAK3172_t* p_Device, RAK3172_CR_t* p_CodeRate);
 
@@ -121,16 +121,16 @@ RAK3172_Error_t RAK3172_GetCodeRate(RAK3172_t* p_Device, RAK3172_CR_t* p_CodeRat
  *  @param p_Device Pointer to RAK3172 device object
  *  @param Preamble Transmission Preamble
  *                  NOTE: The value must be greater than 2!
- *  @return         RAK3172_OK when successful
- *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_SetPreamble(RAK3172_t* p_Device, uint16_t Preamble);
 
 /** @brief              Get the P2P mode preamble.
  *  @param p_Device     Pointer to RAK3172 device object
  *  @param p_Preamble   Pointer to transmission Preamble
- *  @return             RAK3172_OK when successful
- *                      RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return             RAK3172_ERR_OK when successful
+ *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_GetPreamble(RAK3172_t* p_Device, uint16_t* p_Preamble);
 
@@ -138,16 +138,16 @@ RAK3172_Error_t RAK3172_GetPreamble(RAK3172_t* p_Device, uint16_t* p_Preamble);
  *  @param p_Device Pointer to RAK3172 device object
  *  @param Power    Transmission Preamble
  *                  NOTE: The value must be greater than 5 and lower than 22!
- *  @return         RAK3172_OK when successful
- *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_SetPower(RAK3172_t* p_Device, uint8_t Power);
 
 /** @brief          Get the P2P mode transmission power.
  *  @param p_Device Pointer to RAK3172 device object
  *  @param p_Power  Pointer to transmission Preamble
- *  @return         RAK3172_OK when successful
- *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_GetPower(RAK3172_t* p_Device, uint8_t* p_Power);
 
@@ -155,8 +155,8 @@ RAK3172_Error_t RAK3172_GetPower(RAK3172_t* p_Device, uint8_t* p_Power);
  *  @param p_Device Pointer to RAK3172 device object
  *  @param p_Buffer Pointer to data buffer
  *  @param Length   Data length
- *  @return         RAK3172_OK when successful
- *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_P2P_Transmit(RAK3172_t* p_Device, const uint8_t* p_Buffer, uint8_t Length);
 
@@ -169,9 +169,9 @@ RAK3172_Error_t RAK3172_P2P_Transmit(RAK3172_t* p_Device, const uint8_t* p_Buffe
  *  @param p_RSSI       (Optional) Pointer to RSSI value
  *  @param p_SNR        (Optional) Pointer to SNR value
  *  @param Listen       (Optional) Listen timeout in milliseconds
- *  @return             RAK3172_OK when successful
- *                      RAK3172_TIMEOUT when a timeout was received
- *                      RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return             RAK3172_ERR_OK when successful
+ *                      RAK3172_ERR_TIMEOUT when a timeout was received
+ *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* p_Device, uint16_t Timeout, std::string* p_Payload, int8_t* p_RSSI = NULL, int8_t* p_SNR = NULL, uint32_t Listen = 100);
 
@@ -181,16 +181,16 @@ RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* p_Device, uint16_t Timeout, std::
  *                  NOTE: Make sure you perform a "delete" on these objects after the operation to avoid memory leaks!
  *  @param Timeout  (Optional) Timeout in milliseconds.
  *                  NOTE: 0 will stop the receiving, 65534 will disable the timeout (only with firmware v1.0.3 and later) and 65535 will disable the timeout and the device stops when a packet was received.
- *  @return         RAK3172_OK when successful
- *                  RAK3172_INVALID_STATE when the receive task can´t get started
- *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_STATE when the receive task can´t get started
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_P2P_Listen(RAK3172_t* p_Device, QueueHandle_t* p_Queue, uint16_t Timeout = RAK_REC_REPEAT);
 
 /** @brief          Stop the listening mode.
  *  @param p_Device Pointer to RAK3172 device object
- *  @return         RAK3172_OK when successful
- *                  RAK3172_INVALID_ARG when an invalid argument is passed into the function
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
 RAK3172_Error_t RAK3172_P2P_Stop(RAK3172_t* p_Device);
 

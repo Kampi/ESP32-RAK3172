@@ -39,10 +39,12 @@
 
 #include "rak3172_errors.h"
 
+#define RAK3172_WAIT_TIMEOUT                                    500
+
 #define RAK3172_ERROR_CHECK(Func)                               do                                  \
                                                                 {                                   \
                                                                     RAK3172_Error_t Error = Func;   \
-                                                                    if(Error != RAK3172_OK)         \
+                                                                    if(Error != RAK3172_ERR_OK)         \
                                                                     {                               \
                                                                         return Error;               \
                                                                     }                               \
@@ -74,6 +76,9 @@ typedef enum
 {
     RAK_BAUD_4800       = 4800,     /**< Baud rate 4800. */
     RAK_BAUD_9600       = 9600,     /**< Baud rate 9600. */
+    RAK_BAUD_19200      = 19200,    /**< Baud rate 19200. */
+    RAK_BAUD_38400      = 38400,    /**< Baud rate 38400. */
+    RAK_BAUD_57600      = 57600,    /**< Baud rate 57600. */
     RAK_BAUD_115200     = 115200,   /**< Baud rate 115200. */
 } RAK3172_Baud_t;
 
@@ -178,7 +183,7 @@ typedef struct
     uart_port_t Interface;          /**< Serial interface used by the device RAK3172 driver. */
     gpio_num_t Rx;                  /**< Rx pin number. */
     gpio_num_t Tx;                  /**< Tx pin number. */
-    #ifdef RAK3172_RESET_USE_HW
+    #ifdef CONFIG_RAK3172_RESET_USE_HW
         gpio_num_t Reset;           /**< Reset pin number. */
         bool isResetInverted;       /**< */
     #endif

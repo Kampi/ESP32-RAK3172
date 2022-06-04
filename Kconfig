@@ -29,10 +29,8 @@ menu "RAK3172"
                 UART communication port number for the driver.
                 See UART documentation for available port numbers.
 
-        choice RAK3172_UART_DEFAULT_BAUD
+        choice
             prompt "Default baud rate"
-            default RAK3172_BAUD_115200
-
             config RAK3172_BAUD_4800
                 bool "4800"
 
@@ -55,7 +53,6 @@ menu "RAK3172"
 
         config RAK3172_UART_BAUD
             int
-            default 115200
             default 4800 if RAK3172_BAUD_4800
             default 9600 if RAK3172_BAUD_9600
             default 19200 if RAK3172_BAUD_19200
@@ -64,14 +61,14 @@ menu "RAK3172"
             default 115200 if RAK3172_BAUD_115200
 
         config RAK3172_UART_RX
-            int "RAK3172 Rx pin"
+            int "Rx pin"
             range 0 32
             default 12
             help
                 Rx pin used by the UART interface.
 
         config RAK3172_UART_TX
-            int "RAK3172 Tx pin"
+            int "Tx pin"
             range 0 32
             default 14
             help
@@ -92,6 +89,13 @@ menu "RAK3172"
             default n
             help
                 Enable this option if you want to invert the reset (active-high instead of active-low).
+
+        config RAK3172_RESET_USE_PULL
+            bool "Use internal pull-up / pull-down"
+            depends on RAK3172_RESET_USE_HW
+            default n
+            help
+                Enable this option if you want to use an internal pull-up resistor (invert disabled) or an internal pull-down resistor (invert enabled).
 
         config RAK3172_RESET_PIN
             int "RAK3172 Reset pin"
@@ -124,11 +128,19 @@ menu "RAK3172"
             help
                 Queue length for the UART receive buffer.
 
-        config RAK3172_TASK_CORE_AFFINITY
-            bool "Use receive task core affinity"
+        config RAK3172_TASK_CORE_USE_AFFINITY
+            bool "Use core affinity"
             default n
             help
-                Enable this option if you want to use a specific core for the driver.
+                Enable this option if you want to use a specific core for the UART receive task.
+
+        config RAK3172_TASK_CORE
+            int "Receive task core"
+            depends on RAK3172_TASK_CORE_USE_AFFINITY
+            range 0 1
+            default 1
+            help
+                Core used by the UART receive task.
     endmenu
 
 endmenu

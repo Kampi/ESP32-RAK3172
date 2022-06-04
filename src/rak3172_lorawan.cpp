@@ -35,69 +35,15 @@ static const char* TAG = "RAK3172_LoRaWAN";
 
 RAK3172_Error_t RAK3172_Init_LoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t Retries, RAK3172_JoinMode_t JoinMode, const uint8_t* p_Key1, const uint8_t* p_Key2, const uint8_t* p_Key3, char Class, RAK3172_Band_t Band, RAK3172_SubBand_t Subband, bool UseADR, uint32_t Timeout)
 {
-    std::string Dummy;
     std::string Command;
-
-    ESP_LOGI(TAG, "Initialize module in LoRaWAN mode...");
 
     if((Class != 'A') && (Class != 'B') && (Class != 'C'))
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
+    ESP_LOGI(TAG, "Initialize module in LoRaWAN mode...");
     RAK3172_ERROR_CHECK(RAK3172_SetMode(p_Device, RAK_MODE_LORAWAN));
-
-    // Check if echo mode is enabled.
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT", NULL, &Dummy));
-    ESP_LOGD(TAG, "Response from 'AT': %s", Dummy.c_str());
-    if(Dummy.find("OK") == std::string::npos)
-    {
-        std::string Command;
-        std::string* Response;
-
-        // Echo mode is enabled. Need to receive one more line.
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, 100 / portTICK_PERIOD_MS) != pdPASS)
-        {
-            return RAK3172_TIMEOUT;
-        }
-        delete Response;
-
-        ESP_LOGD(TAG, "Echo mode enabled. Disabling echo mode...");
-
-        // Disable echo mode
-        //  -> Transmit the command
-        //  -> Receive the echo
-        //  -> Receive the value
-        //  -> Receive the status
-        uart_write_bytes(p_Device->Interface, "ATE\r\n", 5);
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, 100 / portTICK_PERIOD_MS) != pdPASS)
-        {
-            return RAK3172_TIMEOUT;
-        }
-        delete Response;
-
-        #ifndef CONFIG_RAK3172_USE_RUI3
-            if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, 100 / portTICK_PERIOD_MS) != pdPASS)
-            {
-                return RAK3172_TIMEOUT;
-            }
-            delete Response;
-        #endif
-
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, 100 / portTICK_PERIOD_MS) != pdPASS)
-        {
-            return RAK3172_TIMEOUT;
-        }
-        delete Response;
-
-        ESP_LOGD(TAG, "Response from 'AT': %s", Response->c_str());
-
-        // Error during initialization when everything else except 'OK' is received.
-        if(Response->find("OK") == std::string::npos)
-        {
-            return RAK3172_FAIL;
-        }
-    }
 
     // Stop the joining process.
     Command = "AT+JOIN=0:0:10:8";
@@ -116,28 +62,26 @@ RAK3172_Error_t RAK3172_Init_LoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SetRetries(p_Device, Retries));
-    RAK3172_ERROR_CHECK(RAK3172_SetMode(p_Device, RAK_MODE_LORAWAN));
     RAK3172_ERROR_CHECK(RAK3172_SetTxPwr(p_Device, TxPwr));
-
-    p_Device->LoRaWAN.Join = JoinMode;
 
     Command = "AT+NJM=" + std::to_string(p_Device->LoRaWAN.Join);
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, Command, NULL, NULL));
 
+    p_Device->LoRaWAN.Join = JoinMode;
     if(p_Device->LoRaWAN.Join == RAK_JOIN_OTAA)
     {
-        ESP_LOGD(TAG, "Using OTAA mode");
+        ESP_LOGI(TAG, "Using OTAA mode");
 
         return RAK3172_SetOTAAKeys(p_Device, p_Key1, p_Key2, p_Key3);
     }
     else
     {
-        ESP_LOGD(TAG, "Using ABP mode");
+        ESP_LOGI(TAG, "Using ABP mode");
 
         return RAK3172_SetABPKeys(p_Device, p_Key1, p_Key2, p_Key3);
     }
 
-    return RAK3172_INVALID_ARG;
+    return RAK3172_ERR_INVALID_ARG;
 }
 
 RAK3172_Error_t RAK3172_SetOTAAKeys(RAK3172_t* p_Device, const uint8_t* p_DEVEUI, const uint8_t* p_APPEUI, const uint8_t* p_APPKEY)
@@ -148,7 +92,7 @@ RAK3172_Error_t RAK3172_SetOTAAKeys(RAK3172_t* p_Device, const uint8_t* p_DEVEUI
 
     if((p_Device->LoRaWAN.Join != RAK_JOIN_OTAA) || (p_DEVEUI == NULL) || (p_APPEUI == NULL) || (p_APPKEY == NULL))
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     // Copy the keys from the buffer into a string.
@@ -185,7 +129,7 @@ RAK3172_Error_t RAK3172_SetABPKeys(RAK3172_t* p_Device, const uint8_t* p_APPSKEY
 
     if((p_Device->LoRaWAN.Join != RAK_JOIN_ABP) || (p_APPSKEY == NULL) || (p_NWKSKEY == NULL) || (p_DEVADDR == NULL))
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     // Copy the keys from the buffer into a string.
@@ -221,7 +165,7 @@ RAK3172_Error_t RAK3172_StartJoin(RAK3172_t* p_Device, uint32_t Timeout, uint8_t
 
     if(Attempts == 0)
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     Attempts_Temp = Attempts;
@@ -247,7 +191,7 @@ RAK3172_Error_t RAK3172_StartJoin(RAK3172_t* p_Device, uint32_t Timeout, uint8_t
             // Join was successful.
             if(Line->find("JOINED") != std::string::npos)
             {
-                return RAK3172_OK;
+                return RAK3172_ERR_OK;
             }
             // Join failed. Reduce the counter by one and return a timeout when zero.
             else if(Line->find("JOIN FAILED") != std::string::npos)
@@ -259,7 +203,7 @@ RAK3172_Error_t RAK3172_StartJoin(RAK3172_t* p_Device, uint32_t Timeout, uint8_t
                 {
                     RAK3172_SendCommand(p_Device, "AT+JOIN=0:0:7:0", NULL, NULL);
 
-                    return RAK3172_TIMEOUT;
+                    return RAK3172_ERR_TIMEOUT;
                 }
             }
 
@@ -272,7 +216,7 @@ RAK3172_Error_t RAK3172_StartJoin(RAK3172_t* p_Device, uint32_t Timeout, uint8_t
 
             RAK3172_SendCommand(p_Device, "AT+JOIN=0:0:7:0", NULL, NULL);
 
-            return RAK3172_TIMEOUT;
+            return RAK3172_ERR_TIMEOUT;
         }
 
         esp_sleep_enable_timer_wakeup(100 * 1000ULL);
@@ -292,7 +236,7 @@ RAK3172_Error_t RAK3172_Joined(RAK3172_t* p_Device, bool* p_Joined)
 
     if(p_Joined == NULL)
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     *p_Joined = false;
@@ -304,7 +248,7 @@ RAK3172_Error_t RAK3172_Joined(RAK3172_t* p_Device, bool* p_Joined)
         *p_Joined = true;
     }
 
-    return RAK3172_OK;
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, const uint8_t* p_Buffer, uint8_t Length)
@@ -322,18 +266,18 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, cons
 
     if(((p_Buffer == NULL) && (Length == 0)) || (Port == 0))
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
     else if(Length == 0)
     {
-        return RAK3172_OK;
+        return RAK3172_ERR_OK;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_Joined(p_Device, &Joined));
 
     if(Joined == false)
     {
-        return RAK3172_INVALID_STATE;
+        return RAK3172_ERR_INVALID_STATE;
     }
 
     // Encode the payload into an ASCII string.
@@ -351,7 +295,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, cons
     // The device is busy. Leave the function with an invalid state error.
     if(Status.find("AT_BUSY_ERROR") != std::string::npos)
     {
-        return RAK3172_INVALID_RESPONSE;
+        return RAK3172_ERR_INVALID_RESPONSE;
     }
 
     // Wait for the confirmation if needed.
@@ -374,12 +318,12 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, cons
                 // Transmission failed.
                 if(Line->find("SEND CONFIRMED FAILED") != std::string::npos)
                 {
-                    return RAK3172_INVALID_RESPONSE;
+                    return RAK3172_ERR_INVALID_RESPONSE;
                 }
                 // Transmission was successful.
                 else if(Line->find("SEND CONFIRMED OK") != std::string::npos)
                 {
-                    return RAK3172_OK;
+                    return RAK3172_ERR_OK;
                 }
 
                 delete Line;
@@ -393,7 +337,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, cons
             {
                 ESP_LOGE(TAG, "Transmit timeout!");
 
-                return RAK3172_TIMEOUT;
+                return RAK3172_ERR_TIMEOUT;
             }
 
             esp_sleep_enable_timer_wakeup(100 * 1000ULL);
@@ -402,7 +346,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, cons
         } while(true);
     }
 
-    return RAK3172_OK;
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, std::string* p_Payload, int* p_RSSI, int* p_SNR, uint32_t Timeout)
@@ -411,7 +355,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, std::string* p_Payl
 
     if((p_Payload == NULL) || (Timeout <= 1))
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     Now = esp_timer_get_time() / 1000ULL;
@@ -458,7 +402,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, std::string* p_Payl
                 //  - Remove the port number
                 *p_Payload = Line->substr(Line->find_last_of(":") + 1, Line->length());
 
-                return RAK3172_OK;
+                return RAK3172_ERR_OK;
             }
         }
 
@@ -468,7 +412,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, std::string* p_Payl
         {
             ESP_LOGE(TAG, "Receive timeout!");
 
-            return RAK3172_TIMEOUT;
+            return RAK3172_ERR_TIMEOUT;
         }
 
         esp_sleep_enable_timer_wakeup(100 * 1000ULL);
@@ -483,7 +427,7 @@ RAK3172_Error_t RAK3172_SetRetries(RAK3172_t* p_Device, uint8_t Retries)
 
     if(Retries > 7)
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     if(Retries > 0)
@@ -502,14 +446,14 @@ RAK3172_Error_t RAK3172_GetRetries(RAK3172_t* p_Device, uint8_t* p_Retries)
 
     if(p_Retries == NULL)
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+RETY=?", &Value, NULL));
 
     *p_Retries = (uint8_t)std::stoi(Value);
 
-    return RAK3172_OK;
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_SetPNM(RAK3172_t* p_Device, bool Enable)
@@ -523,14 +467,14 @@ RAK3172_Error_t RAK3172_GetPNM(RAK3172_t* p_Device, bool* p_Enable)
 
     if(p_Enable == NULL)
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+PNM=?", &Value, NULL));
 
     *p_Enable = (bool)std::stoi(Value);
 
-    return RAK3172_OK;
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_SetConfirmation(RAK3172_t* p_Device, bool Enable)
@@ -544,14 +488,14 @@ RAK3172_Error_t RAK3172_GetConfirmation(RAK3172_t* p_Device, bool* p_Enable)
 
     if(p_Enable == NULL)
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+CFM=?", &Value, NULL));
 
     *p_Enable = (bool)std::stoi(Value);
 
-    return RAK3172_OK;
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_SetBand(RAK3172_t* p_Device, RAK3172_Band_t Band)
@@ -565,14 +509,14 @@ RAK3172_Error_t RAK3172_GetBand(RAK3172_t* p_Device, RAK3172_Band_t* p_Band)
 
     if(p_Band == NULL)
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+BAND=?", &Value, NULL));
 
     *p_Band = (RAK3172_Band_t)std::stoi(Value);
 
-    return RAK3172_OK;
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_SetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_t Band)
@@ -581,7 +525,7 @@ RAK3172_Error_t RAK3172_SetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_t Band)
 
     if(Band == RAK_SUB_BAND_NONE)
     {
-        return RAK3172_OK;
+        return RAK3172_ERR_OK;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_GetBand(p_Device, &Dummy));
@@ -591,7 +535,7 @@ RAK3172_Error_t RAK3172_SetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_t Band)
     {
         if((Band > RAK_SUB_BAND_9) && (Dummy != RAK_BAND_CN470))
         {
-            return RAK3172_INVALID_ARG;
+            return RAK3172_ERR_INVALID_ARG;
         }
 
         if(Band == RAK_SUB_BAND_ALL)
@@ -611,7 +555,7 @@ RAK3172_Error_t RAK3172_SetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_t Band)
         }
     }
 
-    return RAK3172_FAIL;
+    return RAK3172_ERR_FAIL;
 }
 
 RAK3172_Error_t RAK3172_GetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_t* p_Band)
@@ -623,7 +567,7 @@ RAK3172_Error_t RAK3172_GetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_t* p_Ban
 
     if(p_Band == NULL)
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_GetBand(p_Device, &Dummy));
@@ -632,7 +576,7 @@ RAK3172_Error_t RAK3172_GetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_t* p_Ban
     {
         *p_Band = RAK_SUB_BAND_NONE;
 
-        return RAK3172_OK;
+        return RAK3172_ERR_OK;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+MASK=?", &Value, NULL));
@@ -643,7 +587,7 @@ RAK3172_Error_t RAK3172_GetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_t* p_Ban
     {
         *p_Band = RAK_SUB_BAND_ALL;
 
-        return RAK3172_OK;
+        return RAK3172_ERR_OK;
     }
     else
     {
@@ -655,7 +599,7 @@ RAK3172_Error_t RAK3172_GetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_t* p_Ban
 
         *p_Band = (RAK3172_SubBand_t)(Shifts + 2);
 
-        return RAK3172_OK;
+        return RAK3172_ERR_OK;
     }
 }
 
@@ -732,7 +676,7 @@ RAK3172_Error_t RAK3172_GetSNR(RAK3172_t* p_Device, uint8_t* p_SNR)
 
     *p_SNR = (uint8_t)std::stoi(Value);
 
-    return RAK3172_OK;
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_GetRSSI(RAK3172_t* p_Device, int8_t* p_RSSI)
@@ -743,7 +687,7 @@ RAK3172_Error_t RAK3172_GetRSSI(RAK3172_t* p_Device, int8_t* p_RSSI)
 
     *p_RSSI = (int8_t)std::stoi(Value);
 
-    return RAK3172_OK;
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_GetDuty(RAK3172_t* p_Device, uint8_t* p_Duty)
@@ -755,21 +699,21 @@ RAK3172_Error_t RAK3172_GetDuty(RAK3172_t* p_Device, uint8_t* p_Duty)
 
     if((Band != RAK_BAND_EU868) && (Band != RAK_BAND_RU864) && (Band != RAK_BAND_EU433))
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+DUTYTIME=?", &Value, NULL));
 
     *p_Duty = (uint8_t)std::stoi(Value);
 
-    return RAK3172_OK;
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_SetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t DR)
 {
     if(DR > RAK_DR_7)
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     return RAK3172_SendCommand(p_Device, "AT+DR=" + std::to_string(DR), NULL, NULL);
@@ -781,14 +725,14 @@ RAK3172_Error_t RAK3172_GetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t* p_D
 
     if(p_DR == NULL)
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+DR=?", &Value, NULL));
 
     *p_DR = (RAK3172_DataRate_t)std::stoi(Value);
 
-    return RAK3172_OK;
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_SetADR(RAK3172_t* p_Device, bool Enable)
@@ -802,14 +746,14 @@ RAK3172_Error_t RAK3172_GetADR(RAK3172_t* p_Device, bool* p_Enable)
 
     if(p_Enable == NULL)
     {
-        return RAK3172_INVALID_ARG;
+        return RAK3172_ERR_INVALID_ARG;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ADR=?", &Value, NULL));
 
     *p_Enable = (bool)std::stoi(Value);
 
-    return RAK3172_OK;
+    return RAK3172_ERR_OK;
 }
 
 #endif

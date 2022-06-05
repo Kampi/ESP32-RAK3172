@@ -126,7 +126,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                             }
 
                             ESP_LOGD(TAG, "     Response: %s", Response->c_str());
-                            xQueueSend(Device->Internal.Rx_Queue, &Response, 0);
+                            xQueueSend(Device->Internal.RxQueue, &Response, 0);
                         }
                     }
 
@@ -237,8 +237,8 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
         return RAK3172_ERR_INVALID_STATE;
     }
 
-    p_Device->Internal.Rx_Queue = xQueueCreate(CONFIG_RAK3172_TASK_QUEUE_LENGTH, sizeof(std::string*));
-    if(p_Device->Internal.Rx_Queue == NULL)
+    p_Device->Internal.RxQueue = xQueueCreate(CONFIG_RAK3172_TASK_QUEUE_LENGTH, sizeof(std::string*));
+    if(p_Device->Internal.RxQueue == NULL)
     {
         return RAK3172_ERR_NO_MEM;
     }
@@ -285,11 +285,10 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
     ESP_LOGD(TAG, "Response from 'AT': %s", Response.c_str());
     if(Response.find("OK") == std::string::npos)
     {
-        std::string Command;
         std::string* Dummy;
 
         // Echo mode is enabled. Need to receive one more line.
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Dummy, 100 / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.RxQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
@@ -303,21 +302,21 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
         //  -> Receive the value
         //  -> Receive the status
         uart_write_bytes(p_Device->Interface, "ATE\r\n", 5);
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Dummy, 100 / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.RxQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
         delete Dummy;
 
         #ifndef CONFIG_RAK3172_USE_RUI3
-            if(xQueueReceive(p_Device->Internal.Rx_Queue, &Dummy, 100 / portTICK_PERIOD_MS) != pdPASS)
+            if(xQueueReceive(p_Device->Internal.RxQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
             {
                 return RAK3172_ERR_TIMEOUT;
             }
             delete Dummy;
         #endif
 
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Dummy, 100 / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.RxQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
@@ -382,7 +381,7 @@ void RAK3172_Deinit(RAK3172_t* p_Device)
     {
         std::string* Response;
 
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.RxQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             break;
         }
@@ -390,7 +389,7 @@ void RAK3172_Deinit(RAK3172_t* p_Device)
         delete Response;
     } while(true);
 
-    vQueueDelete(p_Device->Internal.Rx_Queue);
+    vQueueDelete(p_Device->Internal.RxQueue);
 
     gpio_config_t Conf = {
         .pin_bit_mask = ((1ULL << p_Device->Rx) | (1ULL << p_Device->Tx)),
@@ -428,7 +427,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout)
     // Wait for the splashscreen and get the data.
     do
     {
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, (Timeout * 1000ULL) / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.RxQueue, &Response, (Timeout * 1000ULL) / portTICK_PERIOD_MS) != pdPASS)
         {
             ESP_LOGE(TAG, "     Module reset timeout!");
 
@@ -488,7 +487,7 @@ RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, st
     // Copy the value if needed.
     if(p_Value != NULL)
     {
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.RxQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
@@ -509,7 +508,7 @@ RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, st
 
     #ifndef CONFIG_RAK3172_USE_RUI3
         // Receive the line feed before the status.
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.RxQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
@@ -517,9 +516,8 @@ RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, st
     #endif
 
     // Receive the trailing status code.
-    if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+    if(xQueueReceive(p_Device->Internal.RxQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
     {
-        ESP_LOGI(TAG, "A");
         return RAK3172_ERR_TIMEOUT;
     }
 
@@ -615,7 +613,7 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* p_Device, RAK3172_Mode_t Mode)
 
     #ifndef CONFIG_RAK3172_USE_RUI3
         // Receive the line feed before the status.
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, 1000 / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.RxQueue, &Response, 1000 / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
@@ -623,7 +621,7 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* p_Device, RAK3172_Mode_t Mode)
     #endif
 
     // Receive the trailing status code.
-    if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+    if(xQueueReceive(p_Device->Internal.RxQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
     {
         return RAK3172_ERR_TIMEOUT;
     }
@@ -640,7 +638,7 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* p_Device, RAK3172_Mode_t Mode)
     // Wait for the splashscreen and get the data.
     do
     {
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Response, 1000 / portTICK_PERIOD_MS) == pdFAIL)
+        if(xQueueReceive(p_Device->Internal.RxQueue, &Response, 1000 / portTICK_PERIOD_MS) == pdFAIL)
         {
             break;
         }

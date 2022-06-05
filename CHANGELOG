@@ -26,5 +26,6 @@
 									Rename error codes
 									Clean up Kconfig
 									Code optimizations
+									Add RAK3172 device initialization macro
 									Update CHANGELOG
 									Change version number to 3.1.0

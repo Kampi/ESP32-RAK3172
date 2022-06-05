@@ -38,13 +38,19 @@
 #include <stdbool.h>
 
 #include "rak3172_errors.h"
+#include "rak3172_config.h"
 
+/** @brief Timeout for UART receive queue.
+ */
 #define RAK3172_WAIT_TIMEOUT                                    500
 
+/** @brief      Generic error check macro.
+ *  @param Func Function that should be checked
+ */
 #define RAK3172_ERROR_CHECK(Func)                               do                                  \
                                                                 {                                   \
                                                                     RAK3172_Error_t Error = Func;   \
-                                                                    if(Error != RAK3172_ERR_OK)         \
+                                                                    if(Error != RAK3172_ERR_OK)     \
                                                                     {                               \
                                                                         return Error;               \
                                                                     }                               \
@@ -180,45 +186,45 @@ typedef enum
  */
 typedef struct
 {
-    uart_port_t Interface;          /**< Serial interface used by the device RAK3172 driver. */
-    gpio_num_t Rx;                  /**< Rx pin number. */
-    gpio_num_t Tx;                  /**< Tx pin number. */
+    uart_port_t Interface;              /**< Serial interface used by the device RAK3172 driver. */
+    gpio_num_t Rx;                      /**< Rx pin number. */
+    gpio_num_t Tx;                      /**< Tx pin number. */
     #ifdef CONFIG_RAK3172_RESET_USE_HW
-        gpio_num_t Reset;           /**< Reset pin number. */
-        bool isResetInverted;       /**< */
+        gpio_num_t Reset;               /**< Reset pin number. */
+        bool isResetInverted;           /**< */
     #endif
-	RAK3172_Baud_t Baudrate;		/**< Baud rate for the module communication. */
-    RAK3172_Mode_t Mode;            /**< Current device mode. */
-    std::string Firmware;           /**< Firmware version string. */
-    std::string Serial;             /**< Serial number string. */
+	RAK3172_Baud_t Baudrate;		    /**< Baud rate for the module communication. */
+    RAK3172_Mode_t Mode;                /**< Current device mode. */
+    std::string Firmware;               /**< Firmware version string. */
+    std::string Serial;                 /**< Serial number string. */
     struct
     {
-        TaskHandle_t Handle;        /**< Handle for the receive task.
-                                         NOTE: Managed by the driver. */
-        bool isInitialized;         /**< #true when the device is initialized.
-                                         NOTE: Managed by the driver. */
-        bool isBusy;                /**< #true when the device is busy.
-                                         NOTE: Managed by the driver. */
-        uint8_t* RxBuffer;          /**< Pointer to receive buffer.
-                                         NOTE: Managed by the driver. */
-        QueueHandle_t Rx_Queue;     /**< Rx queue used by the receiving task.
-                                         NOTE: Managed by the driver. */
+        TaskHandle_t Handle;            /**< Handle for the receive task.
+                                             NOTE: Managed by the driver. */
+        bool isInitialized;             /**< #true when the device is initialized.
+                                             NOTE: Managed by the driver. */
+        bool isBusy;                    /**< #true when the device is busy.
+                                             NOTE: Managed by the driver. */
+        uint8_t* RxBuffer;              /**< Pointer to receive buffer.
+                                             NOTE: Managed by the driver. */
+        QueueHandle_t RxQueue;          /**< Rx queue used by the receiving task.
+                                             NOTE: Managed by the driver. */
     } Internal;
     struct
     {
-        RAK3172_JoinMode_t Join;    /**< Join mode used by the device.
-                                         NOTE: Managed by the driver. */
+        RAK3172_JoinMode_t Join;        /**< Join mode used by the device.
+                                             NOTE: Managed by the driver. */
     } LoRaWAN;
     struct
     {
         QueueHandle_t* Queue;       /**< Pointer to message queue.
-                                         NOTE: Managed by the driver. */
+                                        NOTE: Managed by the driver. */
         bool Active;                /**< Receive task active.
-                                         NOTE: Managed by the driver. */
+                                        NOTE: Managed by the driver. */
         uint16_t Timeout;           /**< Receive timeout.
-                                         NOTE: Managed by the driver. */
+                                        NOTE: Managed by the driver. */
         TaskHandle_t Handle;        /**< Handle for the P2P receive task.
-                                         NOTE: Managed by the driver. */
+                                        NOTE: Managed by the driver. */
     } P2P;
 } RAK3172_t;
 

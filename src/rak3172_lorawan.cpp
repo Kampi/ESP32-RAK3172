@@ -45,6 +45,8 @@ RAK3172_Error_t RAK3172_Init_LoRaWAN(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t
     ESP_LOGI(TAG, "Initialize module in LoRaWAN mode...");
     RAK3172_ERROR_CHECK(RAK3172_SetMode(p_Device, RAK_MODE_LORAWAN));
 
+    p_Device->Internal.isBusy = false;
+
     // Stop the joining process.
     Command = "AT+JOIN=0:0:10:8";
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, Command, NULL, NULL));
@@ -90,9 +92,13 @@ RAK3172_Error_t RAK3172_SetOTAAKeys(RAK3172_t* p_Device, const uint8_t* p_DEVEUI
     std::string DevEUIString;
     std::string AppKeyString;
 
-    if((p_Device->LoRaWAN.Join != RAK_JOIN_OTAA) || (p_DEVEUI == NULL) || (p_APPEUI == NULL) || (p_APPKEY == NULL))
+    if((p_DEVEUI == NULL) || (p_APPEUI == NULL) || (p_APPKEY == NULL))
     {
         return RAK3172_ERR_INVALID_ARG;
+    }
+    else if(p_Device->LoRaWAN.Join != RAK_JOIN_OTAA)
+    {
+        return RAK3172_ERR_INVALID_STATE;
     }
 
     // Copy the keys from the buffer into a string.
@@ -127,9 +133,13 @@ RAK3172_Error_t RAK3172_SetABPKeys(RAK3172_t* p_Device, const uint8_t* p_APPSKEY
     std::string NwkSKEYString;
     std::string DevADDRString;
 
-    if((p_Device->LoRaWAN.Join != RAK_JOIN_ABP) || (p_APPSKEY == NULL) || (p_NWKSKEY == NULL) || (p_DEVADDR == NULL))
+    if((p_APPSKEY == NULL) || (p_NWKSKEY == NULL) || (p_DEVADDR == NULL))
     {
         return RAK3172_ERR_INVALID_ARG;
+    }
+    else if(p_Device->LoRaWAN.Join != RAK_JOIN_ABP)
+    {
+        return RAK3172_ERR_INVALID_STATE;
     }
 
     // Copy the keys from the buffer into a string.
@@ -179,7 +189,7 @@ RAK3172_Error_t RAK3172_StartJoin(RAK3172_t* p_Device, uint32_t Timeout, uint8_t
     {
         std::string* Line;
 
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Line, 100 / portTICK_PERIOD_MS) == pdPASS)
+        if(xQueueReceive(p_Device->Internal.RxQueue, &Line, 100 / portTICK_PERIOD_MS) == pdPASS)
         {
             ESP_LOGI(TAG, "Join event: %s", Line->c_str());
 
@@ -311,7 +321,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, cons
                 Wait();
             }
 
-            if(xQueueReceive(p_Device->Internal.Rx_Queue, &Line, 100 / portTICK_PERIOD_MS) == pdPASS)
+            if(xQueueReceive(p_Device->Internal.RxQueue, &Line, 100 / portTICK_PERIOD_MS) == pdPASS)
             {
                 ESP_LOGD(TAG, "Transmission event: %s", Line->c_str());
 
@@ -363,7 +373,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, std::string* p_Payl
     {
         std::string* Line;
 
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Line, 100 / portTICK_PERIOD_MS) == pdPASS)
+        if(xQueueReceive(p_Device->Internal.RxQueue, &Line, 100 / portTICK_PERIOD_MS) == pdPASS)
         {
             int Index;
 

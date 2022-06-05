@@ -35,11 +35,11 @@ typedef uint32_t RAK3172_Error_t;
 
 /** @brief No error.
  */
-#define RAK3172_ERR_OK                   (RAK3172_ERR_BASE + 0)
+#define RAK3172_ERR_OK                  (RAK3172_ERR_BASE + 0)
 
 /** @brief Invalid function argument.
  */
-#define RAK3172_ERR_INVALID_ARG          (RAK3172_ERR_BASE + 1)
+#define RAK3172_ERR_INVALID_ARG         (RAK3172_ERR_BASE + 1)
 
 /** @brief The when the interface is not initialized.
  */

@@ -143,7 +143,11 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
 const std::string RAK3172_LibVersion(void)
 {
-    return std::string(STRINGIFY(RAK3172_LIB_MAJOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_MINOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_BUILD));
+    #if((defined RAK3172_LIB_MAJOR) && (defined RAK3172_LIB_MINOR) && (defined RAK3172_LIB_BUILD))
+        return std::string(STRINGIFY(RAK3172_LIB_MAJOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_MINOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_BUILD));
+    #else
+        return "<Not defined>";
+    #endif
 }
 
 RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)

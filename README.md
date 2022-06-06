@@ -9,7 +9,9 @@
 
 ## About
 
-LoRaWAN / LoRa P2P driver for the RAK3172 SoM.
+ESP32 driver for the UART based RAK3172 LoRaWAN / LoRa P2P SoM.
+
+> Binary mode with RUI3 API isn´t supported yet!
 
 ## Use with PlatformIO
 

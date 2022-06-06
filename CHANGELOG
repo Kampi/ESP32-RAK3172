@@ -18,7 +18,7 @@
 									Update documentation
 									Update CHANGELOG
 									Change version number to 3.0.0
-3.1.0								Add support for RUI3 based firmware
+4.0.0								Add support for RUI3 based firmware
 									Add option for UART to support ESP32 power management modes
 									Fix error in splash screen handling in function "RAK3172_SetMode"
 									Add option to enable / disable a hardware reset
@@ -26,7 +26,12 @@
 									Rename error codes
 									Clean up Kconfig
 									Code optimizations
-									Add RAK3172 device structureinitialization macro
+									Add RAK3172 device structure initialization macro
+									Add firmware version check
+									Add factory reset
+									Add "RAK3172_ERR_NOT_CONNECTED" in LoRaWAN mode
+									Rework event handling
+									Improve parameter checking in different functions
 									Update examples
 									Update CHANGELOG
-									Change version number to 3.1.0
+									Change version number to 4.0.0

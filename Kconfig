@@ -6,6 +6,12 @@ menu "RAK3172"
         help
             Enable support for a RUI3 based communication interface.
 
+    config RAK3172_FACTORY_RESET
+        bool "Factory reset"
+        default y
+        help
+            Perform a factory reset during the device driver initialization.
+
     menu "Modes"
         config RAK3172_WITH_LORAWAN
             bool "Include LoRaWAN"
@@ -84,7 +90,7 @@ menu "RAK3172"
                 Enable this option if you want to use the hardware reset.
 
         config RAK3172_RESET_INVERT
-            bool "Invert reset"
+            bool "Invert"
             depends on RAK3172_RESET_USE_HW
             default n
             help

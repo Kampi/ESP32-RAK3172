@@ -27,6 +27,9 @@ static void applicationTask(void* p_Parameter)
 {
     uint8_t Buffer[] = {1, 2, 3};
     RAK3172_Error_t Error;
+    RAK3172_Info_t Info;
+
+    _Device.Info = &Info;
 
     Error = RAK3172_Init(&_Device);
     if(Error != RAK3172_ERR_OK)
@@ -34,11 +37,11 @@ static void applicationTask(void* p_Parameter)
         ESP_LOGE(TAG, "Can not initialize RAK3172! Error: 0x%04X", Error);
     }
 
-    ESP_LOGI(TAG, "Firmware: %s", _Device.Firmware.c_str());
-    ESP_LOGI(TAG, "Serial number: %s", _Device.Serial.c_str());
+    ESP_LOGI(TAG, "Firmware: %s", Info.Firmware.c_str());
+    ESP_LOGI(TAG, "Serial number: %s", Info.Serial.c_str());
     ESP_LOGI(TAG, "Current mode: %u", _Device.Mode);
 
-    Error = RAK3172_Init_P2P(&_Device, 868000000, RAK_PSF_9, RAK_BW_125, RAK_CR_0, 8, 15);
+    Error = RAK3172_P2P_Init(&_Device, 868000000, RAK_PSF_9, RAK_BW_125, RAK_CR_0, 8, 15);
     if(Error != RAK3172_ERR_OK)
     {
         ESP_LOGE(TAG, "Can not initialize RAK3172 LoRa P2P! Error: 0x%04X", Error);

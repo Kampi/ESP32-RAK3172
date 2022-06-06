@@ -27,6 +27,9 @@ static void applicationTask(void* p_Parameter)
 {
     bool Status;
     RAK3172_Error_t Error;
+    RAK3172_Info_t Info;
+
+    _Device.Info = &Info;
 
     Error = RAK3172_Init(&_Device);
     if(Error != RAK3172_ERR_OK)
@@ -34,27 +37,27 @@ static void applicationTask(void* p_Parameter)
         ESP_LOGE(TAG, "Can not initialize RAK3172! Error: 0x%04X", Error);
     }
 
-    ESP_LOGI(TAG, "Firmware: %s", _Device.Firmware.c_str());
-    ESP_LOGI(TAG, "Serial number: %s", _Device.Serial.c_str());
+    ESP_LOGI(TAG, "Firmware: %s", Info.Firmware.c_str());
+    ESP_LOGI(TAG, "Serial number: %s", Info.Serial.c_str());
     ESP_LOGI(TAG, "Current mode: %u", _Device.Mode);
 
-    Error = RAK3172_Init_LoRaWAN(&_Device, 16, 3, RAK_JOIN_OTAA, DEVEUI, APPEUI, APPKEY, 'A', RAK_BAND_EU868, RAK_SUB_BAND_NONE);
+    Error = RAK3172_LoRaWAN_Init(&_Device, 16, 3, RAK_JOIN_OTAA, DEVEUI, APPEUI, APPKEY, 'A', RAK_BAND_EU868, RAK_SUB_BAND_NONE);
     if(Error != RAK3172_ERR_OK)
     {
         ESP_LOGE(TAG, "Can not initialize RAK3172 LoRaWAN! Error: 0x%04X", Error);
     }
 
-    Error = RAK3172_Joined(&_Device, &Status);
+    Error = RAK3172_LoRaWAN_isJoined(&_Device, &Status);
     if(Error != RAK3172_ERR_OK)
     {
         ESP_LOGE(TAG, "Error: 0x%04X", Error);
     }
 
-    if(!Status)
+    if(Status == false)
     {
         ESP_LOGI(TAG, "Not joined. Rejoin...");
 
-        Error = RAK3172_StartJoin(&_Device, 0, LORAWAN_JOIN_ATTEMPTS, true, LORAWAN_MAX_JOIN_INTERVAL_S, NULL);
+        Error = RAK3172_LoRaWAN_StartJoin(&_Device, 0, LORAWAN_JOIN_ATTEMPTS, true, LORAWAN_MAX_JOIN_INTERVAL_S, NULL);
         if(Error != RAK3172_ERR_OK)
         {
             ESP_LOGE(TAG, "Can not join network!");

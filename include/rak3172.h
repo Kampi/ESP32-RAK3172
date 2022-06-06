@@ -29,14 +29,16 @@
 #include "Definitions/rak3172_errors.h"
 
 #ifdef CONFIG_RAK3172_WITH_P2P
-    #include "rak3172_p2p.h"
+    #include "Protocols/P2P/rak3172_p2p.h"
 #endif
 
 #ifdef CONFIG_RAK3172_WITH_LORAWAN
-    #include "rak3172_lorawan.h"
+    #include "Protocols/LoRaWAN/rak3172_lorawan.h"
 #endif
 
-#define RAK3172_NO_TIMEOUT                      0
+#ifdef CONFIG_RAK3172_USE_RUI3
+    #include "rak3172_commands_rui3.h"
+#endif
 
 /** @brief  Get the version number of the RAK3172 library.
  *  @return Library version
@@ -56,6 +58,12 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device);
  */
 void RAK3172_Deinit(RAK3172_t* p_Device);
 
+/** @brief          Perform a factory reset of the device.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @return         RAK3172_ERR_OK when successful
+ */
+RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* p_Device);
+
 /** @brief          Perform a software reset of the device.
  *  @param p_Device Pointer to RAK3172 device object
  *  @param Timeout  (Optional) Timeout for the device reset in seconds
@@ -66,11 +74,12 @@ void RAK3172_Deinit(RAK3172_t* p_Device);
 RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout = 10);
 
 #ifdef CONFIG_RAK3172_RESET_USE_HW
-    /** @brief          
+    /** @brief          Perform a hardware reset of the device.
      *  @param p_Device Pointer to RAK3172 device object
+     *  @param Timeout  (Optional) Timeout for the device reset in seconds
      *  @return         RAK3172_ERR_OK when successful
      */
-    RAK3172_Error_t RAK3172_HardReset(RAK3172_t* p_Device);
+    RAK3172_Error_t RAK3172_HardReset(RAK3172_t* p_Device, uint32_t Timeout = 10);
 #endif
 
 /** @brief          Transmit an AT command to the RAK3172 module.

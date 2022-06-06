@@ -61,4 +61,8 @@ typedef uint32_t RAK3172_Error_t;
  */
 #define RAK3172_ERR_NO_MEM              (RAK3172_ERR_BASE + 5)
 
+/** @brief The device is not connected (LoRaWAN only).
+ */
+#define RAK3172_ERR_NOT_CONNECTED       (RAK3172_ERR_BASE + 6)
+
 #endif /* RAK3172_ERRORS_H_ */

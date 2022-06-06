@@ -44,8 +44,7 @@
                                                                                             .isResetInverted = Reset_Inv,                   \
                                                                                             .Baudrate = (RAK3172_Baud_t)Baud,               \
                                                                                             .Mode = RAK_MODE_P2P,                           \
-                                                                                            .Firmware = "",                                 \
-                                                                                            .Serial = "",                                   \
+                                                                                            .Info = NULL,                                   \
                                                                                             .Internal = {                                   \
                                                                                                 .Handle = NULL,                             \
                                                                                                 .isInitialized = false,                     \
@@ -55,6 +54,7 @@
                                                                                             },                                              \
                                                                                             .LoRaWAN = {                                    \
                                                                                                 .Join = RAK_JOIN_ABP,                       \
+                                                                                                .isJoined = false,                          \
                                                                                             },                                              \
                                                                                             .P2P = {                                        \
                                                                                                 .Queue = NULL,                              \
@@ -76,8 +76,7 @@
                                                                         .Tx = (gpio_num_t)Tx_Pin,                                           \
                                                                         .Baudrate = (RAK3172_Baud_t)Baud,                                   \
                                                                         .Mode = RAK_MODE_P2P,                                               \
-                                                                        .Firmware = "",                                                     \
-                                                                        .Serial = "",                                                       \
+                                                                         .Info = NULL,                                                      \
                                                                         .Internal = {                                                       \
                                                                             .Handle = NULL,                                                 \
                                                                             .isInitialized = false,                                         \
@@ -87,11 +86,12 @@
                                                                         },                                                                  \
                                                                         .LoRaWAN = {                                                        \
                                                                             .Join = RAK_JOIN_ABP,                                           \
+                                                                            .isJoined = false,                                              \
                                                                         },                                                                  \
                                                                         .P2P = {                                                            \
                                                                             .Queue = NULL,                                                  \
                                                                             .Active = false,                                                \
-                                                                            .TimeOut = 0,                                                   \
+                                                                            .Timeout = 0,                                                   \
                                                                             .Handle = NULL                                                  \
                                                                         }                                                                   \
                                                                     }

@@ -50,7 +50,7 @@ static void receiveTask(void* p_Arg)
     {
         std::string* Meta;
 
-        if(xQueueReceive(Device->Internal.Rx_Queue, &Meta, portMAX_DELAY) == pdPASS)
+        if(xQueueReceive(Device->Internal.RxQueue, &Meta, portMAX_DELAY) == pdPASS)
         {
             // The RSSI and SNR value indicates the start of the receive frame.
             if(Meta->find("RXP2P") != std::string::npos)
@@ -70,7 +70,7 @@ static void receiveTask(void* p_Arg)
                     Message->SNR = std::stoi(Meta->substr(Index + 6, Meta->length() - 1));
 
                     // The next line contains the data.
-                    if(xQueueReceive(Device->Internal.Rx_Queue, &Payload, 100 / portTICK_PERIOD_MS) != pdPASS)
+                    if(xQueueReceive(Device->Internal.RxQueue, &Payload, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
                     {
                         Device->Internal.isBusy = false;
                         Device->P2P.Active = false;
@@ -107,7 +107,7 @@ static void receiveTask(void* p_Arg)
     vTaskSuspend(NULL);
 }
 
-RAK3172_Error_t RAK3172_Init_P2P(RAK3172_t* p_Device, uint32_t Frequency, RAK3172_PSF_t Spread, RAK3172_BW_t Bandwidth, RAK3172_CR_t CodeRate, uint16_t Preamble, uint8_t Power, uint32_t Timeout)
+RAK3172_Error_t RAK3172_P2P_Init(RAK3172_t* p_Device, uint32_t Frequency, RAK3172_PSF_t Spread, RAK3172_BW_t Bandwidth, RAK3172_CR_t CodeRate, uint16_t Preamble, uint8_t Power, uint32_t Timeout)
 {
     std::string Value;
 
@@ -133,7 +133,7 @@ RAK3172_Error_t RAK3172_Init_P2P(RAK3172_t* p_Device, uint32_t Frequency, RAK317
     return RAK3172_SendCommand(p_Device, "AT+P2P=" + Value, NULL, NULL);
 }
 
-RAK3172_Error_t RAK3172_GetConfig(RAK3172_t* p_Device, std::string* p_Config)
+RAK3172_Error_t RAK3172_P2P_GetConfig(RAK3172_t* p_Device, std::string* p_Config)
 {
     if(p_Config == NULL)
     {
@@ -143,7 +143,7 @@ RAK3172_Error_t RAK3172_GetConfig(RAK3172_t* p_Device, std::string* p_Config)
     return RAK3172_SendCommand(p_Device, "AT+P2P=?", p_Config, NULL);
 }
 
-RAK3172_Error_t RAK3172_SetFrequency(RAK3172_t* p_Device, uint32_t Freq)
+RAK3172_Error_t RAK3172_P2P_SetFrequency(RAK3172_t* p_Device, uint32_t Freq)
 {
     if((Freq > 960000000) || (Freq < 150000000))
     {
@@ -153,7 +153,7 @@ RAK3172_Error_t RAK3172_SetFrequency(RAK3172_t* p_Device, uint32_t Freq)
     return RAK3172_SendCommand(p_Device, "AT+PFREQ=" + std::to_string(Freq), NULL, NULL);
 }
 
-RAK3172_Error_t RAK3172_GetFrequency(RAK3172_t* p_Device, uint32_t* p_Freq)
+RAK3172_Error_t RAK3172_P2P_GetFrequency(RAK3172_t* p_Device, uint32_t* p_Freq)
 {
     std::string Value;
 
@@ -169,7 +169,7 @@ RAK3172_Error_t RAK3172_GetFrequency(RAK3172_t* p_Device, uint32_t* p_Freq)
     return RAK3172_ERR_OK;
 }
 
-RAK3172_Error_t RAK3172_SetSpreading(RAK3172_t* p_Device, RAK3172_PSF_t Spread)
+RAK3172_Error_t RAK3172_P2P_SetSpreading(RAK3172_t* p_Device, RAK3172_PSF_t Spread)
 {
     if((Spread > RAK_PSF_12) || (Spread < RAK_PSF_6))
     {
@@ -179,7 +179,7 @@ RAK3172_Error_t RAK3172_SetSpreading(RAK3172_t* p_Device, RAK3172_PSF_t Spread)
     return RAK3172_SendCommand(p_Device, "AT+PSF=" + std::to_string(Spread), NULL, NULL);
 }
 
-RAK3172_Error_t RAK3172_GetSpreading(RAK3172_t* p_Device, RAK3172_PSF_t* p_Spread)
+RAK3172_Error_t RAK3172_P2P_GetSpreading(RAK3172_t* p_Device, RAK3172_PSF_t* p_Spread)
 {
     std::string Value;
 
@@ -195,7 +195,7 @@ RAK3172_Error_t RAK3172_GetSpreading(RAK3172_t* p_Device, RAK3172_PSF_t* p_Sprea
     return RAK3172_ERR_OK;
 }
 
-RAK3172_Error_t RAK3172_SetBandwidth(RAK3172_t* p_Device, RAK3172_BW_t Bandwidth)
+RAK3172_Error_t RAK3172_P2P_SetBandwidth(RAK3172_t* p_Device, RAK3172_BW_t Bandwidth)
 {
     if((Bandwidth != RAK_BW_125) && (Bandwidth != RAK_BW_250) && (Bandwidth != RAK_BW_500))
     {
@@ -205,7 +205,7 @@ RAK3172_Error_t RAK3172_SetBandwidth(RAK3172_t* p_Device, RAK3172_BW_t Bandwidth
     return RAK3172_SendCommand(p_Device, "AT+PBW=" + std::to_string(Bandwidth), NULL, NULL);
 }
 
-RAK3172_Error_t RAK3172_GetBandwidth(RAK3172_t* p_Device, RAK3172_BW_t* p_Bandwidth)
+RAK3172_Error_t RAK3172_P2P_GetBandwidth(RAK3172_t* p_Device, RAK3172_BW_t* p_Bandwidth)
 {
     std::string Value;
 
@@ -221,7 +221,7 @@ RAK3172_Error_t RAK3172_GetBandwidth(RAK3172_t* p_Device, RAK3172_BW_t* p_Bandwi
     return RAK3172_ERR_OK;
 }
 
-RAK3172_Error_t RAK3172_SetCodeRate(RAK3172_t* p_Device, RAK3172_CR_t CodeRate)
+RAK3172_Error_t RAK3172_P2P_SetCodeRate(RAK3172_t* p_Device, RAK3172_CR_t CodeRate)
 {
     if((CodeRate > RAK_CR_3) || (CodeRate < RAK_CR_0))
     {
@@ -231,7 +231,7 @@ RAK3172_Error_t RAK3172_SetCodeRate(RAK3172_t* p_Device, RAK3172_CR_t CodeRate)
     return RAK3172_SendCommand(p_Device, "AT+PCR=" + std::to_string(CodeRate), NULL, NULL);  
 }
 
-RAK3172_Error_t RAK3172_GetCodeRate(RAK3172_t* p_Device, RAK3172_CR_t* p_CodeRate)
+RAK3172_Error_t RAK3172_P2P_GetCodeRate(RAK3172_t* p_Device, RAK3172_CR_t* p_CodeRate)
 {
     std::string Value;
 
@@ -247,7 +247,7 @@ RAK3172_Error_t RAK3172_GetCodeRate(RAK3172_t* p_Device, RAK3172_CR_t* p_CodeRat
     return RAK3172_ERR_OK;
 }
 
-RAK3172_Error_t RAK3172_SetPreamble(RAK3172_t* p_Device, uint16_t Preamble)
+RAK3172_Error_t RAK3172_P2P_SetPreamble(RAK3172_t* p_Device, uint16_t Preamble)
 {
     if(Preamble < 2)
     {
@@ -257,7 +257,7 @@ RAK3172_Error_t RAK3172_SetPreamble(RAK3172_t* p_Device, uint16_t Preamble)
     return RAK3172_SendCommand(p_Device, "AT+PPL=" + std::to_string(Preamble), NULL, NULL);  
 }
 
-RAK3172_Error_t RAK3172_GetPreamble(RAK3172_t* p_Device, uint16_t* p_Preamble)
+RAK3172_Error_t RAK3172_P2P_GetPreamble(RAK3172_t* p_Device, uint16_t* p_Preamble)
 {
     std::string Value;
 
@@ -273,7 +273,7 @@ RAK3172_Error_t RAK3172_GetPreamble(RAK3172_t* p_Device, uint16_t* p_Preamble)
     return RAK3172_ERR_OK;
 }
 
-RAK3172_Error_t RAK3172_SetPower(RAK3172_t* p_Device, uint8_t Power)
+RAK3172_Error_t RAK3172_P2P_SetPower(RAK3172_t* p_Device, uint8_t Power)
 {
     if((Power > 22) || (Power < 5))
     {
@@ -283,7 +283,7 @@ RAK3172_Error_t RAK3172_SetPower(RAK3172_t* p_Device, uint8_t Power)
     return RAK3172_SendCommand(p_Device, "AT+PTP=" + std::to_string(Power), NULL, NULL);  
 }
 
-RAK3172_Error_t RAK3172_GetPower(RAK3172_t* p_Device, uint8_t* p_Power)
+RAK3172_Error_t RAK3172_P2P_GetPower(RAK3172_t* p_Device, uint8_t* p_Power)
 {
     std::string Value;
 
@@ -336,7 +336,7 @@ RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* p_Device, uint16_t Timeout, std::
     {
         std::string* Meta;
 
-        if(xQueueReceive(p_Device->Internal.Rx_Queue, &Meta, Listen / portTICK_PERIOD_MS) == pdPASS)
+        if(xQueueReceive(p_Device->Internal.RxQueue, &Meta, Listen / portTICK_PERIOD_MS) == pdPASS)
         {
             int Index;
             std::string* Payload;
@@ -363,7 +363,7 @@ RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* p_Device, uint16_t Timeout, std::
                 }
 
                 // The next line contains the data.
-                if(xQueueReceive(p_Device->Internal.Rx_Queue, &Payload, 100 / portTICK_PERIOD_MS) != pdPASS)
+                if(xQueueReceive(p_Device->Internal.RxQueue, &Payload, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
                 {
                     return RAK3172_ERR_TIMEOUT;
                 }

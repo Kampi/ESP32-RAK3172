@@ -35,6 +35,6 @@
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetNetID(RAK3172_t* p_Device, std::string* p_ID);
+RAK3172_Error_t RAK3172_LoRaWAN_GetNetID(const RAK3172_t* const p_Device, std::string* const p_ID);
 
 #endif /* RAK3172_LORAWAN_RUI3_H_ */

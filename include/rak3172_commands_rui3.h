@@ -35,7 +35,7 @@
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetCLIVersion(RAK3172_t* p_Device, std::string* p_Version);
+RAK3172_Error_t RAK3172_GetCLIVersion(const RAK3172_t* const p_Device, std::string* const p_Version);
 
 /** @brief              Get the version of the API.
  *  @param p_Device     Pointer to RAK3172 device object
@@ -44,7 +44,7 @@ RAK3172_Error_t RAK3172_GetCLIVersion(RAK3172_t* p_Device, std::string* p_Versio
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetAPIVersion(RAK3172_t* p_Device, std::string* p_Version);
+RAK3172_Error_t RAK3172_GetAPIVersion(const RAK3172_t* const p_Device, std::string* const p_Version);
 
 /** @brief              Get the build time of the firmware.
  *  @param p_Device     Pointer to RAK3172 device object
@@ -53,7 +53,7 @@ RAK3172_Error_t RAK3172_GetAPIVersion(RAK3172_t* p_Device, std::string* p_Versio
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetBuildTime(RAK3172_t* p_Device, std::string* p_BuildTime);
+RAK3172_Error_t RAK3172_GetBuildTime(const RAK3172_t* const p_Device, std::string* const p_BuildTime);
 
 /** @brief              Get the repo information of the firmware.
  *  @param p_Device     Pointer to RAK3172 device object
@@ -62,7 +62,7 @@ RAK3172_Error_t RAK3172_GetBuildTime(RAK3172_t* p_Device, std::string* p_BuildTi
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetRepoInfo(RAK3172_t* p_Device, std::string* p_Repo);
+RAK3172_Error_t RAK3172_GetRepoInfo(const RAK3172_t* const p_Device, std::string* const p_Repo);
 
 /** @brief          Get the device model.
  *  @param p_Device Pointer to RAK3172 device object
@@ -71,7 +71,7 @@ RAK3172_Error_t RAK3172_GetRepoInfo(RAK3172_t* p_Device, std::string* p_Repo);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetModel(RAK3172_t* p_Device, std::string* p_Model);
+RAK3172_Error_t RAK3172_GetModel(const RAK3172_t* const p_Device, std::string* const p_Model);
 
 /** @brief          Get the hardware ID.
  *  @param p_Device Pointer to RAK3172 device object
@@ -80,7 +80,7 @@ RAK3172_Error_t RAK3172_GetModel(RAK3172_t* p_Device, std::string* p_Model);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetHWID(RAK3172_t* p_Device, std::string* p_ID);
+RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t* const p_Device, std::string* const p_ID);
 
 /** @brief          Put the device into sleep mode.
  *  @param p_Device Pointer to RAK3172 device object
@@ -89,6 +89,6 @@ RAK3172_Error_t RAK3172_GetHWID(RAK3172_t* p_Device, std::string* p_ID);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetHWID(RAK3172_t* p_Device, uint32_t Period);
+RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t* const p_Device, uint32_t Period);
 
 #endif /* RAK3172_COMMANDS_RUI3_H_ */

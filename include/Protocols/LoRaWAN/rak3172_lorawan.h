@@ -56,7 +56,7 @@
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  */
-RAK3172_Error_t RAK3172_LoRaWAN_Init(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t Retries, RAK3172_JoinMode_t JoinMode, const uint8_t* p_Key1, const uint8_t* p_Key2, const uint8_t* p_Key3, char Class, RAK3172_Band_t Band, RAK3172_SubBand_t Subband = RAK_SUB_BAND_NONE, bool UseADR = true, uint32_t Timeout = 10);
+RAK3172_Error_t RAK3172_LoRaWAN_Init(RAK3172_t* const p_Device, uint8_t TxPwr, uint8_t Retries, RAK3172_JoinMode_t JoinMode, const uint8_t* const p_Key1, const uint8_t* const p_Key2, const uint8_t* const p_Key3, char Class, RAK3172_Band_t Band, RAK3172_SubBand_t Subband = RAK_SUB_BAND_NONE, bool UseADR = true, uint32_t Timeout = 10);
 
 /** @brief              Set the keys for OTAA mode.
  *  @param p_Device     Pointer to RAK3172 device object
@@ -66,7 +66,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Init(RAK3172_t* p_Device, uint8_t TxPwr, uint8_t
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetOTAAKeys(RAK3172_t* p_Device, const uint8_t* p_DEVEUI, const uint8_t* p_APPEUI, const uint8_t* p_APPKEY);
+RAK3172_Error_t RAK3172_LoRaWAN_SetOTAAKeys(const RAK3172_t* const p_Device, const uint8_t* const p_DEVEUI, const uint8_t* const p_APPEUI, const uint8_t* const p_APPKEY);
 
 /** @brief              Set the keys for ABP mode.
  *  @param p_Device     Pointer to RAK3172 device object
@@ -76,7 +76,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetOTAAKeys(RAK3172_t* p_Device, const uint8_t* 
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetABPKeys(RAK3172_t* p_Device, const uint8_t* p_APPSKEY, const uint8_t* p_NWKSKEY, const uint8_t* p_DEVADDR);
+RAK3172_Error_t RAK3172_LoRaWAN_SetABPKeys(const RAK3172_t* const p_Device, const uint8_t* const p_APPSKEY, const uint8_t* const p_NWKSKEY, const uint8_t* const p_DEVADDR);
 
 /** @brief                  Start the joining process.
  *                          NOTE: This is a blocking function!
@@ -93,14 +93,14 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetABPKeys(RAK3172_t* p_Device, const uint8_t* p
  *                          RAK3172_ERR_TIMEOUT when the number of JOIN attemps has expired
  *                          RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  */
-RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* p_Device, uint32_t Timeout = 0, uint8_t Attempts = 0, bool EnableAutoJoin = false, uint8_t Interval = 10, RAK3172_Wait_t on_Wait = NULL);
+RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(const RAK3172_t* const p_Device, uint32_t Timeout = 0, uint8_t Attempts = 0, bool EnableAutoJoin = false, uint8_t Interval = 10, RAK3172_Wait_t on_Wait = NULL);
 
 /** @brief          Stop the joining process.
  *  @param p_Device Pointer to RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_StopJoin(RAK3172_t* p_Device);
+RAK3172_Error_t RAK3172_LoRaWAN_StopJoin(const RAK3172_t* const p_Device);
 
 /** @brief          Check if the module has joined the network.
  *  @param p_Device Pointer to RAK3172 device object
@@ -109,7 +109,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_StopJoin(RAK3172_t* p_Device);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_FAIL when a transmission error occurs
  */
-RAK3172_Error_t RAK3172_LoRaWAN_isJoined(RAK3172_t* p_Device, bool* p_Joined);
+RAK3172_Error_t RAK3172_LoRaWAN_isJoined(RAK3172_t* const p_Device, bool* const p_Joined);
 
 /** @brief          Start a LoRaWAN data transmission.
  *                  NOTE: This is a blocking function!
@@ -125,7 +125,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_isJoined(RAK3172_t* p_Device, bool* p_Joined);
  *                  RAK3172_ERR_TIMEOUT when a transmit timeout occurs
  *                  RAK3172_ERR_INVALID_STATE when the device is not joined
  */
-RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, const uint8_t* p_Buffer, uint8_t Length);
+RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port, const uint8_t* const p_Buffer, uint8_t Length);
 
 /** @brief              Start a LoRaWAN data transmission.
  *                      NOTE: This is a blocking function!
@@ -146,7 +146,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, cons
  *                      RAK3172_ERR_TIMEOUT when a transmit timeout occurs
  *                      RAK3172_ERR_INVALID_STATE when the device is not joined
  */
-RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, const void* p_Buffer, uint8_t Length, uint32_t Timeout, bool Confirmed = false, RAK3172_Wait_t Wait = NULL);
+RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port, const void* p_Buffer, uint8_t Length, uint32_t Timeout, bool Confirmed = false, RAK3172_Wait_t Wait = NULL);
 
 /** @brief          Read an incomming LoRaWAN downlink message from the RAK3172.
  *                  NOTE: This is a blocking function!
@@ -160,7 +160,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* p_Device, uint8_t Port, cons
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_STATE when the device is not joined
  */
-RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, std::string* p_Payload, int* p_RSSI = NULL, int* p_SNR = NULL, uint32_t Timeout = 3);
+RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* const p_Device, std::string* const p_Payload, int* p_RSSI = NULL, int* p_SNR = NULL, uint32_t Timeout = 3);
 
 /** @brief          Set the number of confirmed payload retransmissions.
  *  @param p_Device Pointer to RAK3172 device object
@@ -169,7 +169,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* p_Device, std::string* p_Payl
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetRetries(RAK3172_t* p_Device, uint8_t Retries);
+RAK3172_Error_t RAK3172_LoRaWAN_SetRetries(const RAK3172_t* const p_Device, uint8_t Retries);
 
 /** @brief              Get the number of confirmed payload retransmissions.
  *  @param p_Device     Pointer to RAK3172 device object
@@ -177,7 +177,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetRetries(RAK3172_t* p_Device, uint8_t Retries)
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetRetries(RAK3172_t* p_Device, uint8_t* p_Retries);
+RAK3172_Error_t RAK3172_LoRaWAN_GetRetries(const RAK3172_t* const p_Device, uint8_t* const p_Retries);
 
 /** @brief          Enable / Disable the usage of the public network mode.
  *  @param p_Device Pointer to RAK3172 device object
@@ -185,7 +185,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetRetries(RAK3172_t* p_Device, uint8_t* p_Retri
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetPNM(RAK3172_t* p_Device, bool Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_SetPNM(const RAK3172_t* const p_Device, bool Enable);
 
 /** @brief          Get the status of the public network mode.
  *  @param p_Device Pointer to RAK3172 device object
@@ -193,7 +193,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetPNM(RAK3172_t* p_Device, bool Enable);
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetPNM(RAK3172_t* p_Device, bool* p_Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_GetPNM(const RAK3172_t* const p_Device, bool* const p_Enable);
 
 /** @brief          Enable / Disable the usage of the confirmation mode.
  *  @param p_Device Pointer to RAK3172 device object
@@ -201,7 +201,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetPNM(RAK3172_t* p_Device, bool* p_Enable);
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetConfirmation(RAK3172_t* p_Device, bool Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_SetConfirmation(const RAK3172_t* const p_Device, bool Enable);
 
 /** @brief          Get the current state of the transmission confirmation mode.
  *  @param p_Device Pointer to RAK3172 device object
@@ -209,7 +209,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetConfirmation(RAK3172_t* p_Device, bool Enable
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetConfirmation(RAK3172_t* p_Device, bool* p_Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_GetConfirmation(const RAK3172_t* const p_Device, bool* const p_Enable);
 
 /** @brief          Set the used frequency band.
  *  @param p_Device Pointer to RAK3172 device object
@@ -217,7 +217,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetConfirmation(RAK3172_t* p_Device, bool* p_Ena
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetBand(RAK3172_t* p_Device, RAK3172_Band_t Band);
+RAK3172_Error_t RAK3172_LoRaWAN_SetBand(const RAK3172_t* const p_Device, RAK3172_Band_t Band);
 
 /** @brief          Get the used frequency band.
  *  @param p_Device Pointer to RAK3172 device object
@@ -225,7 +225,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetBand(RAK3172_t* p_Device, RAK3172_Band_t Band
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetBand(RAK3172_t* p_Device, RAK3172_Band_t* p_Band);
+RAK3172_Error_t RAK3172_LoRaWAN_GetBand(const RAK3172_t* const p_Device, RAK3172_Band_t* p_Band);
 
 /** @brief          Set the sub band for the LoRaWAN communication.
  *  @param p_Device Pointer to RAK3172 device object
@@ -234,7 +234,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetBand(RAK3172_t* p_Device, RAK3172_Band_t* p_B
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_RESPONSE when the device is operating in the wrong frequency band
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_t Band);
+RAK3172_Error_t RAK3172_LoRaWAN_SetSubBand(const RAK3172_t* const p_Device, RAK3172_SubBand_t Band);
 
 /** @brief          Get the sub band for the LoRaWAN communication.
  *  @param p_Device Pointer to RAK3172 device object
@@ -242,7 +242,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_t* p_Band);
+RAK3172_Error_t RAK3172_LoRaWAN_GetSubBand(const RAK3172_t* const p_Device, RAK3172_SubBand_t* p_Band);
 
 /** @brief          Set the Tx power of the RAK3172.
  *                  NOTE: The index of the Tx power and the resulting power depends on the selected region!
@@ -252,7 +252,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetSubBand(RAK3172_t* p_Device, RAK3172_SubBand_
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetTxPwr(RAK3172_t* p_Device, uint8_t TxPwr);
+RAK3172_Error_t RAK3172_LoRaWAN_SetTxPwr(const RAK3172_t* const p_Device, uint8_t TxPwr);
 
 /** @brief          Set the RX1 delay of the device.
  *  @param p_Device Pointer to RAK3172 device object
@@ -260,7 +260,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetTxPwr(RAK3172_t* p_Device, uint8_t TxPwr);
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetRX1Delay(RAK3172_t* p_Device, uint16_t Delay);
+RAK3172_Error_t RAK3172_LoRaWAN_SetRX1Delay(const RAK3172_t* const p_Device, uint16_t Delay);
 
 /** @brief          Set the RX2 delay of the device.
  *  @param p_Device Pointer to RAK3172 device object
@@ -268,7 +268,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetRX1Delay(RAK3172_t* p_Device, uint16_t Delay)
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetRX2Delay(RAK3172_t* p_Device, uint16_t Delay);
+RAK3172_Error_t RAK3172_LoRaWAN_SetRX2Delay(const RAK3172_t* const p_Device, uint16_t Delay);
 
 /** @brief          Get the SNR value of the last packet.
  *  @param p_Device Pointer to RAK3172 device object
@@ -276,7 +276,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetRX2Delay(RAK3172_t* p_Device, uint16_t Delay)
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetSNR(RAK3172_t* p_Device, uint8_t* p_SNR);
+RAK3172_Error_t RAK3172_LoRaWAN_GetSNR(const RAK3172_t* const p_Device, uint8_t* const p_SNR);
 
 /** @brief          Get the RSSI value of the last packet.
  *  @param p_Device Pointer to RAK3172 device object
@@ -284,7 +284,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetSNR(RAK3172_t* p_Device, uint8_t* p_SNR);
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetRSSI(RAK3172_t* p_Device, int8_t* p_RSSI);
+RAK3172_Error_t RAK3172_LoRaWAN_GetRSSI(const RAK3172_t* const p_Device, int8_t* p_RSSI);
 
 /** @brief          Get the duty time.
  *                  NOTE: This can only be used when using EU868, RU864 or EU433 frequency band!
@@ -294,7 +294,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetRSSI(RAK3172_t* p_Device, int8_t* p_RSSI);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_RESPONSE when the device is operating in the wrong frequency band
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetDuty(RAK3172_t* p_Device, uint8_t* p_Duty);
+RAK3172_Error_t RAK3172_LoRaWAN_GetDuty(const RAK3172_t* const p_Device, uint8_t* const p_Duty);
 
 /** @brief          Set the data rate of the LoRa module.
  *  @param p_Device Pointer to RAK3172 device object
@@ -303,7 +303,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetDuty(RAK3172_t* p_Device, uint8_t* p_Duty);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t DR);
+RAK3172_Error_t RAK3172_LoRaWAN_SetDataRate(const RAK3172_t* const p_Device, RAK3172_DataRate_t DR);
 
 /** @brief          Get the data rate of the LoRa module.
  *  @param p_Device Pointer to RAK3172 device object
@@ -312,16 +312,16 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetDataRate(RAK3172_t* p_Device, RAK3172_DataRat
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetDataRate(RAK3172_t* p_Device, RAK3172_DataRate_t* p_DR);
+RAK3172_Error_t RAK3172_LoRaWAN_GetDataRate(const RAK3172_t* const p_Device, RAK3172_DataRate_t* p_DR);
 
 /** @brief          Enable / Disable the adaptive data rate.
  *  @param p_Device Pointer to RAK3172 device object
- *  @param Enable   Pointer to data rate
+ *  @param Enable   Enable / Disable ADR
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetADR(RAK3172_t* p_Device, bool Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_SetADR(const RAK3172_t* const p_Device, bool Enable);
 
 /** @brief          Get the status of the adaptive data rate option.
  *  @param p_Device Pointer to RAK3172 device object
@@ -330,6 +330,24 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetADR(RAK3172_t* p_Device, bool Enable);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetADR(RAK3172_t* p_Device, bool* p_Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_GetADR(const RAK3172_t* const p_Device, bool* const p_Enable);
+
+/** @brief          Set the LoRaWAN join mode.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param Mode     Join mode
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_SetJoinMode(const RAK3172_t* const p_Device, RAK3172_JoinMode_t Mode);
+
+/** @brief          Get the current LoRaWAN join mode.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Mode   Pointer to join mode
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_GetJoinMode(const RAK3172_t* const p_Device, RAK3172_JoinMode_t* p_Mode);
 
 #endif /* RAK3172_LORAWAN_H_ */

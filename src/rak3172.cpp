@@ -24,8 +24,6 @@
 
 #include <esp_log.h>
 
-#include <algorithm>
-
 #include <sdkconfig.h>
 
 #include "../include/rak3172.h"
@@ -69,8 +67,6 @@ static uart_config_t _UART_Config = {
 #endif
 };
 
-static QueueHandle_t _RAK3172_UARTEvent_Queue;
-
 static const char* TAG = "RAK3172";
 
 /** @brief          Receive the splash screen after a reset.
@@ -78,7 +74,7 @@ static const char* TAG = "RAK3172";
  *  @param Timeout  (Optional) Timeout for the splash screen in seconds
  *  @return         RAK3172_ERR_OK when successful
  */
-static RAK3172_Error_t RAK3172_ReceiveSplashScreen(RAK3172_t* p_Device, uint16_t Timeout = 10)
+static RAK3172_Error_t RAK3172_ReceiveSplashScreen(RAK3172_t* const p_Device, uint16_t Timeout = 10)
 {
     std::string* Response = NULL;
 
@@ -124,7 +120,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
     while(true)
     {
-        if(xQueueReceive(_RAK3172_UARTEvent_Queue, (void*)&Event, portMAX_DELAY))
+        if(xQueueReceive(Device->Internal.EventQueue, (void*)&Event, portMAX_DELAY))
         {
             size_t BufferedSize;
             uint32_t PatternPos;
@@ -147,7 +143,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                     }
                     else
                     {
-                        std::string* Response = new std::string();
+                        std::string* const Response = new std::string();
 
                         if(Response != NULL)
                         {
@@ -217,7 +213,7 @@ const std::string RAK3172_LibVersion(void)
     #endif
 }
 
-RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
+RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
 {
     RAK3172_Error_t Error;
     std::string Response;
@@ -294,7 +290,7 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device)
         ESP_LOGI(TAG, "     [ ] Hardware reset");
     #endif
 
-    if(uart_driver_install(p_Device->Interface, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_QUEUE_LENGTH, &_RAK3172_UARTEvent_Queue, 0) ||
+    if(uart_driver_install(p_Device->Interface, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_QUEUE_LENGTH, &p_Device->Internal.EventQueue, 0) ||
        uart_param_config(p_Device->Interface, &_UART_Config) ||
        uart_set_pin(p_Device->Interface, p_Device->Tx, p_Device->Rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) ||
        uart_enable_pattern_det_baud_intr(p_Device->Interface, '\n', 1, 9, 0, 0) ||
@@ -437,7 +433,7 @@ RAK3172_Init_Error:
 	return Error;
 }
 
-void RAK3172_Deinit(RAK3172_t* p_Device)
+void RAK3172_Deinit(RAK3172_t* const p_Device)
 {
     if(p_Device->Internal.isInitialized == false)
     {
@@ -472,7 +468,7 @@ void RAK3172_Deinit(RAK3172_t* p_Device)
     gpio_set_level(p_Device->Tx, false);
 }
 
-RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* p_Device)
+RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* const p_Device)
 {
     std::string Command;
 
@@ -499,7 +495,7 @@ RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* p_Device)
     return RAK3172_ERR_OK;    
 }
 
-RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout)
+RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device, uint32_t Timeout)
 {
     std::string Command;
 
@@ -528,7 +524,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout)
 }
 
 #ifdef CONFIG_RAK3172_RESET_USE_HW
-    RAK3172_Error_t RAK3172_HardReset(RAK3172_t* p_Device, uint32_t Timeout)
+    RAK3172_Error_t RAK3172_HardReset(RAK3172_t* const p_Device, uint32_t Timeout)
     {
         if(p_Device == NULL)
         {
@@ -575,7 +571,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout)
     }
 #endif
 
-RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, std::string* p_Value, std::string* p_Status)
+RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string Command, std::string* const p_Value, std::string* const p_Status)
 {
     std::string* Response = NULL;
     RAK3172_Error_t Error = RAK3172_ERR_OK;

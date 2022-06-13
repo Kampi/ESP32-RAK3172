@@ -30,6 +30,7 @@
 									Add firmware version check
 									Add factory reset
 									Add "RAK3172_ERR_NOT_CONNECTED" in LoRaWAN mode
+									Add function to set / get the LoRaWAN join mode (ABP or OTAA)
 									Rework event handling
 									Improve parameter checking in different functions
 									Update examples

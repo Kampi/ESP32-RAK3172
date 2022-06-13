@@ -51,18 +51,18 @@ const std::string RAK3172_LibVersion(void);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_STATE when the serial interface can not initialized
  */
-RAK3172_Error_t RAK3172_Init(RAK3172_t* p_Device);
+RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device);
 
 /** @brief          Deinitialize the RAK3172 communication interface.
  *  @param p_Device Pointer to RAK3172 device object
  */
-void RAK3172_Deinit(RAK3172_t* p_Device);
+void RAK3172_Deinit(RAK3172_t* const p_Device);
 
 /** @brief          Perform a factory reset of the device.
  *  @param p_Device Pointer to RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
  */
-RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* p_Device);
+RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* const p_Device);
 
 /** @brief          Perform a software reset of the device.
  *  @param p_Device Pointer to RAK3172 device object
@@ -71,7 +71,7 @@ RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* p_Device);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout = 10);
+RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device, uint32_t Timeout = 10);
 
 #ifdef CONFIG_RAK3172_RESET_USE_HW
     /** @brief          Perform a hardware reset of the device.
@@ -79,7 +79,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout = 10);
      *  @param Timeout  (Optional) Timeout for the device reset in seconds
      *  @return         RAK3172_ERR_OK when successful
      */
-    RAK3172_Error_t RAK3172_HardReset(RAK3172_t* p_Device, uint32_t Timeout = 10);
+    RAK3172_Error_t RAK3172_HardReset(RAK3172_t* const p_Device, uint32_t Timeout = 10);
 #endif
 
 /** @brief          Transmit an AT command to the RAK3172 module.
@@ -92,7 +92,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* p_Device, uint32_t Timeout = 10);
  *                  RAK3172_ERR_FAIL when an event happens, when the status is not "OK" or when the device is busy
  *                  RAK3172_ERR_TIMEOUT when a receive timeout occurs
  */
-RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, std::string* p_Value = NULL, std::string* p_Status = NULL);
+RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string Command, std::string* const p_Value = NULL, std::string* const p_Status = NULL);
 
 /** @brief              Get the firmware version of the RAK3172 SoM.
  *  @param p_Device     Pointer to RAK3172 device object
@@ -101,7 +101,7 @@ RAK3172_Error_t RAK3172_SendCommand(RAK3172_t* p_Device, std::string Command, st
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetFWVersion(RAK3172_t* p_Device, std::string* p_Version);
+RAK3172_Error_t RAK3172_GetFWVersion(const RAK3172_t* const p_Device, std::string* const p_Version);
 
 /** @brief              Get the serial number of the RAK3172 SoM.
  *  @param p_Device     Pointer to RAK3172 device object
@@ -110,7 +110,7 @@ RAK3172_Error_t RAK3172_GetFWVersion(RAK3172_t* p_Device, std::string* p_Version
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetSerialNumber(RAK3172_t* p_Device, std::string* p_Serial);
+RAK3172_Error_t RAK3172_GetSerialNumber(const RAK3172_t* const p_Device, std::string* const p_Serial);
 
 /** @brief          Get the RSSI value of the last packet.
  *  @param p_Device Pointer to RAK3172 device object
@@ -119,7 +119,7 @@ RAK3172_Error_t RAK3172_GetSerialNumber(RAK3172_t* p_Device, std::string* p_Seri
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetRSSI(RAK3172_t* p_Device, int* p_RSSI);
+RAK3172_Error_t RAK3172_GetRSSI(const RAK3172_t* const p_Device, int* p_RSSI);
 
 /** @brief          Get the SNR value of the last packet.
  *  @param p_Device Pointer to RAK3172 device object
@@ -128,7 +128,7 @@ RAK3172_Error_t RAK3172_GetRSSI(RAK3172_t* p_Device, int* p_RSSI);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetSNR(RAK3172_t* p_Device, int* p_SNR);
+RAK3172_Error_t RAK3172_GetSNR(const RAK3172_t* const p_Device, int* p_SNR);
 
 /** @brief          Set the current operating mode for the LoRa module.
  *  @param p_Device Pointer to RAK3172 device object
@@ -137,7 +137,7 @@ RAK3172_Error_t RAK3172_GetSNR(RAK3172_t* p_Device, int* p_SNR);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_SetMode(RAK3172_t* p_Device, RAK3172_Mode_t Mode);
+RAK3172_Error_t RAK3172_SetMode(RAK3172_t* const p_Device, RAK3172_Mode_t Mode);
 
 /** @brief          Get the current operating mode for the LoRa module.
  *  @param p_Device Pointer to RAK3172 device object
@@ -145,7 +145,7 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* p_Device, RAK3172_Mode_t Mode);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetMode(RAK3172_t* p_Device);
+RAK3172_Error_t RAK3172_GetMode(RAK3172_t* const p_Device);
 
 /** @brief          Set the baudrate of the LoRa module.
  *  @param p_Device Pointer to RAK3172 device object
@@ -154,7 +154,7 @@ RAK3172_Error_t RAK3172_GetMode(RAK3172_t* p_Device);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_SetBaud(RAK3172_t* p_Device, RAK3172_Baud_t Baud);
+RAK3172_Error_t RAK3172_SetBaud(RAK3172_t* const p_Device, RAK3172_Baud_t Baud);
 
 /** @brief          Get the baudrate of the LoRa module.
  *  @param p_Device Pointer to RAK3172 device object
@@ -163,6 +163,6 @@ RAK3172_Error_t RAK3172_SetBaud(RAK3172_t* p_Device, RAK3172_Baud_t Baud);
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetBaud(RAK3172_t* p_Device, RAK3172_Baud_t* p_Baud);
+RAK3172_Error_t RAK3172_GetBaud(RAK3172_t* const p_Device, RAK3172_Baud_t* p_Baud);
 
 #endif /* RAK3172_H_ */

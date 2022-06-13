@@ -28,7 +28,7 @@
 
 #include "rak3172.h"
 
-RAK3172_Error_t RAK3172_LoRaWAN_GetNetID(RAK3172_t* p_Device, std::string* p_ID)
+RAK3172_Error_t RAK3172_LoRaWAN_GetNetID(const RAK3172_t* const p_Device, std::string* const p_ID)
 {
     if(p_Device == NULL)
     {

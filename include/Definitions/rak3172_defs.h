@@ -226,6 +226,8 @@ typedef struct
                                              NOTE: Managed by the driver. */
         QueueHandle_t RxQueue;          /**< Rx queue used by the receiving task.
                                              NOTE: Managed by the driver. */
+        QueueHandle_t EventQueue;       /**< UART event queue used by the receiving task.
+                                             NOTE: Managed by the driver. */
     } Internal;
     struct
     {

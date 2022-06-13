@@ -50,7 +50,8 @@
                                                                                                 .isInitialized = false,                     \
                                                                                                 .isBusy = false,                            \
                                                                                                 .RxBuffer = NULL,                           \
-                                                                                                .RxQueue = NULL                             \
+                                                                                                .RxQueue = NULL,                            \
+                                                                                                .EventQueue = NULL                          \
                                                                                             },                                              \
                                                                                             .LoRaWAN = {                                    \
                                                                                                 .Join = RAK_JOIN_ABP,                       \
@@ -82,7 +83,8 @@
                                                                             .isInitialized = false,                                         \
                                                                             .isBusy = false,                                                \
                                                                             .RxBuffer = NULL,                                               \
-                                                                            .RxQueue = NULL                                                 \
+                                                                            .RxQueue = NULL,                                                \
+                                                                            .EventQueue = NULL                                              \
                                                                         },                                                                  \
                                                                         .LoRaWAN = {                                                        \
                                                                             .Join = RAK_JOIN_ABP,                                           \

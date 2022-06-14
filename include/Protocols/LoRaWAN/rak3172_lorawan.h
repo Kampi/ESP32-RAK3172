@@ -4,22 +4,17 @@
  *  Copyright (C) Daniel Kampert, 2022
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 driver for ESP32.
-
-  GNU GENERAL PUBLIC LICENSE:
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-  Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ * Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
 
 #ifndef RAK3172_LORAWAN_H_
@@ -146,7 +141,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port
  *                      RAK3172_ERR_TIMEOUT when a transmit timeout occurs
  *                      RAK3172_ERR_INVALID_STATE when the device is not joined
  */
-RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port, const void* p_Buffer, uint8_t Length, uint32_t Timeout, bool Confirmed = false, RAK3172_Wait_t Wait = NULL);
+RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port, const void* const p_Buffer, uint8_t Length, uint32_t Timeout, bool Confirmed = false, RAK3172_Wait_t Wait = NULL);
 
 /** @brief          Read an incomming LoRaWAN downlink message from the RAK3172.
  *                  NOTE: This is a blocking function!
@@ -160,7 +155,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_STATE when the device is not joined
  */
-RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* const p_Device, std::string* const p_Payload, int* p_RSSI = NULL, int* p_SNR = NULL, uint32_t Timeout = 3);
+RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* const p_Device, std::string* const p_Payload, int* const p_RSSI = NULL, int* const p_SNR = NULL, uint32_t Timeout = 3);
 
 /** @brief          Set the number of confirmed payload retransmissions.
  *  @param p_Device Pointer to RAK3172 device object
@@ -225,7 +220,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetBand(const RAK3172_t* const p_Device, RAK3172
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetBand(const RAK3172_t* const p_Device, RAK3172_Band_t* p_Band);
+RAK3172_Error_t RAK3172_LoRaWAN_GetBand(const RAK3172_t* const p_Device, RAK3172_Band_t* const p_Band);
 
 /** @brief          Set the sub band for the LoRaWAN communication.
  *  @param p_Device Pointer to RAK3172 device object
@@ -242,7 +237,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetSubBand(const RAK3172_t* const p_Device, RAK3
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetSubBand(const RAK3172_t* const p_Device, RAK3172_SubBand_t* p_Band);
+RAK3172_Error_t RAK3172_LoRaWAN_GetSubBand(const RAK3172_t* const p_Device, RAK3172_SubBand_t* const p_Band);
 
 /** @brief          Set the Tx power of the RAK3172.
  *                  NOTE: The index of the Tx power and the resulting power depends on the selected region!
@@ -276,7 +271,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetRX2Delay(const RAK3172_t* const p_Device, uin
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetSNR(const RAK3172_t* const p_Device, uint8_t* const p_SNR);
+RAK3172_Error_t RAK3172_LoRaWAN_GetSNR(const RAK3172_t* const p_Device, int8_t* const p_SNR);
 
 /** @brief          Get the RSSI value of the last packet.
  *  @param p_Device Pointer to RAK3172 device object
@@ -312,7 +307,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetDataRate(const RAK3172_t* const p_Device, RAK
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetDataRate(const RAK3172_t* const p_Device, RAK3172_DataRate_t* p_DR);
+RAK3172_Error_t RAK3172_LoRaWAN_GetDataRate(const RAK3172_t* const p_Device, RAK3172_DataRate_t* const p_DR);
 
 /** @brief          Enable / Disable the adaptive data rate.
  *  @param p_Device Pointer to RAK3172 device object
@@ -348,6 +343,6 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetJoinMode(const RAK3172_t* const p_Device, RAK
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetJoinMode(const RAK3172_t* const p_Device, RAK3172_JoinMode_t* p_Mode);
+RAK3172_Error_t RAK3172_LoRaWAN_GetJoinMode(const RAK3172_t* const p_Device, RAK3172_JoinMode_t* const p_Mode);
 
 #endif /* RAK3172_LORAWAN_H_ */

@@ -3,23 +3,18 @@
  *
  *  Copyright (C) Daniel Kampert, 2022
  *	Website: www.kampis-elektroecke.de
- *  File info: LoRaWAN module of the RAK3172 driver for ESP32.
-
-  GNU GENERAL PUBLIC LICENSE:
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-  Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
+ *  File info: RAK3172 driver for ESP32.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ * Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
 
 #include <sdkconfig.h>
@@ -44,6 +39,48 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetNetID(const RAK3172_t* const p_Device, std::s
     }
 
     return RAK3172_SendCommand(p_Device, "AT+NETID=?", p_ID, NULL);
+}
+
+RAK3172_Error_t RAK3172_LoRaWAN_SetSingleChannelMode(const RAK3172_t* const p_Device, bool Enable)
+{
+    return RAK3172_SendCommand(p_Device, "AT+CHS=" + std::to_string(Enable), NULL, NULL);
+}
+
+RAK3172_Error_t RAK3172_LoRaWAN_GetSingleChannelMode(const RAK3172_t* const p_Device, bool* const p_Enable)
+{
+    std::string Value;
+
+    if(p_Enable == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+CHS=?", &Value, NULL));
+
+    *p_Enable = (bool)std::stoi(Value);
+
+    return RAK3172_ERR_OK;
+}
+
+RAK3172_Error_t RAK3172_LoRaWAN_SetEightChannelMode(const RAK3172_t* const p_Device, bool Enable)
+{
+    return RAK3172_SendCommand(p_Device, "AT+CHE=" + std::to_string(Enable), NULL, NULL);
+}
+
+RAK3172_Error_t RAK3172_LoRaWAN_GetEightChannelMode(const RAK3172_t* const p_Device, bool* const p_Enable)
+{
+    std::string Value;
+
+    if(p_Enable == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+CHE=?", &Value, NULL));
+
+    *p_Enable = (bool)std::stoi(Value);
+
+    return RAK3172_ERR_OK;
 }
 
 #endif

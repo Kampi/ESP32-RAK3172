@@ -34,5 +34,6 @@
 									Rework event handling
 									Improve parameter checking in different functions
 									Update examples
+									Change license to MIT
 									Update CHANGELOG
 									Change version number to 4.0.0

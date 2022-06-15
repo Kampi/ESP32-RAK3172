@@ -38,7 +38,7 @@
 /** @brief  Get the version number of the RAK3172 library.
  *  @return Library version
  */
-const std::string RAK3172_LibVersion(void);
+const inline __attribute__((always_inline)) std::string RAK3172_LibVersion(void);
 
 /** @brief          Initialize the receiving task and initialize the RAK3172 SoM.
  *  @param p_Device Pointer to RAK3172 device object

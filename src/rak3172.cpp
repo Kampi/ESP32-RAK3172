@@ -203,7 +203,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
     }
 }
 
-const std::string RAK3172_LibVersion(void)
+const inline __attribute__((always_inline)) std::string RAK3172_LibVersion(void)
 {
     #if((defined RAK3172_LIB_MAJOR) && (defined RAK3172_LIB_MINOR) && (defined RAK3172_LIB_BUILD))
         return std::string(STRINGIFY(RAK3172_LIB_MAJOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_MINOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_BUILD));

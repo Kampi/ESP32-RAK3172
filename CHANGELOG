@@ -34,6 +34,7 @@
 									Rework event handling
 									Improve parameter checking in different functions
 									Update examples
+									Add error output to "RAK3172_ERROR_CHECK"
 									Change license to MIT
 									Update CHANGELOG
 									Change version number to 4.0.0

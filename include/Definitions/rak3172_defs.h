@@ -20,6 +20,8 @@
 #ifndef RAK3172_DEFS_H_
 #define RAK3172_DEFS_H_
 
+#include <esp_log.h>
+
 #include <driver/uart.h>
 #include <driver/gpio.h>
 
@@ -46,13 +48,14 @@
 /** @brief      Generic error check macro.
  *  @param Func Function that should be checked
  */
-#define RAK3172_ERROR_CHECK(Func)                               do                                  \
-                                                                {                                   \
-                                                                    RAK3172_Error_t Error = Func;   \
-                                                                    if(Error != RAK3172_ERR_OK)     \
-                                                                    {                               \
-                                                                        return Error;               \
-                                                                    }                               \
+#define RAK3172_ERROR_CHECK(Func)                               do                                                                                                  \
+                                                                {                                                                                                   \
+                                                                    RAK3172_Error_t Error = Func;                                                                   \
+                                                                    if(Error != RAK3172_ERR_OK)                                                                     \
+                                                                    {                                                                                               \
+                                                                        ESP_LOGE("RAK3172", "Error check failed in (%s) at line (%u)!", __FUNCTION__, __LINE__);    \
+                                                                        return Error;                                                                               \
+                                                                    }                                                                                               \
                                                                 } while(0);
 
 /** @brief Hook for a custom wait callback.
@@ -220,7 +223,7 @@ typedef struct
     RAK3172_Info_t* Info;               /**< Pointer to optional device information object. */
     struct
     {
-        TaskHandle_t Handle;            /**< Handle for the receive task.
+        TaskHandle_t Handle;            /**< Handle for the UART receive task.
                                              NOTE: Managed by the driver. */
         bool isInitialized;             /**< #true when the device driver is initialized.
                                              NOTE: Managed by the driver. */
@@ -228,9 +231,11 @@ typedef struct
                                              NOTE: Managed by the driver. */
         uint8_t* RxBuffer;              /**< Pointer to receive buffer.
                                              NOTE: Managed by the driver. */
-        QueueHandle_t RxQueue;          /**< Rx queue used by the receiving task.
+        QueueHandle_t MessageQueue;     /**< Module Rx message queue used by the receiving task.
                                              NOTE: Managed by the driver. */
-        QueueHandle_t EventQueue;       /**< UART event queue used by the receiving task.
+        QueueHandle_t EventQueue;       /**< Event queue used by the UART driver for the pattern detection.
+                                             NOTE: Managed by the driver. */
+        QueueHandle_t ReceiveQueue;     /**< Pointer to receive message queue.
                                              NOTE: Managed by the driver. */
     } Internal;
     struct
@@ -239,12 +244,16 @@ typedef struct
                                              NOTE: Managed by the driver. */
         bool isJoined;                  /**< Join status of the device.
                                              NOTE: Managed by the driver. */
+        bool MessageReceived;           /** Indicates a received downlink message.
+                                             NOTE: Managed by the driver. */
+        bool ConfirmError;              /**< Message confirmation failed.
+                                             NOTE: Managed by the driver. */
     } LoRaWAN;
     struct
     {
-        QueueHandle_t* Queue;           /**< Pointer to message queue.
-                                             NOTE: Managed by the driver. */
         bool Active;                    /**< Receive task active.
+                                             NOTE: Managed by the driver. */
+        bool isEncryptionEnabled;       /**< LoRa P2P encryption status.
                                              NOTE: Managed by the driver. */
         uint16_t Timeout;               /**< Receive timeout.
                                              NOTE: Managed by the driver. */
@@ -253,13 +262,15 @@ typedef struct
     } P2P;
 } RAK3172_t;
 
-/** @brief RAK3172 receive object.
+/** @brief RAK3172 message receive object.
  */
 typedef struct
 {
     std::string Payload;                /**< Received payload. */
     int8_t RSSI;                        /**< Receiving RSSI value. */
     int8_t SNR;                         /**< Receiving SNR value. */
+    uint8_t Port;                       /**< Port number.
+                                             NOTE: Only used in LoRaWAN mode! */
 } RAK3172_Rx_t;
 
 #endif /* RAK3172_DEFS_H_ */

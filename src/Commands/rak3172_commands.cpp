@@ -102,19 +102,19 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* const p_Device, RAK3172_Mode_t Mode)
 
     #ifndef CONFIG_RAK3172_USE_RUI3
         // Receive the line feed before the status.
-        if(xQueueReceive(p_Device->Internal.RxQueue, &Response, 1000 / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             Error = RAK3172_ERR_TIMEOUT;
-            goto RAK3172_SetMode_Error;
+            goto RAK3172_SetMode_Exit;
         }
         delete Response;
     #endif
 
     // Receive the trailing status code.
-    if(xQueueReceive(p_Device->Internal.RxQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+    if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
     {
         Error = RAK3172_ERR_TIMEOUT;
-        goto RAK3172_SetMode_Error;
+        goto RAK3172_SetMode_Exit;
     }
 
     // 'OK' received, so the mode wasn´t change. Leave the function.
@@ -122,28 +122,29 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* const p_Device, RAK3172_Mode_t Mode)
     {
         delete Response;
 
-        p_Device->Internal.isBusy = false;
-
-        return RAK3172_ERR_OK;
+        Error = RAK3172_ERR_OK;
+        goto RAK3172_SetMode_Exit;
     }
 
     // Otherwise the mode has changed and we have to receive the splash screen.
     delete Response;
     do
     {
-        if(xQueueReceive(p_Device->Internal.RxQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) == pdFAIL)
+        if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) == pdFAIL)
         {
             p_Device->Internal.isBusy = false;
         }
-
-        delete Response;
+        else
+        {
+            delete Response;
+        }
     } while(p_Device->Internal.isBusy);
 
     // The mode was changed. Set the new mode.
     p_Device->Mode = Mode;
     ESP_LOGI(TAG, "New mode: %u", p_Device->Mode);
 
-RAK3172_SetMode_Error:
+RAK3172_SetMode_Exit:
     p_Device->Internal.isBusy = false;
     return Error;
 }

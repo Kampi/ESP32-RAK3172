@@ -75,7 +75,7 @@ static void applicationTask(void* p_Parameter)
             ESP_LOGI(TAG, "     SNR: %i", Obj->SNR);
             ESP_LOGI(TAG, "     Payload: %s", Obj->Payload.c_str());
 
-            delete Obj;
+            free(Obj);
         }
 
         if(RAK3172_P2P_isListening(&_Device))

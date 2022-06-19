@@ -19,6 +19,8 @@
 
 #include <esp_log.h>
 
+#include <algorithm>
+
 #include <sdkconfig.h>
 
 #include "../include/rak3172.h"
@@ -79,7 +81,7 @@ static RAK3172_Error_t RAK3172_ReceiveSplashScreen(RAK3172_t* const p_Device, ui
 
     do
     {
-        if(xQueueReceive(p_Device->Internal.RxQueue, &Response, Timeout / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, Timeout / portTICK_PERIOD_MS) != pdPASS)
         {
             ESP_LOGE(TAG, "     Timeout!");
 
@@ -119,7 +121,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
     while(true)
     {
-        if(xQueueReceive(Device->Internal.EventQueue, (void*)&Event, portMAX_DELAY))
+        if(xQueueReceive(Device->Internal.EventQueue, (void*)&Event, 20))
         {
             size_t BufferedSize;
             uint32_t PatternPos;
@@ -134,61 +136,155 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
                     PatternPos = uart_pattern_pop_pos(Device->Interface);
 
-                    ESP_LOGD(TAG, "     Pattern detected at position %u. Use buffered size: %u", PatternPos, BufferedSize);
-
                     if(PatternPos == -1)
                     {
                         uart_flush_input(Device->Interface);
                     }
                     else
                     {
-                        std::string* const Response = new std::string();
+                        std::string* Response = new std::string();
 
-                        if(Response != NULL)
+                        ESP_LOGD(TAG, "     Pattern detected at position %u. Use buffered size: %u", PatternPos, BufferedSize);
+
+                        uart_read_bytes(Device->Interface, Device->Internal.RxBuffer, PatternPos, 10);
+
+                        // Copy the data from the buffer into the string.
+                        for(uint32_t i = 0; i < PatternPos; i++)
                         {
-                            uart_read_bytes(Device->Interface, Device->Internal.RxBuffer, PatternPos, 100 / portTICK_PERIOD_MS);
+                            char Character = (char)Device->Internal.RxBuffer[i];
 
-                            // Copy the data from the buffer into the string.
-                            for(uint32_t i = 0; i < PatternPos; i++)
+                            if((Character != '\n') && (Character != '\r'))
                             {
-                                char Character = (char)Device->Internal.RxBuffer[i];
+                                *Response += Character;
+                            }
+                        }
 
-                                if((Character != '\n') && (Character != '\r'))
-                                {
-                                    *Response += Character;
-                                }
+                        ESP_LOGD(TAG, "     Response: %s", Response->c_str());
+
+                        // Device is in LoRa mode and an asynchronous event was received.
+                        if((Device->Mode == RAK_MODE_LORAWAN) && (Response->find("+EVT") != std::string::npos))
+                        {
+                            // Join was successful
+                            if(Response->find("JOINED") != std::string::npos)
+                            {
+                                ESP_LOGD(TAG, "Joined...");
+
+                                Device->Internal.isBusy = false;
+                                Device->LoRaWAN.isJoined = true;
+                            }
+                            // Join failed.
+                        #ifdef CONFIG_RAK3172_USE_RUI3
+                            else if(Response->find("JOIN_FAILED_RX_TIMEOUT") != std::string::npos)
+                        #else
+                            else if(Response->find("JOIN FAILED") != std::string::npos)
+                        #endif
+                            {
+                                ESP_LOGD(TAG, "Not joined...");
+
+                                Device->Internal.isBusy = false;
+                                Device->LoRaWAN.isJoined = false;
+                            }
+                            // Transmission failed.
+                        #ifdef CONFIG_RAK3172_USE_RUI3
+                            else if(Response->find("SEND_CONFIRMED_FAILED") != std::string::npos)
+                        #else
+                            else if(Response->find("SEND CONFIRMED FAILED") != std::string::npos)
+                        #endif
+                            {
+                                Device->Internal.isBusy = false;
+                                Device->LoRaWAN.ConfirmError = true;
+                            }
+                            // Transmission was successful.
+                        #ifdef CONFIG_RAK3172_USE_RUI3
+                            else if(Response->find("SEND_CONFIRMED_OK") != std::string::npos)
+                        #else
+                            else if(Response->find("SEND CONFIRMED OK") != std::string::npos)
+                        #endif
+                            {
+                                Device->Internal.isBusy = false;
+                                Device->LoRaWAN.ConfirmError = false;
+                            }
+                            else if(Response->find("RX") != std::string::npos)
+                            {
+                                std::string Dummy;
+                                RAK3172_Rx_t* Received = new RAK3172_Rx_t();
+
+                                ESP_LOGD(TAG, "Message received!");
+                                ESP_LOGD(TAG, " %s", Response->c_str());
+
+                                // Remove "+EVT:RX_x:" from the response.
+                                Response->erase(Response->find("+EVT:"), std::string("+EVT:").length() + 5);
+
+                                // Get the RSSI value.
+                                #ifdef CONFIG_RAK3172_USE_RUI3
+                                    Dummy = Response->substr(0, Response->find(":"));
+                                    Response->erase(0, std::string(Dummy + ":").length());
+                                #else
+                                    Dummy = Response->substr(std::string("RSSI").length() + 1, Response->find(","));
+                                    Response->erase(0, std::string(Dummy + ":").length() + 1);
+                                #endif
+                                Received->RSSI = std::stoi(Dummy);
+
+                                // Get the SNR value.
+                                #ifdef CONFIG_RAK3172_USE_RUI3
+                                    Dummy = Response->substr(0, Response->find(":"));
+                                    Response->erase(0, std::string(Dummy + ":").length());
+                                #else
+                                    Dummy = Response->substr(std::string("SNR").length() + 1, Response->find(","));
+                                #endif
+                                Received->SNR = std::stoi(Dummy);
+
+                                #ifndef CONFIG_RAK3172_USE_RUI3
+                                    // The payload is stored in the next line.
+                                    char Data;
+                                    int Bytes;
+
+                                    Response->clear();
+                                    do
+                                    {
+                                        Bytes = uart_read_bytes(Device->Interface, &Data, 1, 20 / portTICK_PERIOD_MS);
+                                        if((Bytes != 0) && (Data != '\r') && (Data != '\n'))
+                                        {
+                                            *Response += Data;
+                                        }
+                                    } while(Bytes != 0);
+
+                                    uart_flush_input(Device->Interface);
+
+                                    ESP_LOGI(TAG, "Next line: %s", Response->c_str());
+
+                                    // Remove all "+EVT" strings.
+                                    Response->erase(0, std::string("+EVT:").length());
+                                    Response->erase(Response->find("+EVT"), std::string("+EVT").length());
+                                #endif
+
+                                // Remove the "UNICAST" or the "MULCAST" from the message.
+                                Response->erase(0, Response->find(":") + 1);
+
+                                // Get the communication port.
+                                Dummy = Response->substr(0, Response->find(":"));
+                                Response->erase(Response->find(Dummy), std::string(Dummy + ":").length());
+                                Received->Port = std::stoi(Dummy);
+
+                                // Get the payload.
+                                Received->Payload = *Response;
+
+                                ESP_LOGD(TAG, "RSSI: %i", Received->RSSI);
+                                ESP_LOGD(TAG, "SNR: %i", Received->SNR);
+                                ESP_LOGD(TAG, "Port: %u", Received->Port);
+                                ESP_LOGD(TAG, "Payload: %s", Received->Payload.c_str());
+
+                                xQueueSend(Device->Internal.ReceiveQueue, &Received, 0);
+
+                                Device->LoRaWAN.MessageReceived = true;
                             }
 
-                            ESP_LOGD(TAG, "     Response: %s", Response->c_str());
-
-                            // An asynchronous event was received.
-                            if(Response->find("+EVT") != std::string::npos)
-                            {
-                                ESP_LOGI(TAG, "     Event: %s", Response->c_str());
-
-                                // Join events shouldn´t be passed into the receive queue.
-                                if(Response->find("JOINED") != std::string::npos)
-                                {
-                                    ESP_LOGI(TAG, "Device joined...");
-
-                                    Device->LoRaWAN.isJoined = true;
-                                }
-                                else if(Response->find("JOIN FAILED") != std::string::npos)
-                                {
-                                    ESP_LOGI(TAG, "Not joined...");
-
-                                    Device->LoRaWAN.isJoined = false;
-                                }
-                                else if(Response->find("RX") != std::string::npos)
-                                {
-                                    ESP_LOGI(TAG, "Message received...");
-                                }
-                            }
-                            // Any other message response.
-                            else
-                            {
-                                xQueueSend(Device->Internal.RxQueue, &Response, 0);
-                            }
+                            delete Response;
+                        }
+                        // Any other messages from the module.
+                        else
+                        {
+                            xQueueSend(Device->Internal.MessageQueue, &Response, 0);
                         }
                     }
 
@@ -201,15 +297,6 @@ static void RAK3172_UART_EventTask(void* p_Arg)
             }
         }
     }
-}
-
-const inline __attribute__((always_inline)) std::string RAK3172_LibVersion(void)
-{
-    #if((defined RAK3172_LIB_MAJOR) && (defined RAK3172_LIB_MINOR) && (defined RAK3172_LIB_BUILD))
-        return std::string(STRINGIFY(RAK3172_LIB_MAJOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_MINOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_BUILD));
-    #else
-        return "<Not defined>";
-    #endif
 }
 
 RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
@@ -292,19 +379,20 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
     if(uart_driver_install(p_Device->Interface, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_QUEUE_LENGTH, &p_Device->Internal.EventQueue, 0) ||
        uart_param_config(p_Device->Interface, &_UART_Config) ||
        uart_set_pin(p_Device->Interface, p_Device->Tx, p_Device->Rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) ||
-       uart_enable_pattern_det_baud_intr(p_Device->Interface, '\n', 1, 9, 0, 0) ||
+       uart_enable_pattern_det_baud_intr(p_Device->Interface, '\n', 1, 1, 0, 0) ||
        uart_pattern_queue_reset(p_Device->Interface, CONFIG_RAK3172_TASK_QUEUE_LENGTH))
     {
         return RAK3172_ERR_INVALID_STATE;
     }
 
-    if(uart_flush(p_Device->Interface))
+    p_Device->Internal.MessageQueue = xQueueCreate(CONFIG_RAK3172_TASK_QUEUE_LENGTH, sizeof(std::string*));
+    if(p_Device->Internal.MessageQueue == NULL)
     {
-        return RAK3172_ERR_INVALID_STATE;
+        return RAK3172_ERR_NO_MEM;
     }
 
-    p_Device->Internal.RxQueue = xQueueCreate(CONFIG_RAK3172_TASK_QUEUE_LENGTH, sizeof(std::string*));
-    if(p_Device->Internal.RxQueue == NULL)
+    p_Device->Internal.ReceiveQueue = xQueueCreate(1, sizeof(RAK3172_Rx_t*));
+    if(p_Device->Internal.ReceiveQueue == NULL)
     {
         return RAK3172_ERR_NO_MEM;
     }
@@ -328,15 +416,13 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
         goto RAK3172_Init_Error;
     }
 
-    p_Device->Internal.isInitialized = true;
+    if(uart_flush(p_Device->Interface))
+    {
+        return RAK3172_ERR_INVALID_STATE;
+    }
 
-    #ifdef CONFIG_RAK3172_FACTORY_RESET
-        Error = RAK3172_FactoryReset(p_Device);
-        if(Error != RAK3172_ERR_OK)
-        {
-            goto RAK3172_Init_Error;
-        }
-    #endif
+    xQueueReset(p_Device->Internal.MessageQueue);
+    p_Device->Internal.isInitialized = true;
 
     #ifdef CONFIG_RAK3172_RESET_USE_HW
         Error = RAK3172_HardReset(p_Device);
@@ -352,7 +438,17 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
         }
     #endif
 
-    vTaskDelay(1000 / portTICK_RATE_MS);
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+
+/* TODO
+    #ifdef CONFIG_RAK3172_FACTORY_RESET
+        Error = RAK3172_FactoryReset(p_Device);
+        if(Error != RAK3172_ERR_OK)
+        {
+            goto RAK3172_Init_Error;
+        }
+    #endif
+*/
 
     // Check if echo mode is enabled.
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT", NULL, &Response));
@@ -362,7 +458,7 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
         std::string* Dummy;
 
         // Echo mode is enabled. Need to receive one more line.
-        if(xQueueReceive(p_Device->Internal.RxQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.MessageQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
@@ -375,22 +471,22 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
         //  -> Receive the echo
         //  -> Receive the value
         //  -> Receive the status
-        uart_write_bytes(p_Device->Interface, "ATE\r\n", 5);
-        if(xQueueReceive(p_Device->Internal.RxQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        uart_write_bytes(p_Device->Interface, "ATE\r\n", std::string("ATE\r\n").length());
+        if(xQueueReceive(p_Device->Internal.MessageQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
         delete Dummy;
 
         #ifndef CONFIG_RAK3172_USE_RUI3
-            if(xQueueReceive(p_Device->Internal.RxQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+            if(xQueueReceive(p_Device->Internal.MessageQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
             {
                 return RAK3172_ERR_TIMEOUT;
             }
             delete Dummy;
         #endif
 
-        if(xQueueReceive(p_Device->Internal.RxQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.MessageQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
@@ -452,7 +548,7 @@ void RAK3172_Deinit(RAK3172_t* const p_Device)
         uart_driver_delete(p_Device->Interface);
     }
 
-    vQueueDelete(p_Device->Internal.RxQueue);
+    vQueueDelete(p_Device->Internal.MessageQueue);
 
     gpio_config_t Conf = {
         .pin_bit_mask = ((1ULL << p_Device->Rx) | (1ULL << p_Device->Tx)),
@@ -487,11 +583,13 @@ RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* const p_Device)
     Command = "ATR\r\n";
     uart_write_bytes(p_Device->Interface, Command.c_str(), Command.length());
 
-    RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, RAK3172_WAIT_TIMEOUT));
+    #ifndef CONFIG_RAK3172_USE_RUI3
+        RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, RAK3172_WAIT_TIMEOUT));
+    #endif
 
     ESP_LOGI(TAG, "     Successful!");
 
-    return RAK3172_ERR_OK;    
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device, uint32_t Timeout)
@@ -547,7 +645,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device, uint32_t Timeout)
             gpio_set_level(p_Device->Reset, false);
         }
 
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
 
         if(p_Device->isResetInverted)
         {
@@ -558,11 +656,13 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device, uint32_t Timeout)
             gpio_set_level(p_Device->Reset, true);
         }
 
-        #ifndef CONFIG_RAK3172_USE_RUI3
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+
+        #ifdef CONFIG_RAK3172_USE_RUI3
             RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, Timeout));
-        #else
-            p_Device->Internal.isBusy = false;
         #endif
+
+        p_Device->Internal.isBusy = false;
 
         ESP_LOGI(TAG, "     Successful!");
 
@@ -583,7 +683,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
     {
         ESP_LOGE(TAG, "Device busy!");
 
-        return RAK3172_ERR_FAIL;
+        return RAK3172_ERR_BUSY;
     }
     else if(p_Device->Internal.isInitialized == false)
     {
@@ -591,7 +691,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
     }
 
     // Clear the queue and drop all items.
-    xQueueReset(p_Device->Internal.RxQueue);
+    xQueueReset(p_Device->Internal.MessageQueue);
 
     // Transmit the command.
     ESP_LOGI(TAG, "Transmit command: %s", Command.c_str());
@@ -601,7 +701,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
     // Copy the value if needed.
     if(p_Value != NULL)
     {
-        if(xQueueReceive(p_Device->Internal.RxQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
@@ -622,7 +722,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
 
     #ifndef CONFIG_RAK3172_USE_RUI3
         // Receive the line feed before the status.
-        if(xQueueReceive(p_Device->Internal.RxQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
@@ -630,7 +730,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
     #endif
 
     // Receive the trailing status code.
-    if(xQueueReceive(p_Device->Internal.RxQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+    if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
     {
         return RAK3172_ERR_TIMEOUT;
     }

@@ -38,7 +38,14 @@
 /** @brief  Get the version number of the RAK3172 library.
  *  @return Library version
  */
-const inline __attribute__((always_inline)) std::string RAK3172_LibVersion(void);
+const inline __attribute__((always_inline)) std::string RAK3172_LibVersion(void)
+{
+    #if((defined RAK3172_LIB_MAJOR) && (defined RAK3172_LIB_MINOR) && (defined RAK3172_LIB_BUILD))
+        return std::string(STRINGIFY(RAK3172_LIB_MAJOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_MINOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_BUILD));
+    #else
+        return "<Not defined>";
+    #endif
+}
 
 /** @brief          Initialize the receiving task and initialize the RAK3172 SoM.
  *  @param p_Device Pointer to RAK3172 device object
@@ -125,7 +132,7 @@ RAK3172_Error_t RAK3172_GetRSSI(const RAK3172_t* const p_Device, int* p_RSSI);
  */
 RAK3172_Error_t RAK3172_GetSNR(const RAK3172_t* const p_Device, int* p_SNR);
 
-/** @brief          Set the current operating mode for the LoRa module.
+/** @brief          Set the current operating mode for the module.
  *  @param p_Device Pointer to RAK3172 device object
  *  @param Mode     RAK3172 operating mode
  *  @return         RAK3172_ERR_OK when successful
@@ -134,7 +141,7 @@ RAK3172_Error_t RAK3172_GetSNR(const RAK3172_t* const p_Device, int* p_SNR);
  */
 RAK3172_Error_t RAK3172_SetMode(RAK3172_t* const p_Device, RAK3172_Mode_t Mode);
 
-/** @brief          Get the current operating mode for the LoRa module.
+/** @brief          Get the current operating mode for the module.
  *  @param p_Device Pointer to RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
@@ -142,7 +149,7 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* const p_Device, RAK3172_Mode_t Mode);
  */
 RAK3172_Error_t RAK3172_GetMode(RAK3172_t* const p_Device);
 
-/** @brief          Set the baudrate of the LoRa module.
+/** @brief          Set the baudrate of the module.
  *  @param p_Device Pointer to RAK3172 device object
  *  @param Baud     Module baudrate
  *  @return         RAK3172_ERR_OK when successful
@@ -151,7 +158,7 @@ RAK3172_Error_t RAK3172_GetMode(RAK3172_t* const p_Device);
  */
 RAK3172_Error_t RAK3172_SetBaud(RAK3172_t* const p_Device, RAK3172_Baud_t Baud);
 
-/** @brief          Get the baudrate of the LoRa module.
+/** @brief          Get the baudrate of the module.
  *  @param p_Device Pointer to RAK3172 device object
  *  @param p_Baud   Pointer to module baudrate
  *  @return         RAK3172_ERR_OK when successful

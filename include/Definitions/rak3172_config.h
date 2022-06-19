@@ -45,16 +45,19 @@
                                                                                                 .isInitialized = false,                     \
                                                                                                 .isBusy = false,                            \
                                                                                                 .RxBuffer = NULL,                           \
-                                                                                                .RxQueue = NULL,                            \
-                                                                                                .EventQueue = NULL                          \
+                                                                                                .MessageQueue = NULL,                       \
+                                                                                                .EventQueue = NULL,                         \
+                                                                                                .ReceiveQueue = NULL                        \
                                                                                             },                                              \
                                                                                             .LoRaWAN = {                                    \
                                                                                                 .Join = RAK_JOIN_ABP,                       \
                                                                                                 .isJoined = false,                          \
+                                                                                                .MessageReceived = false,                   \
+                                                                                                .ConfirmError = false,                      \
                                                                                             },                                              \
                                                                                             .P2P = {                                        \
-                                                                                                .Queue = NULL,                              \
                                                                                                 .Active = false,                            \
+                                                                                                .isEncryptionEnabled = false,               \
                                                                                                 .Timeout = 0,                               \
                                                                                                 .Handle = NULL                              \
                                                                                             }                                               \
@@ -78,16 +81,19 @@
                                                                             .isInitialized = false,                                         \
                                                                             .isBusy = false,                                                \
                                                                             .RxBuffer = NULL,                                               \
-                                                                            .RxQueue = NULL,                                                \
-                                                                            .EventQueue = NULL                                              \
+                                                                            .MessageQueue = NULL,                                           \
+                                                                            .EventQueue = NULL,                                             \
+                                                                            .ReceiveQueue = NULL                                            \
                                                                         },                                                                  \
                                                                         .LoRaWAN = {                                                        \
                                                                             .Join = RAK_JOIN_ABP,                                           \
                                                                             .isJoined = false,                                              \
+                                                                            .MessageReceived = false,                                       \
+                                                                            .ConfirmError = false,                                          \
                                                                         },                                                                  \
                                                                         .P2P = {                                                            \
-                                                                            .Queue = NULL,                                                  \
                                                                             .Active = false,                                                \
+                                                                            .isEncryptionEnabled = false,                                   \
                                                                             .Timeout = 0,                                                   \
                                                                             .Handle = NULL                                                  \
                                                                         }                                                                   \

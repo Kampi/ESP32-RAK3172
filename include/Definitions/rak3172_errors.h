@@ -40,21 +40,25 @@ typedef uint32_t RAK3172_Error_t;
  */
 #define RAK3172_ERR_INVALID_STATE       (RAK3172_ERR_BASE + 2)
 
+/** @brief The device is busy.
+ */
+#define RAK3172_ERR_BUSY                (RAK3172_ERR_BASE + 3)
+
 /** @brief When an event happens, when the status is not "OK" or when the device is busy.
  */
-#define RAK3172_ERR_FAIL                (RAK3172_ERR_BASE + 3)
+#define RAK3172_ERR_FAIL                (RAK3172_ERR_BASE + 4)
 
 /** @brief When the number of JOIN attemps has expired.
  */
-#define RAK3172_ERR_TIMEOUT             (RAK3172_ERR_BASE + 4)
+#define RAK3172_ERR_TIMEOUT             (RAK3172_ERR_BASE + 5)
 
 /** @brief When a send confirmation failed or when the device is busy.
  */
-#define RAK3172_ERR_INVALID_RESPONSE    (RAK3172_ERR_BASE + 5)
+#define RAK3172_ERR_INVALID_RESPONSE    (RAK3172_ERR_BASE + 6)
 
 /** @brief Mo memory for memory allocation available.
  */
-#define RAK3172_ERR_NO_MEM              (RAK3172_ERR_BASE + 5)
+#define RAK3172_ERR_NO_MEM              (RAK3172_ERR_BASE + 7)
 
 /** @brief The device is not connected (LoRaWAN only).
  */

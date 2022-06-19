@@ -161,7 +161,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetABPKeys(const RAK3172_t* const p_Device, cons
     return RAK3172_SendCommand(p_Device, "AT+DEVADDR=" + DevADDRString, NULL, NULL);
 }
 
-RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(const RAK3172_t* const p_Device, uint32_t Timeout, uint8_t Attempts, bool EnableAutoJoin, uint8_t Interval, RAK3172_Wait_t on_Wait)
+RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Timeout, uint8_t Attempts, bool EnableAutoJoin, uint8_t Interval, RAK3172_Wait_t on_Wait)
 {
     uint32_t TimeNow;
 
@@ -177,6 +177,8 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(const RAK3172_t* const p_Device, uint3
     // Start the joining procedure.
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+JOIN=1:" + std::to_string(EnableAutoJoin) + ":" + std::to_string(Interval) + ":" + std::to_string(Attempts), NULL, NULL));
 
+    p_Device->Internal.isBusy = true;
+
     // Wait for a successfull join.
     TimeNow = esp_timer_get_time() / 1000ULL;
     do
@@ -186,6 +188,8 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(const RAK3172_t* const p_Device, uint3
             ESP_LOGE(TAG, "Join timeout!");
 
             RAK3172_LoRaWAN_StopJoin(p_Device);
+
+            p_Device->Internal.isBusy = false;
 
             return RAK3172_ERR_TIMEOUT;
         }
@@ -269,44 +273,24 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port
         return RAK3172_ERR_INVALID_RESPONSE;
     }
 
+    p_Device->Internal.isBusy = true;
+
     // Wait for the confirmation if needed.
     if(Confirmed)
     {
         Now = esp_timer_get_time() / 1000ULL;
         do
         {
-            std::string* Line;
-
             if(Wait)
             {
                 Wait();
             }
 
-            if(xQueueReceive(p_Device->Internal.RxQueue, &Line, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) == pdPASS)
-            {
-                ESP_LOGI(TAG, "Transmission event: %s", Line->c_str());
-
-                // Transmission failed.
-                if(Line->find("SEND CONFIRMED FAILED") != std::string::npos)
-                {
-                    return RAK3172_ERR_INVALID_RESPONSE;
-                }
-                // Transmission was successful.
-                else if(Line->find("SEND CONFIRMED OK") != std::string::npos)
-                {
-                    return RAK3172_ERR_OK;
-                }
-
-                delete Line;
-            }
-            else
-            {
-                ESP_LOGD(TAG, "Wait for Tx...");
-            }
-
             if((Timeout > 0) && (((esp_timer_get_time() / 1000ULL) - Now) >= (Timeout * 1000UL)))
             {
                 ESP_LOGE(TAG, "Transmit timeout!");
+
+                p_Device->Internal.isBusy = false;
 
                 return RAK3172_ERR_TIMEOUT;
             }
@@ -314,17 +298,24 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port
             esp_sleep_enable_timer_wakeup(20 * 1000ULL);
             esp_light_sleep_start();
             vTaskDelay(20);
-        } while(true);
+        } while(p_Device->Internal.isBusy);
+    }
+
+    p_Device->Internal.isBusy = false;
+
+    if(Confirmed && p_Device->LoRaWAN.ConfirmError)
+    {
+        return RAK3172_ERR_INVALID_RESPONSE;
     }
 
     return RAK3172_ERR_OK;
 }
 
-RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* const p_Device, std::string* const p_Payload, int* const p_RSSI, int* const p_SNR, uint32_t Timeout)
+RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* const p_Device, RAK3172_Rx_t* p_Message)
 {
-    uint32_t Now;
+    RAK3172_Rx_t* FromQueue = NULL;
 
-    if((p_Device == NULL) || (p_Payload == NULL) || (Timeout <= 1))
+    if((p_Device == NULL) || (p_Message == NULL))
     {
         return RAK3172_ERR_INVALID_ARG;
     }
@@ -332,68 +323,25 @@ RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* const p_Device, std::string* 
     {
         return RAK3172_ERR_NOT_CONNECTED;
     }
-
-    Now = esp_timer_get_time() / 1000ULL;
-    do
+    else if(p_Device->LoRaWAN.MessageReceived == false)
     {
-        std::string* Line;
+        return RAK3172_ERR_FAIL;
+    }
 
-        if(xQueueReceive(p_Device->Internal.RxQueue, &Line, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) == pdPASS)
-        {
-            int Index;
+    if(xQueueReceive(p_Device->Internal.ReceiveQueue, &FromQueue, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+    {
+        return RAK3172_ERR_FAIL;
+    }
 
-            ESP_LOGD(TAG, "Receive event: %s", Line->c_str());
+    p_Message->RSSI = FromQueue->RSSI;
+    p_Message->SNR = FromQueue->SNR;
+    p_Message->Port = FromQueue->Port;
+    p_Message->Payload = FromQueue->Payload;
 
-            // Get the RX metadata first.
-            if(Line->find("RX") != std::string::npos)
-            {
-                std::string Dummy;
+    p_Device->LoRaWAN.MessageReceived = false;
+    delete FromQueue;
 
-                // Get the RSSI value.
-                if(p_RSSI != NULL)
-                {
-                    Index = Line->find(",");
-                    Dummy = Line->substr(Index + 7, Index + Line->find(",", Index) + 1);
-                    *p_RSSI = std::stoi(Dummy);
-                }
-
-                // Get the SNR value.
-                if(p_SNR != NULL)
-                {
-                    Index = Line->find_last_of(",");
-                    Dummy = Line->substr(Index + 6, Line->length() - 1);
-                    *p_SNR = std::stoi(Dummy);
-                }
-            }
-
-            // Then get the data and leave the function.
-            if(Line->find("UNICAST") != std::string::npos)
-            {
-                //Line = p_Device->p_Interface->readStringUntil('\n');
-                ESP_LOGD(TAG, "    Payload: %s", Line->c_str());
-
-                // Clean up the payload string ("+EVT:Port:Payload")
-                //  - Remove the "+EVT" indicator
-                //  - Remove the port number
-                *p_Payload = Line->substr(Line->find_last_of(":") + 1, Line->length());
-
-                return RAK3172_ERR_OK;
-            }
-        }
-
-        delete Line;
-
-        if((Timeout > 0) && ((((esp_timer_get_time() / 1000ULL) - Now) / 1000ULL) >= Timeout))
-        {
-            ESP_LOGE(TAG, "Receive timeout!");
-
-            return RAK3172_ERR_TIMEOUT;
-        }
-
-        esp_sleep_enable_timer_wakeup(20 * 1000ULL);
-        esp_light_sleep_start();
-        vTaskDelay(20);
-    } while(true);
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_LoRaWAN_SetRetries(const RAK3172_t* const p_Device, uint8_t Retries)

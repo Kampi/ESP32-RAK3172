@@ -128,28 +128,25 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port
  *  @param Port         LoRaWAN port
  *  @param p_Buffer     Pointer to data buffer
  *  @param Length       Data buffer length
- *  @param Timeout      Receive timeout in seconds
  *  @param Confirmed    (Optional) Enable message confirmation
  *                      NOTE: Only neccessary when payload is greater than 1024 bytes (long payload)
- *  @param Wait         (Optional) Hook for a custom wait function
+ *  @param Wait         (Optional) Hook for a custom wait function that is called during each sleep iteration
  *                      NOTE: The function call is time critical. Prevent long wait periods!
  *  @return             RAK3172_ERR_OK when successful
- *                      RAK3172_ERR_INVALID_STATE when the device is busy
- *                      RAK3172_ERR_FAIL when a transmission error occurs
+ *                      RAK3172_ERR_BUSY when the device is busy
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
- *                      RAK3172_ERR_INVALID_RESPONSE when a send confirmation failed or when the device is busy
- *                      RAK3172_ERR_TIMEOUT when a transmit timeout occurs
- *                      RAK3172_ERR_INVALID_STATE when the device is not joined
+ *                      RAK3172_ERR_NOT_CONNECTED when the device is not joined
  */
-RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port, const void* const p_Buffer, uint8_t Length, uint32_t Timeout, bool Confirmed = false, RAK3172_Wait_t Wait = NULL);
+RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port, const void* const p_Buffer, uint8_t Length, bool Confirmed = false, RAK3172_Wait_t Wait = NULL);
 
 /** @brief              Check if a downlink message was received during the last uplink and pop one message from the stack.
  *  @param p_Device     Pointer to RAK3172 device object
  *  @param p_Message    Pointer to RAK3172 message object
+ *  @param Timeout      (Optional) Wait timeout in seconds
  *  @return             RAK3172_ERR_OK when successful
- *                      RAK3172_ERR_FAIL when no message is available
+ *                      RAK3172_ERR_TIMEOUT when no message is available
  */
-RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* const p_Device, RAK3172_Rx_t* p_Message);
+RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* const p_Device, RAK3172_Rx_t* p_Message, uint32_t Timeout = 10);
 
 /** @brief          Set the number of confirmed payload retransmissions.
  *  @param p_Device Pointer to RAK3172 device object

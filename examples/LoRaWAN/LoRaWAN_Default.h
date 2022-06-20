@@ -29,14 +29,4 @@ static const uint8_t APPKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x
  */
 #define LORAWAN_TX_ATTEMPTS             5
 
-/** @brief  Default TX timeout for transmitting a message using LoRaWAN mode in seconds.
- *          NOTE: A value of 0 disables the timeout.
- */
-#define LORAWAN_TX_TIMEOUT_S             15
-
-/** @brief Default RX timeout after transmitting a message using LoRaWAN mode in seconds.
- *         NOTE: must be greater than one, because LoRa use a fixed delay of 1 second between RX1 and RX2.
- */
-#define LORAWAN_RX_TIMEOUT_S            3
-
 #endif /* LORAWAN_DEFAULT_H_ */

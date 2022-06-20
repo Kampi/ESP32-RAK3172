@@ -96,6 +96,8 @@ static RAK3172_Error_t RAK3172_ReceiveSplashScreen(RAK3172_t* const p_Device, ui
             {
                 ESP_LOGE(TAG, "Firmware compiled for RUI3, but module firmware doesn´t support RUI3!");
 
+                p_Device->Internal.isBusy = false;
+
                 return RAK3172_ERR_INVALID_RESPONSE;
             }
         #endif
@@ -242,7 +244,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                     Response->clear();
                                     do
                                     {
-                                        Bytes = uart_read_bytes(Device->Interface, &Data, 1, 20 / portTICK_PERIOD_MS);
+                                        Bytes = uart_read_bytes(Device->Interface, &Data, 1, 10);
                                         if((Bytes != 0) && (Data != '\r') && (Data != '\n'))
                                         {
                                             *Response += Data;
@@ -436,7 +438,6 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
 
     vTaskDelay(500 / portTICK_PERIOD_MS);
 
-/* TODO
     #ifdef CONFIG_RAK3172_FACTORY_RESET
         Error = RAK3172_FactoryReset(p_Device);
         if(Error != RAK3172_ERR_OK)
@@ -444,7 +445,6 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
             goto RAK3172_Init_Error;
         }
     #endif
-*/
 
     // Check if echo mode is enabled.
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT", NULL, &Response));
@@ -575,13 +575,13 @@ RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* const p_Device)
 
     ESP_LOGI(TAG, "Perform factory reset...");
 
-    p_Device->Internal.isBusy = true;
-
-    Command = "ATR\r\n";
-    uart_write_bytes(p_Device->Interface, Command.c_str(), Command.length());
-
     #ifndef CONFIG_RAK3172_USE_RUI3
+        p_Device->Internal.isBusy = true;
+        Command = "ATR\r\n";
+        uart_write_bytes(p_Device->Interface, Command.c_str(), Command.length());
         RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, RAK3172_WAIT_TIMEOUT));
+    #else
+        RAK3172_SendCommand(p_Device, "ATR");
     #endif
 
     ESP_LOGI(TAG, "     Successful!");
@@ -658,8 +658,6 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device, uint32_t Timeout)
         #ifdef CONFIG_RAK3172_USE_RUI3
             RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, Timeout));
         #endif
-
-        p_Device->Internal.isBusy = false;
 
         ESP_LOGI(TAG, "     Successful!");
 

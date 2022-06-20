@@ -33,7 +33,7 @@ RAK3172_Error_t RAK3172_P2P_EnableEncryption(RAK3172_t* const p_Device, const ui
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ENCRY=" + std::to_string(true), NULL, NULL));
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ENCRY=" + std::to_string(true)));
 
     p_Device->P2P.isEncryptionEnabled = true;
 
@@ -49,7 +49,7 @@ RAK3172_Error_t RAK3172_P2P_EnableEncryption(RAK3172_t* const p_Device, const ui
 
 RAK3172_Error_t RAK3172_P2P_DisableEncryption(RAK3172_t* const p_Device)
 {
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ENCRY=" + std::to_string(false), NULL, NULL));
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ENCRY=" + std::to_string(false)));
 
     p_Device->P2P.isEncryptionEnabled = false;
 
@@ -65,7 +65,7 @@ RAK3172_Error_t RAK3172_P2P_isEncryptionEnabled(const RAK3172_t* const p_Device,
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ENCRY=?", &Value, NULL));
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ENCRY=?", &Value));
 
     *p_Enabled = (bool)std::stoi(Value);
 

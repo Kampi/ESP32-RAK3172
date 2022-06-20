@@ -18,11 +18,7 @@
 									Update documentation
 									Update CHANGELOG
 									Change version number to 3.0.0
-4.0.0								Add support for RUI3 based firmware
-									Add option for UART to support ESP32 power management modes
-									Fix error in splash screen handling in function "RAK3172_SetMode"
-									Add option to enable / disable a hardware reset
-									Add support for core affinity
+4.0.0								Fix error in splash screen handling in function "RAK3172_SetMode"
 									Rename error codes
 									Clean up Kconfig
 									Add RAK3172 device structure initialization macro
@@ -32,7 +28,12 @@
 									Add error check for "RAK3172_LoRaWAN_SetRX1Delay" and "RAK3172_LoRaWAN_SetRX2Delay"
 									Add function to set / get the LoRaWAN join mode (ABP or OTAA)
 									And functions to get / set the join (1/2) and Rx (1/2) delays
+									Add option to enable / disable a hardware reset
+									Add support for core affinity
+									Add support for RUI3 based firmware
+									Add option for UART to support ESP32 power management modes
 									Rework event handling
+									Remove LoRaWAN transmit timeout
 									Improve parameter checking in different functions
 									Add error output to "RAK3172_ERROR_CHECK"
 									Change license to MIT

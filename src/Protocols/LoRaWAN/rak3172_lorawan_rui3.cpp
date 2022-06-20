@@ -38,12 +38,12 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetNetID(const RAK3172_t* const p_Device, std::s
         return RAK3172_ERR_NOT_CONNECTED;
     }
 
-    return RAK3172_SendCommand(p_Device, "AT+NETID=?", p_ID, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+NETID=?", p_ID);
 }
 
 RAK3172_Error_t RAK3172_LoRaWAN_SetSingleChannelMode(const RAK3172_t* const p_Device, bool Enable)
 {
-    return RAK3172_SendCommand(p_Device, "AT+CHS=" + std::to_string(Enable), NULL, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+CHS=" + std::to_string(Enable));
 }
 
 RAK3172_Error_t RAK3172_LoRaWAN_GetSingleChannelMode(const RAK3172_t* const p_Device, bool* const p_Enable)
@@ -55,7 +55,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetSingleChannelMode(const RAK3172_t* const p_De
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+CHS=?", &Value, NULL));
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+CHS=?", &Value));
 
     *p_Enable = (bool)std::stoi(Value);
 
@@ -64,7 +64,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetSingleChannelMode(const RAK3172_t* const p_De
 
 RAK3172_Error_t RAK3172_LoRaWAN_SetEightChannelMode(const RAK3172_t* const p_Device, bool Enable)
 {
-    return RAK3172_SendCommand(p_Device, "AT+CHE=" + std::to_string(Enable), NULL, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+CHE=" + std::to_string(Enable));
 }
 
 RAK3172_Error_t RAK3172_LoRaWAN_GetEightChannelMode(const RAK3172_t* const p_Device, bool* const p_Enable)
@@ -76,7 +76,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetEightChannelMode(const RAK3172_t* const p_Dev
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+CHE=?", &Value, NULL));
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+CHE=?", &Value));
 
     *p_Enable = (bool)std::stoi(Value);
 

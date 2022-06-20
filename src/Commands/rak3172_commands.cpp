@@ -30,7 +30,7 @@ RAK3172_Error_t RAK3172_GetFWVersion(const RAK3172_t* const p_Device, std::strin
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    return RAK3172_SendCommand(p_Device, "AT+VER=?", p_Version, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+VER=?", p_Version);
 }
 
 RAK3172_Error_t RAK3172_GetSerialNumber(const RAK3172_t* const p_Device, std::string* const p_Serial)
@@ -40,7 +40,7 @@ RAK3172_Error_t RAK3172_GetSerialNumber(const RAK3172_t* const p_Device, std::st
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    return RAK3172_SendCommand(p_Device, "AT+SN=?", p_Serial, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+SN=?", p_Serial);
 }
 
 RAK3172_Error_t RAK3172_GetRSSI(const RAK3172_t* const p_Device, int* p_RSSI)
@@ -52,7 +52,7 @@ RAK3172_Error_t RAK3172_GetRSSI(const RAK3172_t* const p_Device, int* p_RSSI)
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+RSSI=?", &Value, NULL));
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+RSSI=?", &Value));
 
     *p_RSSI = std::stoi(Value);
 
@@ -68,7 +68,7 @@ RAK3172_Error_t RAK3172_GetSNR(const RAK3172_t* const p_Device, int* p_SNR)
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+SNR=?", &Value, NULL));
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+SNR=?", &Value));
 
     *p_SNR = std::stoi(Value);
 
@@ -153,7 +153,7 @@ RAK3172_Error_t RAK3172_GetMode(RAK3172_t* const p_Device)
 {
     std::string Value;
 
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+NWM=?", &Value, NULL));
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+NWM=?", &Value));
 
     p_Device->Mode = (RAK3172_Mode_t)std::stoi(Value);
 
@@ -167,14 +167,14 @@ RAK3172_Error_t RAK3172_SetBaud(const RAK3172_t* const p_Device, RAK3172_Baud_t 
         return RAK3172_ERR_OK;
     }
 
-    return RAK3172_SendCommand(p_Device, "AT+BAUD=" + std::to_string((uint32_t)Baud), NULL, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+BAUD=" + std::to_string((uint32_t)Baud));
 }
 
 RAK3172_Error_t RAK3172_GetBaud(const RAK3172_t* const p_Device, RAK3172_Baud_t* p_Baud)
 {
     std::string Value;
 
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+BAUD=?", &Value, NULL));
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+BAUD=?", &Value));
 
     *p_Baud = (RAK3172_Baud_t)std::stoi(Value);
 

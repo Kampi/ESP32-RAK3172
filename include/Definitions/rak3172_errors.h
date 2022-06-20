@@ -48,7 +48,7 @@ typedef uint32_t RAK3172_Error_t;
  */
 #define RAK3172_ERR_FAIL                (RAK3172_ERR_BASE + 4)
 
-/** @brief When the number of JOIN attemps has expired.
+/** @brief When a communication timeout occurs.
  */
 #define RAK3172_ERR_TIMEOUT             (RAK3172_ERR_BASE + 5)
 

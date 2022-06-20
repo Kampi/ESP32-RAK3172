@@ -30,7 +30,7 @@ RAK3172_Error_t RAK3172_GetCLIVersion(const RAK3172_t* const p_Device, std::stri
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    return RAK3172_SendCommand(p_Device, "AT+CLIVER=?", p_Version, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+CLIVER=?", p_Version);
 }
 
 RAK3172_Error_t RAK3172_GetAPIVersion(const RAK3172_t* const p_Device, std::string* const p_Version)
@@ -40,7 +40,7 @@ RAK3172_Error_t RAK3172_GetAPIVersion(const RAK3172_t* const p_Device, std::stri
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    return RAK3172_SendCommand(p_Device, "AT+APIVER=?", p_Version, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+APIVER=?", p_Version);
 }
 
 RAK3172_Error_t RAK3172_GetBuildTime(const RAK3172_t* const p_Device, std::string* const p_BuildTime)
@@ -50,7 +50,7 @@ RAK3172_Error_t RAK3172_GetBuildTime(const RAK3172_t* const p_Device, std::strin
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    return RAK3172_SendCommand(p_Device, "AT+BUILDTIME=?", p_BuildTime, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+BUILDTIME=?", p_BuildTime);
 }
 
 RAK3172_Error_t RAK3172_GetRepoInfo(const RAK3172_t* const p_Device, std::string* const p_Repo)
@@ -60,7 +60,7 @@ RAK3172_Error_t RAK3172_GetRepoInfo(const RAK3172_t* const p_Device, std::string
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    return RAK3172_SendCommand(p_Device, "AT+REPOINFO=?", p_Repo, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+REPOINFO=?", p_Repo);
 }
 
 RAK3172_Error_t RAK3172_GetModel(const RAK3172_t* const p_Device, std::string* const p_Model)
@@ -70,7 +70,7 @@ RAK3172_Error_t RAK3172_GetModel(const RAK3172_t* const p_Device, std::string* c
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    return RAK3172_SendCommand(p_Device, "AT+HWMODEL=?", p_Model, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+HWMODEL=?", p_Model);
 }
 
 RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t* const p_Device, std::string* const p_ID)
@@ -80,12 +80,12 @@ RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t* const p_Device, std::string* co
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    return RAK3172_SendCommand(p_Device, "AT+HWID=?", p_ID, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+HWID=?", p_ID);
 }
 
 RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t* const p_Device, uint32_t Period)
 {
-    return RAK3172_SendCommand(p_Device, "AT+SLEEP=" + std::to_string(Period), NULL, NULL);
+    return RAK3172_SendCommand(p_Device, "AT+SLEEP=" + std::to_string(Period));
 }
 
 #endif

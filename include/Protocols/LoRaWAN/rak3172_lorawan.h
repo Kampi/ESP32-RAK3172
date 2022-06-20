@@ -143,7 +143,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port
  */
 RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port, const void* const p_Buffer, uint8_t Length, uint32_t Timeout, bool Confirmed = false, RAK3172_Wait_t Wait = NULL);
 
-/** @brief              Check if a downlin message was received during the last uplink and get the message.
+/** @brief              Check if a downlink message was received during the last uplink and pop one message from the stack.
  *  @param p_Device     Pointer to RAK3172 device object
  *  @param p_Message    Pointer to RAK3172 message object
  *  @return             RAK3172_ERR_OK when successful

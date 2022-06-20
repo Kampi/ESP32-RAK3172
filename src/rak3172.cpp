@@ -249,8 +249,6 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                         }
                                     } while(Bytes != 0);
 
-                                    uart_flush_input(Device->Interface);
-
                                     ESP_LOGI(TAG, "Next line: %s", Response->c_str());
 
                                     // Remove all "+EVT" strings.
@@ -275,8 +273,6 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                 ESP_LOGD(TAG, "Payload: %s", Received->Payload.c_str());
 
                                 xQueueSend(Device->Internal.ReceiveQueue, &Received, 0);
-
-                                Device->LoRaWAN.MessageReceived = true;
                             }
 
                             delete Response;
@@ -391,7 +387,7 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
         return RAK3172_ERR_NO_MEM;
     }
 
-    p_Device->Internal.ReceiveQueue = xQueueCreate(1, sizeof(RAK3172_Rx_t*));
+    p_Device->Internal.ReceiveQueue = xQueueCreate(8, sizeof(RAK3172_Rx_t*));
     if(p_Device->Internal.ReceiveQueue == NULL)
     {
         return RAK3172_ERR_NO_MEM;
@@ -549,6 +545,7 @@ void RAK3172_Deinit(RAK3172_t* const p_Device)
     }
 
     vQueueDelete(p_Device->Internal.MessageQueue);
+    vQueueDelete(p_Device->Internal.ReceiveQueue);
 
     gpio_config_t Conf = {
         .pin_bit_mask = ((1ULL << p_Device->Rx) | (1ULL << p_Device->Tx)),

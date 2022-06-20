@@ -244,8 +244,6 @@ typedef struct
                                              NOTE: Managed by the driver. */
         bool isJoined;                  /**< Join status of the device.
                                              NOTE: Managed by the driver. */
-        bool MessageReceived;           /** Indicates a received downlink message.
-                                             NOTE: Managed by the driver. */
         bool ConfirmError;              /**< Message confirmation failed.
                                              NOTE: Managed by the driver. */
     } LoRaWAN;

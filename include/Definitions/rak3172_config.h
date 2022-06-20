@@ -52,7 +52,6 @@
                                                                                             .LoRaWAN = {                                    \
                                                                                                 .Join = RAK_JOIN_ABP,                       \
                                                                                                 .isJoined = false,                          \
-                                                                                                .MessageReceived = false,                   \
                                                                                                 .ConfirmError = false,                      \
                                                                                             },                                              \
                                                                                             .P2P = {                                        \
@@ -88,7 +87,6 @@
                                                                         .LoRaWAN = {                                                        \
                                                                             .Join = RAK_JOIN_ABP,                                           \
                                                                             .isJoined = false,                                              \
-                                                                            .MessageReceived = false,                                       \
                                                                             .ConfirmError = false,                                          \
                                                                         },                                                                  \
                                                                         .P2P = {                                                            \

@@ -323,10 +323,12 @@ RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* const p_Device, RAK3172_Rx_t*
     {
         return RAK3172_ERR_NOT_CONNECTED;
     }
-    else if(p_Device->LoRaWAN.MessageReceived == false)
+    else if(uxQueueMessagesWaiting(p_Device->Internal.MessageQueue) == 0)
     {
         return RAK3172_ERR_FAIL;
     }
+
+    ESP_LOGI(TAG, "Messages waiting: %u", uxQueueMessagesWaiting(p_Device->Internal.MessageQueue));
 
     if(xQueueReceive(p_Device->Internal.ReceiveQueue, &FromQueue, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
     {
@@ -338,7 +340,6 @@ RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* const p_Device, RAK3172_Rx_t*
     p_Message->Port = FromQueue->Port;
     p_Message->Payload = FromQueue->Payload;
 
-    p_Device->LoRaWAN.MessageReceived = false;
     delete FromQueue;
 
     return RAK3172_ERR_OK;

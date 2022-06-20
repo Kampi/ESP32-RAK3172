@@ -24,6 +24,7 @@
 									Add RAK3172 device structure initialization macro
 									Add firmware version check
 									Add factory reset
+									Add sleep command for the RAK module
 									Add "RAK3172_ERR_NOT_CONNECTED" in LoRaWAN mode
 									Add error check for "RAK3172_LoRaWAN_SetRX1Delay" and "RAK3172_LoRaWAN_SetRX2Delay"
 									Add function to set / get the LoRaWAN join mode (ABP or OTAA)

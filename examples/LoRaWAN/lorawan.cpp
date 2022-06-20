@@ -1,19 +1,14 @@
 #include <esp_log.h>
-#include <esp_task_wdt.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/event_groups.h>
 
-#include "rak3172.h"
+#include <rak3172.h>
 
-#include "LoRaWAN_Default.h"
+#include "settings/LoRaWAN_Default.h"
 
-#ifdef CONFIG_RAK3172_RESET_USE_HW
-    static RAK3172_t _Device = RAK3172_DEFAULT_CONFIG(CONFIG_RAK3172_UART_PORT, CONFIG_RAK3172_UART_RX, CONFIG_RAK3172_UART_TX, CONFIG_RAK3172_UART_BAUD, CONFIG_RAK3172_RESET_PIN, false);
-#else
-    static RAK3172_t _Device = RAK3172_DEFAULT_CONFIG(CONFIG_RAK3172_UART_PORT, CONFIG_RAK3172_UART_RX, CONFIG_RAK3172_UART_TX, CONFIG_RAK3172_UART_BAUD);
-#endif
+static RAK3172_t _Device                        = RAK3172_DEFAULT_CONFIG(CONFIG_RAK3172_UART_PORT, CONFIG_RAK3172_UART_RX, CONFIG_RAK3172_UART_TX, CONFIG_RAK3172_UART_BAUD, CONFIG_RAK3172_RESET_PIN, false);
 
 static StackType_t _applicationStack[8192];
 
@@ -21,11 +16,13 @@ static StaticTask_t _applicationBuffer;
 
 static TaskHandle_t _applicationHandle;
 
+static const char Payload[]                     = {'{', '}'};
+
 static const char* TAG 							= "main";
 
 static void applicationTask(void* p_Parameter)
 {
-    bool Status;
+    bool Status = false;
     RAK3172_Error_t Error;
     RAK3172_Info_t Info;
 
@@ -57,53 +54,56 @@ static void applicationTask(void* p_Parameter)
     {
         ESP_LOGI(TAG, "Not joined. Rejoin...");
 
-        Error = RAK3172_LoRaWAN_StartJoin(&_Device, 0, LORAWAN_JOIN_ATTEMPTS, true, LORAWAN_MAX_JOIN_INTERVAL_S, NULL);
+        Error = RAK3172_LoRaWAN_StartJoin(&_Device, RAK3172_NO_TIMEOUT, LORAWAN_JOIN_ATTEMPTS, false, LORAWAN_MAX_JOIN_INTERVAL_S, NULL);
         if(Error != RAK3172_ERR_OK)
         {
-            ESP_LOGE(TAG, "Can not join network!");
+            ESP_LOGE(TAG, "Can not join network! Error: 0x%04X", Error);
         }
-        else
-        {
-            ESP_LOGI(TAG, "Joined...");
-
-            char Payload[] = {'{', '}'};
-
-            Error = RAK3172_LoRaWAN_Transmit(&_Device, 1, Payload, sizeof(Payload), LORAWAN_TX_TIMEOUT_S, true, NULL);
-            if(Error == RAK3172_ERR_INVALID_RESPONSE)
-            {
-                ESP_LOGE(TAG, "Can not transmit message network!");
-            }
-            else
-            {
-                ESP_LOGI(TAG, "Message transmitted...");
-            }
-        }
+    }
+    else
+    {
+        ESP_LOGI(TAG, "Joined...");
     }
 
     while(true)
     {
-        esp_task_wdt_reset();
+        Error = RAK3172_LoRaWAN_Transmit(&_Device, 1, Payload, sizeof(Payload), true);
+        if(Error == RAK3172_ERR_INVALID_RESPONSE)
+        {
+            ESP_LOGE(TAG, "Can not transmit message! Error: 0x%04X", Error);
+        }
+        else
+        {
+            RAK3172_Rx_t Message;
 
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+            ESP_LOGI(TAG, "Message transmitted...");
+            Error = RAK3172_LoRaWAN_Receive(&_Device, &Message);
+            if(Error != RAK3172_ERR_OK)
+            {
+                ESP_LOGE(TAG, "Can not receive message! Error: 0x%04X", Error);
+            }
+            else
+            {
+                ESP_LOGI(TAG, " RSSI: %i", Message.RSSI);
+                ESP_LOGI(TAG, " SNR: %i", Message.SNR);
+                ESP_LOGI(TAG, " Port: %u", Message.Port);
+                ESP_LOGI(TAG, " Payload: %s", Message.Payload.c_str());
+            }
+        }
+
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
 }
 
-static void StartApplication(void)
+extern "C" void app_main(void)
 {
     ESP_LOGI(TAG, "Starting application.");
 
-    _applicationHandle = xTaskCreateStatic(applicationTask, "applicationTask", 8192, NULL, 1, _applicationStack, &_applicationBuffer);
+    _applicationHandle = xTaskCreateStatic(applicationTask, "applicationTask", sizeof(_applicationStack), NULL, 1, _applicationStack, &_applicationBuffer);
     if(_applicationHandle == NULL)
     {
         ESP_LOGE(TAG, "    Unable to create application task!");
 
         esp_restart();
     }
-}
-
-extern "C" void app_main(void)
-{
-    ESP_LOGI(TAG, "IDF: %s", esp_get_idf_version());
-
-	StartApplication();
 }

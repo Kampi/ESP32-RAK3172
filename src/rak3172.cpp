@@ -94,7 +94,7 @@ static RAK3172_Error_t RAK3172_ReceiveSplashScreen(RAK3172_t* const p_Device, ui
         #ifdef CONFIG_RAK3172_USE_RUI3
             if(Response->find("Version.") != std::string::npos)
             {
-                ESP_LOGE(TAG, "Firmware compiled for RUI3, but module firmware doesn´t support RUI3!");
+                ESP_LOGE(TAG, "Firmware compiled for RUI3, but module firmware does not support RUI3!");
 
                 p_Device->Internal.isBusy = false;
 

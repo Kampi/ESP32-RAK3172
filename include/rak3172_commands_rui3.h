@@ -78,12 +78,33 @@ RAK3172_Error_t RAK3172_GetModel(const RAK3172_t* const p_Device, std::string* c
 RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t* const p_Device, std::string* const p_ID);
 
 /** @brief          Put the device into sleep mode.
+ *                  NOTE: Use any command to wake up the module.
  *  @param p_Device Pointer to RAK3172 device object
- *  @param Period   Sleep period
+ *  @param Duration Sleep duration in milliseconds
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t* const p_Device, uint32_t Period);
+RAK3172_Error_t RAK3172_Sleep(const RAK3172_t* const p_Device, uint32_t Duration);
+
+/** @brief          Lock the device UART.
+ *                  TODO: Not tested!
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param Password Password
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ */
+RAK3172_Error_t RAK3172_Lock(const RAK3172_t* const p_Device, std::string Password);
+
+/** @brief          Unlock the device UART.
+ *                  TODO: Not tested!
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param Password Password
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ */
+RAK3172_Error_t RAK3172_Unlock(const RAK3172_t* const p_Device, std::string Password);
 
 #endif /* RAK3172_COMMANDS_RUI3_H_ */

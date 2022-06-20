@@ -146,7 +146,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_TIMEOUT when no message is available
  */
-RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* const p_Device, RAK3172_Rx_t* p_Message, uint32_t Timeout = 10);
+RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t* const p_Device, RAK3172_Rx_t* p_Message, uint32_t Timeout = 3);
 
 /** @brief          Set the number of confirmed payload retransmissions.
  *  @param p_Device Pointer to RAK3172 device object

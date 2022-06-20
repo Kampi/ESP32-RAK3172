@@ -82,7 +82,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetABPKeys(const RAK3172_t* const p_Device, cons
  *  @param EnableAutoJoin   (Optional) Enable auto join after power up
  *  @param Interval         (Optional) Reattempt interval
  *  @param on_Wait          (Optional) Hook for a custom wait function
- *                          NOTE: The function call is time critical. Prevent long wait periods!
+ *                          NOTE: The function call is time critical. Prevent delay periods.
  *  @return                 RAK3172_ERR_OK when joined
  *                          RAK3172_ERR_FAIL when a transmission error occurs
  *                          RAK3172_ERR_TIMEOUT when the number of JOIN attemps has expired

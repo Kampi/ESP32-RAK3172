@@ -169,6 +169,10 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Ti
     {
         return RAK3172_ERR_INVALID_ARG;
     }
+    else if(p_Device->Internal.isBusy)
+    {
+        return RAK3172_ERR_BUSY;
+    }
     else if(p_Device->LoRaWAN.isJoined)
     {
         return RAK3172_ERR_OK;
@@ -198,6 +202,8 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Ti
         esp_light_sleep_start();
         vTaskDelay(20);
     } while(p_Device->LoRaWAN.isJoined == false);
+
+    p_Device->Internal.isBusy = false;
 
     return RAK3172_ERR_OK;
 }
@@ -245,6 +251,10 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port
     if((p_Device == NULL) || ((p_Buffer == NULL) && (Length == 0)) || (Port == 0))
     {
         return RAK3172_ERR_INVALID_ARG;
+    }
+    else if(p_Device->Internal.isBusy)
+    {
+        return RAK3172_ERR_BUSY;
     }
     else if(p_Device->LoRaWAN.isJoined == false)
     {
@@ -582,14 +592,108 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetTxPwr(const RAK3172_t* const p_Device, uint8_
     return RAK3172_SendCommand(p_Device, "AT+TXP=" + std::to_string(TxPwrIndex), NULL, NULL);
 }
 
-RAK3172_Error_t RAK3172_LoRaWAN_SetRX1Delay(const RAK3172_t* const p_Device, uint16_t Delay)
+RAK3172_Error_t RAK3172_LoRaWAN_SetJoin1Delay(const RAK3172_t* const p_Device, uint8_t Delay)
 {
+    if((Delay < 1) || (Delay > 14))
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    return RAK3172_SendCommand(p_Device, "AT+JN1DL=" + std::to_string(Delay), NULL, NULL);
+}
+
+RAK3172_Error_t RAK3172_LoRaWAN_GetJoin1Delay(const RAK3172_t* const p_Device, uint8_t* const p_Delay)
+{
+    std::string Value;
+
+    if(p_Delay == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+JN1DL=?", &Value, NULL));
+
+    *p_Delay = (uint8_t)std::stoi(Value);
+
+    return RAK3172_ERR_OK;
+}
+
+RAK3172_Error_t RAK3172_LoRaWAN_SetJoin2Delay(const RAK3172_t* const p_Device, uint8_t Delay)
+{
+    if((Delay < 2) || (Delay > 15))
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    return RAK3172_SendCommand(p_Device, "AT+JN2DL=" + std::to_string(Delay), NULL, NULL);
+}
+
+RAK3172_Error_t RAK3172_LoRaWAN_GetJoin2Delay(const RAK3172_t* const p_Device, uint8_t* const p_Delay)
+{
+    std::string Value;
+
+    if(p_Delay == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+JN2DL=?", &Value, NULL));
+
+    *p_Delay = (uint8_t)std::stoi(Value);
+
+    return RAK3172_ERR_OK;
+}
+
+RAK3172_Error_t RAK3172_LoRaWAN_SetRX1Delay(const RAK3172_t* const p_Device, uint8_t Delay)
+{
+    if((Delay < 1) || (Delay > 15))
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
     return RAK3172_SendCommand(p_Device, "AT+RX1DL=" + std::to_string(Delay), NULL, NULL);
 }
 
-RAK3172_Error_t RAK3172_LoRaWAN_SetRX2Delay(const RAK3172_t* const p_Device, uint16_t Delay)
+RAK3172_Error_t RAK3172_LoRaWAN_GetRX1Delay(const RAK3172_t* const p_Device, uint8_t* const p_Delay)
 {
+    std::string Value;
+
+    if(p_Delay == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+RX1DL=?", &Value, NULL));
+
+    *p_Delay = (uint8_t)std::stoi(Value);
+
+    return RAK3172_ERR_OK;
+}
+
+RAK3172_Error_t RAK3172_LoRaWAN_SetRX2Delay(const RAK3172_t* const p_Device, uint8_t Delay)
+{
+    if((Delay < 2) || (Delay > 16))
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
     return RAK3172_SendCommand(p_Device, "AT+RX2DL=" + std::to_string(Delay), NULL, NULL);
+}
+
+RAK3172_Error_t RAK3172_LoRaWAN_GetRX2Delay(const RAK3172_t* const p_Device, uint8_t* const p_Delay)
+{
+    std::string Value;
+
+    if(p_Delay == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+RX2DL=?", &Value, NULL));
+
+    *p_Delay = (uint8_t)std::stoi(Value);
+
+    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_LoRaWAN_GetSNR(const RAK3172_t* const p_Device, int8_t* const p_SNR)

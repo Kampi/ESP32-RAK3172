@@ -82,13 +82,13 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetABPKeys(const RAK3172_t* const p_Device, cons
  *  @param EnableAutoJoin   (Optional) Enable auto join after power up
  *  @param Interval         (Optional) Reattempt interval
  *  @param on_Wait          (Optional) Hook for a custom wait function
- *                          NOTE: The function call is time critical. Prevent long wait periods!
+ *                          NOTE: The function call is time critical. Prevent delay periods.
  *  @return                 RAK3172_ERR_OK when joined
  *                          RAK3172_ERR_FAIL when a transmission error occurs
  *                          RAK3172_ERR_TIMEOUT when the number of JOIN attemps has expired
  *                          RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  */
-RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Timeout = 0, uint8_t Attempts = 0, bool EnableAutoJoin = false, uint8_t Interval = 10, RAK3172_Wait_t on_Wait = NULL);
+RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Timeout = 0, uint8_t Attempts = 5, bool EnableAutoJoin = false, uint8_t Interval = 10, RAK3172_Wait_t on_Wait = NULL);
 
 /** @brief          Stop the joining process.
  *  @param p_Device Pointer to RAK3172 device object
@@ -243,21 +243,69 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetSubBand(const RAK3172_t* const p_Device, RAK3
  */
 RAK3172_Error_t RAK3172_LoRaWAN_SetTxPwr(const RAK3172_t* const p_Device, uint8_t TxPwr);
 
-/** @brief          Set the RX1 delay of the device.
+/** @brief          Set the join delay on the RX window 1.
  *  @param p_Device Pointer to RAK3172 device object
- *  @param Delay    RX1 delay in ms
+ *  @param Delay    RX1 delay in seconds (1 - 14)
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetRX1Delay(const RAK3172_t* const p_Device, uint16_t Delay);
+RAK3172_Error_t RAK3172_LoRaWAN_SetJoin1Delay(const RAK3172_t* const p_Device, uint8_t Delay);
 
-/** @brief          Set the RX2 delay of the device.
+/** @brief          Get the join delay on the RX window 1.
  *  @param p_Device Pointer to RAK3172 device object
- *  @param Delay    RX1 delay in ms
+ *  @param p_Delay  Pointer to R1 delay in seconds
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetRX2Delay(const RAK3172_t* const p_Device, uint16_t Delay);
+RAK3172_Error_t RAK3172_LoRaWAN_GetJoin1Delay(const RAK3172_t* const p_Device, uint8_t* const p_Delay);
+
+/** @brief          Set the join delay on the RX window 2.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param Delay    RX2 delay in seconds (2 - 15)
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_SetJoin2Delay(const RAK3172_t* const p_Device, uint8_t Delay);
+
+/** @brief          Get the join delay on the RX window 2.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Delay  Pointer to RX2 delay in seconds
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_GetJoin2Delay(const RAK3172_t* const p_Device, uint8_t* const p_Delay);
+
+/** @brief          Set the delay of RX window 1.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param Delay    RX1 delay in seconds (1 - 15)
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_SetRX1Delay(const RAK3172_t* const p_Device, uint8_t Delay);
+
+/** @brief          Set the delay of RX window 1.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Delay  Pointer to RX1 delay in seconds
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_GetRX1Delay(const RAK3172_t* const p_Device, uint8_t* const p_Delay);
+
+/** @brief          Set the delay of RX window 2.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param Delay    RX2 delay in seconds (2 - 16)
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_SetRX2Delay(const RAK3172_t* const p_Device, uint8_t Delay);
+
+/** @brief          Set the delay of RX window 2.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Delay  Pointer to RX2 delay in seconds
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_GetRX2Delay(const RAK3172_t* const p_Device, uint8_t* const p_Delay);
 
 /** @brief          Get the SNR value of the last packet.
  *  @param p_Device Pointer to RAK3172 device object

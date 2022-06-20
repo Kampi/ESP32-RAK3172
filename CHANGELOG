@@ -25,16 +25,19 @@
 									Add support for core affinity
 									Rename error codes
 									Clean up Kconfig
-									Code optimizations
 									Add RAK3172 device structure initialization macro
 									Add firmware version check
 									Add factory reset
 									Add "RAK3172_ERR_NOT_CONNECTED" in LoRaWAN mode
+									Add error check for "RAK3172_LoRaWAN_SetRX1Delay" and "RAK3172_LoRaWAN_SetRX2Delay"
 									Add function to set / get the LoRaWAN join mode (ABP or OTAA)
+									And functions to get / set the join (1/2) and Rx (1/2) delays
 									Rework event handling
 									Improve parameter checking in different functions
-									Update examples
 									Add error output to "RAK3172_ERROR_CHECK"
 									Change license to MIT
+									Code optimizations
+									Update documentation
+									Update examples
 									Update CHANGELOG
 									Change version number to 4.0.0

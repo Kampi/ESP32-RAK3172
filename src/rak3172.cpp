@@ -72,10 +72,10 @@ static const char* TAG = "RAK3172";
 
 /** @brief          Receive the splash screen after a reset.
  *  @param p_Device Pointer to RAK3172 device object
- *  @param Timeout  (Optional) Timeout for the splash screen in seconds
+ *  @param Timeout  (Optional) Timeout for the splash screen in milliseconds
  *  @return         RAK3172_ERR_OK when successful
  */
-static RAK3172_Error_t RAK3172_ReceiveSplashScreen(RAK3172_t* const p_Device, uint16_t Timeout = 10)
+static RAK3172_Error_t RAK3172_ReceiveSplashScreen(RAK3172_t* const p_Device, uint16_t Timeout = 1000)
 {
     std::string* Response = NULL;
 
@@ -128,8 +128,6 @@ static void RAK3172_UART_EventTask(void* p_Arg)
             size_t BufferedSize;
             uint32_t PatternPos;
 
-            ESP_LOGD(TAG, "Event: %u", Event.type);
-
             switch(Event.type)
             {
                 case UART_PATTERN_DET:
@@ -163,122 +161,169 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
                         ESP_LOGD(TAG, "     Response: %s", Response->c_str());
 
-                        // Device is in LoRa mode and an asynchronous event was received.
-                        if((Device->Mode == RAK_MODE_LORAWAN) && (Response->find("+EVT") != std::string::npos))
-                        {
-                            // Join was successful
-                            if(Response->find("JOINED") != std::string::npos)
+                        #ifdef CONFIG_RAK3172_WITH_LORAWAN
+                            if((Device->Mode == RAK_MODE_LORAWAN) && (Response->find("+EVT") != std::string::npos))
                             {
-                                ESP_LOGD(TAG, "Joined...");
+                                ESP_LOGD(TAG, "Event: %s", Response->c_str());
 
-                                Device->Internal.isBusy = false;
-                                Device->LoRaWAN.isJoined = true;
-                            }
-                            // Join failed.
-                        #ifdef CONFIG_RAK3172_USE_RUI3
-                            else if(Response->find("JOIN_FAILED_RX_TIMEOUT") != std::string::npos)
-                        #else
-                            else if(Response->find("JOIN FAILED") != std::string::npos)
-                        #endif
-                            {
-                                ESP_LOGD(TAG, "Not joined...");
+                                // Join was successful
+                                if(Response->find("JOINED") != std::string::npos)
+                                {
+                                    ESP_LOGD(TAG, "Joined...");
 
-                                Device->Internal.isBusy = false;
-                                Device->LoRaWAN.isJoined = false;
-                            }
-                            // Transmission failed.
-                        #ifdef CONFIG_RAK3172_USE_RUI3
-                            else if(Response->find("SEND_CONFIRMED_FAILED") != std::string::npos)
-                        #else
-                            else if(Response->find("SEND CONFIRMED FAILED") != std::string::npos)
-                        #endif
-                            {
-                                Device->Internal.isBusy = false;
-                                Device->LoRaWAN.ConfirmError = true;
-                            }
-                            // Transmission was successful.
-                        #ifdef CONFIG_RAK3172_USE_RUI3
-                            else if(Response->find("SEND_CONFIRMED_OK") != std::string::npos)
-                        #else
-                            else if(Response->find("SEND CONFIRMED OK") != std::string::npos)
-                        #endif
-                            {
-                                Device->Internal.isBusy = false;
-                                Device->LoRaWAN.ConfirmError = false;
-                            }
-                            else if(Response->find("RX") != std::string::npos)
-                            {
-                                std::string Dummy;
-                                RAK3172_Rx_t* Received = new RAK3172_Rx_t();
+                                    Device->Internal.isBusy = false;
+                                    Device->LoRaWAN.isJoined = true;
+                                }
+                                // Join failed.
+                            #ifdef CONFIG_RAK3172_USE_RUI3
+                                else if(Response->find("JOIN_FAILED_RX_TIMEOUT") != std::string::npos)
+                            #else
+                                else if(Response->find("JOIN FAILED") != std::string::npos)
+                            #endif
+                                {
+                                    ESP_LOGD(TAG, "Not joined...");
 
-                                ESP_LOGD(TAG, "Message received!");
-                                ESP_LOGD(TAG, " %s", Response->c_str());
+                                    Device->Internal.isBusy = false;
+                                    Device->LoRaWAN.isJoined = false;
+                                }
+                                // Transmission failed.
+                            #ifdef CONFIG_RAK3172_USE_RUI3
+                                else if(Response->find("SEND_CONFIRMED_FAILED") != std::string::npos)
+                            #else
+                                else if(Response->find("SEND CONFIRMED FAILED") != std::string::npos)
+                            #endif
+                                {
+                                    Device->Internal.isBusy = false;
+                                    Device->LoRaWAN.ConfirmError = true;
+                                }
+                                // Transmission was successful.
+                            #ifdef CONFIG_RAK3172_USE_RUI3
+                                else if(Response->find("SEND_CONFIRMED_OK") != std::string::npos)
+                            #else
+                                else if(Response->find("SEND CONFIRMED OK") != std::string::npos)
+                            #endif
+                                {
+                                    Device->Internal.isBusy = false;
+                                    Device->LoRaWAN.ConfirmError = false;
+                                }
+                                else if(Response->find("RX") != std::string::npos)
+                                {
+                                    std::string Dummy;
+                                    RAK3172_Rx_t* Received = new RAK3172_Rx_t();
 
-                                // Remove "+EVT:RX_x:" from the response.
-                                Response->erase(Response->find("+EVT:"), std::string("+EVT:").length() + 5);
+                                    // Remove "+EVT:RX_x:" from the response.
+                                    Response->erase(Response->find("+EVT:"), std::string("+EVT:").length() + 5);
 
-                                // Get the RSSI value.
-                                #ifdef CONFIG_RAK3172_USE_RUI3
-                                    Dummy = Response->substr(0, Response->find(":"));
-                                    Response->erase(0, std::string(Dummy + ":").length());
-                                #else
-                                    Dummy = Response->substr(std::string("RSSI").length() + 1, Response->find(","));
-                                    Response->erase(0, std::string(Dummy + ":").length() + 1);
-                                #endif
-                                Received->RSSI = std::stoi(Dummy);
+                                    // Get the RSSI value.
+                                    #ifdef CONFIG_RAK3172_USE_RUI3
+                                        Dummy = Response->substr(0, Response->find(":"));
+                                        Response->erase(0, std::string(Dummy + ":").length());
+                                    #else
+                                        Dummy = Response->substr(std::string("RSSI").length() + 1, Response->find(","));
+                                        Response->erase(0, std::string(Dummy + ":").length() + 1);
+                                    #endif
+                                    Received->RSSI = std::stoi(Dummy);
 
-                                // Get the SNR value.
-                                #ifdef CONFIG_RAK3172_USE_RUI3
-                                    Dummy = Response->substr(0, Response->find(":"));
-                                    Response->erase(0, std::string(Dummy + ":").length());
-                                #else
-                                    Dummy = Response->substr(std::string("SNR").length() + 1, Response->find(","));
-                                #endif
-                                Received->SNR = std::stoi(Dummy);
+                                    // Get the SNR value.
+                                    #ifdef CONFIG_RAK3172_USE_RUI3
+                                        Dummy = Response->substr(0, Response->find(":"));
+                                        Response->erase(0, std::string(Dummy + ":").length());
+                                    #else
+                                        Dummy = Response->substr(std::string("SNR").length() + 1, Response->find(","));
+                                    #endif
+                                    Received->SNR = std::stoi(Dummy);
 
-                                #ifndef CONFIG_RAK3172_USE_RUI3
-                                    // The payload is stored in the next line.
-                                    char Data;
-                                    int Bytes;
+                                    #ifndef CONFIG_RAK3172_USE_RUI3
+                                        // The payload is stored in the next line.
+                                        char Data;
+                                        int Bytes;
 
-                                    Response->clear();
-                                    do
-                                    {
-                                        Bytes = uart_read_bytes(Device->Interface, &Data, 1, 10);
-                                        if((Bytes != 0) && (Data != '\r') && (Data != '\n'))
+                                        Response->clear();
+                                        do
                                         {
-                                            *Response += Data;
-                                        }
-                                    } while(Bytes != 0);
+                                            Bytes = uart_read_bytes(Device->Interface, &Data, 1, 10);
+                                            if((Bytes != 0) && (Data != '\r') && (Data != '\n'))
+                                            {
+                                                *Response += Data;
+                                            }
+                                        } while(Bytes != 0);
 
-                                    ESP_LOGI(TAG, "Next line: %s", Response->c_str());
+                                        ESP_LOGD(TAG, "Next line: %s", Response->c_str());
 
-                                    // Remove all "+EVT" strings.
-                                    Response->erase(0, std::string("+EVT:").length());
-                                    Response->erase(Response->find("+EVT"), std::string("+EVT").length());
-                                #endif
+                                        // Remove all "+EVT" strings.
+                                        Response->erase(0, std::string("+EVT:").length());
+                                        Response->erase(Response->find("+EVT"), std::string("+EVT").length());
+                                    #endif
 
-                                // Remove the "UNICAST" or the "MULCAST" from the message.
-                                Response->erase(0, Response->find(":") + 1);
+                                    // Remove the "UNICAST" or the "MULCAST" from the message.
+                                    Response->erase(0, Response->find(":") + 1);
 
-                                // Get the communication port.
-                                Dummy = Response->substr(0, Response->find(":"));
-                                Response->erase(Response->find(Dummy), std::string(Dummy + ":").length());
-                                Received->Port = std::stoi(Dummy);
+                                    // Get the communication port.
+                                    Dummy = Response->substr(0, Response->find(":"));
+                                    Response->erase(Response->find(Dummy), std::string(Dummy + ":").length());
+                                    Received->Port = std::stoi(Dummy);
 
-                                // Get the payload.
-                                Received->Payload = *Response;
+                                    // Get the payload.
+                                    Received->Payload = *Response;
 
-                                ESP_LOGD(TAG, "RSSI: %i", Received->RSSI);
-                                ESP_LOGD(TAG, "SNR: %i", Received->SNR);
-                                ESP_LOGD(TAG, "Port: %u", Received->Port);
-                                ESP_LOGD(TAG, "Payload: %s", Received->Payload.c_str());
+                                    ESP_LOGD(TAG, "RSSI: %i", Received->RSSI);
+                                    ESP_LOGD(TAG, "SNR: %i", Received->SNR);
+                                    ESP_LOGD(TAG, "Port: %u", Received->Port);
+                                    ESP_LOGD(TAG, "Payload: %s", Received->Payload.c_str());
 
-                                xQueueSend(Device->Internal.ReceiveQueue, &Received, 0);
+                                    xQueueSend(Device->Internal.ReceiveQueue, &Received, 0);
+                                }
+
+                                delete Response;
                             }
+                        #endif
+                        #ifdef CONFIG_RAK3172_WITH_P2P
+                            if((Device->Mode == RAK_MODE_P2P) && (Response->find("+EVT") != std::string::npos))
+                            {
+                                ESP_LOGD(TAG, "Event: %s", Response->c_str());
 
-                            delete Response;
-                        }
+                                if(Response->find("+EVT:RXP2P RECEIVE TIMEOUT") != std::string::npos)
+                                {
+                                    Device->P2P.isRxTimeout = true;
+                                }
+                                else if(Response->find("RX") != std::string::npos)
+                                {
+                                    std::string Dummy;
+                                    RAK3172_Rx_t* Received = new RAK3172_Rx_t();
+
+                                    // Remove "+EVT:RXP2P:" from the response.
+                                    Response->erase(Response->find("+EVT:"), std::string("+EVT:").length() + 6);
+
+                                    // Get the RSSI value.
+                                    #ifdef CONFIG_RAK3172_USE_RUI3
+                                        Dummy = Response->substr(0, Response->find(":"));
+                                        Response->erase(0, std::string(Dummy + ":").length());
+                                    #else
+                                        Dummy = Response->substr(std::string("RSSI").length() + 1, Response->find(","));
+                                        Response->erase(0, std::string(Dummy + ":").length() + 1);
+                                    #endif
+                                    Received->RSSI = std::stoi(Dummy);
+
+                                    // Get the SNR value.
+                                    #ifdef CONFIG_RAK3172_USE_RUI3
+                                        Dummy = Response->substr(0, Response->find(":"));
+                                        Response->erase(0, std::string(Dummy + ":").length());
+                                    #else
+                                        Dummy = Response->substr(std::string("SNR").length() + 1, Response->find(","));
+                                    #endif
+                                    Received->SNR = std::stoi(Dummy);
+
+                                    // Get the payload.
+                                    Received->Payload = *Response;
+
+                                    ESP_LOGD(TAG, "RSSI: %i", Received->RSSI);
+                                    ESP_LOGD(TAG, "SNR: %i", Received->SNR);
+                                    ESP_LOGD(TAG, "Payload: %s", Received->Payload.c_str());
+
+                                    xQueueSend(Device->Internal.ReceiveQueue, &Received, 0);
+                                }
+                            }
+                        #endif
                         // Any other messages from the module.
                         else
                         {
@@ -402,9 +447,9 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
     }
 
     #ifdef CONFIG_RAK3172_TASK_CORE_AFFINITY
-        xTaskCreatePinnedToCore(RAK3172_UART_EventTask, "RAK3172_EventTask", CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device->Internal.Handle, CONFIG_RAK3172_TASK_CORE);
+        xTaskCreatePinnedToCore(RAK3172_UART_EventTask, "RAK3172_Event", CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device->Internal.Handle, CONFIG_RAK3172_TASK_CORE);
     #else
-        xTaskCreate(RAK3172_UART_EventTask, "RAK3172_EventTask", CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device->Internal.Handle);
+        xTaskCreate(RAK3172_UART_EventTask, "RAK3172_Event", CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device->Internal.Handle);
     #endif
 
     if(p_Device->Internal.Handle == NULL)

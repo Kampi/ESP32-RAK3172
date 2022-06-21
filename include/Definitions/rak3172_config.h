@@ -57,8 +57,10 @@
                                                                                             .P2P = {                                        \
                                                                                                 .Active = false,                            \
                                                                                                 .isEncryptionEnabled = false,               \
+                                                                                                .isRxTimeout = false,                       \
                                                                                                 .Timeout = 0,                               \
-                                                                                                .Handle = NULL                              \
+                                                                                                .Handle = NULL,                             \
+                                                                                                .ListenQueue = NULL,                        \
                                                                                             }                                               \
                                                                                         }
 #else
@@ -92,8 +94,10 @@
                                                                         .P2P = {                                                            \
                                                                             .Active = false,                                                \
                                                                             .isEncryptionEnabled = false,                                   \
+                                                                            .isRxTimeout = false,                                           \
                                                                             .Timeout = 0,                                                   \
-                                                                            .Handle = NULL                                                  \
+                                                                            .Handle = NULL,                                                 \
+                                                                            .ListenQueue = NULL,                                            \
                                                                         }                                                                   \
                                                                     }
 #endif

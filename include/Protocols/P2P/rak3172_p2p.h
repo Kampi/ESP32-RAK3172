@@ -162,17 +162,14 @@ RAK3172_Error_t RAK3172_P2P_Transmit(const RAK3172_t* const p_Device, const uint
 /** @brief              Receive a single P2P packet.
  *                      NOTE: This is a blocking fuction!
  *  @param p_Device     Pointer to RAK3172 device object
- *  @param Timeout      Timeout in milliseconds
+ *  @param p_Message    Pointer to receive message object
+ *  @param Timeout      Receive timeout in milliseconds
  *                      NOTE: Only values below 65534 are allowed!
- *  @param p_Payload    Pointer to message payload string
- *  @param p_RSSI       (Optional) Pointer to RSSI value
- *  @param p_SNR        (Optional) Pointer to SNR value
- *  @param Listen       (Optional) Listen timeout in milliseconds
  *  @return             RAK3172_ERR_OK when successful
- *                      RAK3172_ERR_TIMEOUT when a timeout was received
+ *                      RAK3172_ERR_TIMEOUT when no message was received
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* const p_Device, uint16_t Timeout, std::string* const p_Payload, int8_t* p_RSSI = NULL, int8_t* p_SNR = NULL, uint32_t Listen = 100);
+RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* const p_Device, RAK3172_Rx_t* const p_Message, uint16_t Timeout);
 
 /** @brief          Start the listening mode to receive LoRa P2P message.
  *  @param p_Device Pointer to RAK3172 device object

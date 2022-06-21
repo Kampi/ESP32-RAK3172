@@ -20,7 +20,6 @@
 									Change version number to 3.0.0
 4.0.0								Fix error in splash screen handling in function "RAK3172_SetMode"
 									Rename error codes
-									Clean up Kconfig
 									Add RAK3172 device structure initialization macro
 									Add firmware version check
 									Add factory reset
@@ -39,6 +38,7 @@
 									Add error output to "RAK3172_ERROR_CHECK"
 									Change license to MIT
 									Code optimizations
+									Update Kconfig with new configuration settings
 									Update documentation
 									Update examples
 									Update CHANGELOG

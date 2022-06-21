@@ -36,7 +36,7 @@ static const char* TAG = "RAK3172_P2P";
 /** @brief          LoRa P2P receive task.
  *  @param p_Arg    Pointer to task arguments
  */
-static void receiveTask(void* p_Arg)
+static void RAK3172_P2P_ReceiveTask(void* p_Arg)
 {
     RAK3172_t* Device = (RAK3172_t*)p_Arg;
 
@@ -44,60 +44,20 @@ static void receiveTask(void* p_Arg)
 
     while(Device->P2P.Active)
     {
-        std::string* Meta;
+        RAK3172_Rx_t Message;
+        RAK3172_Rx_t* FromQueue = NULL;
 
-        if(xQueueReceive(Device->Internal.MessageQueue, &Meta, portMAX_DELAY) == pdPASS)
+        if(xQueueReceive(Device->Internal.ReceiveQueue, &FromQueue, 20 / portTICK_PERIOD_MS) == pdPASS)
         {
-            // The RSSI and SNR value indicates the start of the receive frame.
-            if(Meta->find("RXP2P") != std::string::npos)
-            {
-                int Index;
-                std::string* Payload;
-                RAK3172_Rx_t* Message = new RAK3172_Rx_t();
+            Message.RSSI = FromQueue->RSSI;
+            Message.SNR = FromQueue->SNR;
 
-                if(Message != NULL)
-                {
-                    // Get the RSSI value.
-                    Index = Meta->find(",");
-                    Message->RSSI = std::stoi(Meta->substr(Index + 7, Index + Meta->find(",", Index) + 1));
+            // TODO: Strings sind hier doof...
+            Message.Payload = FromQueue->Payload;
 
-                    // Get the SNR value.
-                    Index = Meta->find_last_of(",");
-                    Message->SNR = std::stoi(Meta->substr(Index + 6, Meta->length() - 1));
+            delete FromQueue;
 
-                    // The next line contains the data.
-                    if(xQueueReceive(Device->Internal.MessageQueue, &Payload, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
-                    {
-                        Device->Internal.isBusy = false;
-                        Device->P2P.Active = false;
-                        Device->P2P.Timeout = true;
-                    }
-
-                    Payload->erase(Payload->find("+EVT:"), std::string("+EVT:").length());
-                    Message->Payload = *Payload;
-                    delete Payload;
-
-                    // Leave the task when a message was received successfully and when a single message should be received.
-                    /*
-                    if(xQueueSend(*Device->Internal.Queue, &Message, portMAX_DELAY) == pdPASS)
-                    {
-                        // Only a single message should be received.
-                        if(Device->P2P.Timeout != RAK_REC_REPEAT)
-                        {
-                            Device->Internal.isBusy = false;
-                            Device->P2P.Active = false;
-                        }
-                    }*/
-                }
-            }
-            // Receive timeout.
-            else if(Meta->find("RECEIVE TIMEOUT") != std::string::npos)
-            {
-                Device->Internal.isBusy = false;
-                Device->P2P.Active = false;
-            }
-
-            delete Meta;
+            xQueueSend(Device->Internal.ReceiveQueue, &Message, 0);
         }
     }
 
@@ -304,7 +264,7 @@ RAK3172_Error_t RAK3172_P2P_Transmit(const RAK3172_t* const p_Device, const uint
 {
     std::string Payload;
 
-    if((p_Buffer == NULL) && (Length > 0))
+    if((p_Device == NULL) || ((p_Buffer == NULL) && (Length > 0)))
     {
         return RAK3172_ERR_INVALID_ARG;
     }
@@ -325,75 +285,45 @@ RAK3172_Error_t RAK3172_P2P_Transmit(const RAK3172_t* const p_Device, const uint
     return RAK3172_SendCommand(p_Device, "AT+PSEND=" + Payload);
 }
 
-RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* const p_Device, uint16_t Timeout, std::string* const p_Payload, int8_t* p_RSSI, int8_t* p_SNR, uint32_t Listen)
+RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* const p_Device, RAK3172_Rx_t* const p_Message, uint16_t Timeout)
 {
-    if((p_Payload == NULL) || (Timeout > 65534))
+    RAK3172_Rx_t* FromQueue = NULL;
+
+    if((p_Device == NULL) || (p_Message == NULL) || (Timeout > 65534))
     {
         return RAK3172_ERR_INVALID_ARG;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+PRECV=" + std::to_string(Timeout)));
 
+    p_Device->P2P.isRxTimeout = false;
     do
     {
-        std::string* Meta;
-
-        if(xQueueReceive(p_Device->Internal.MessageQueue, &Meta, Listen / portTICK_PERIOD_MS) == pdPASS)
+        if(xQueueReceive(p_Device->Internal.ReceiveQueue, &FromQueue, 20 / portTICK_PERIOD_MS) == pdPASS)
         {
-            int Index;
-            std::string* Payload;
+            p_Message->RSSI = FromQueue->RSSI;
+            p_Message->SNR = FromQueue->SNR;
+            p_Message->Payload = FromQueue->Payload;
 
-            // The RSSI and SNR value indicates the start of the receive frame.
-            if(Meta->find("RXP2P") != std::string::npos)
-            {
-                std::string Dummy;
+            delete FromQueue;
 
-                // Get the RSSI value.
-                if(p_RSSI != NULL)
-                {
-                    Index = Meta->find(",");
-                    Dummy = Meta->substr(Index + 7, Index + Meta->find(",", Index) + 1);
-                    *p_RSSI = std::stoi(Dummy);
-                }
-
-                // Get the SNR value.
-                if(p_SNR != NULL)
-                {
-                    Index = Meta->find_last_of(",");
-                    Dummy = Meta->substr(Index + 6, Meta->length() - 1);
-                    *p_SNR = std::stoi(Dummy);
-                }
-
-                // The next line contains the data.
-                if(xQueueReceive(p_Device->Internal.MessageQueue, &Payload, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
-                {
-                    return RAK3172_ERR_TIMEOUT;
-                }
-
-                Payload->replace(Payload->begin(), Payload->end(), "+EVT:", "");
-                *p_Payload = *Payload;
-                delete Payload;
-
-                return RAK3172_ERR_OK;
-            }
-            // Receive timeout.
-            else if(Meta->find("RECEIVE TIMEOUT") != std::string::npos)
-            {
-                return RAK3172_ERR_TIMEOUT;
-            }
-
-            delete Meta;
+            return RAK3172_ERR_OK;
         }
 
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-    } while(true);
+/*
+        esp_sleep_enable_timer_wakeup(20 * 1000ULL);
+        esp_light_sleep_start();
+        vTaskDelay(20);*/
+    } while(p_Device->P2P.isRxTimeout == false);
+
+    return RAK3172_ERR_TIMEOUT;
 }
 
 RAK3172_Error_t RAK3172_P2P_Listen(RAK3172_t* const p_Device, QueueHandle_t* p_Queue, uint16_t Timeout, uint8_t CoreID, uint8_t Priority)
 {
     std::string Version;
 
-    if(p_Queue == NULL)
+    if((p_Device == NULL) || (p_Queue == NULL))
     {
         return RAK3172_ERR_INVALID_ARG;
     }
@@ -402,14 +332,14 @@ RAK3172_Error_t RAK3172_P2P_Listen(RAK3172_t* const p_Device, QueueHandle_t* p_Q
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+PRECV=" + std::to_string(p_Device->P2P.Timeout)));
 
-    //p_Device->P2P.Queue = p_Queue;
+    p_Device->P2P.ListenQueue = p_Queue;
 
     if(p_Device->P2P.Handle != NULL)
     {
         vTaskDelete(p_Device->P2P.Handle);
     }
 
-    xTaskCreatePinnedToCore(receiveTask, "receiveTask", 2048, p_Device, Priority, &p_Device->P2P.Handle, CoreID);
+    xTaskCreatePinnedToCore(RAK3172_P2P_ReceiveTask, "receiveTask", 2048, p_Device, Priority, &p_Device->P2P.Handle, CoreID);
     if(p_Device->P2P.Handle == NULL)
     {
         return RAK3172_ERR_INVALID_STATE;

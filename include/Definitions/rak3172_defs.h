@@ -253,9 +253,13 @@ typedef struct
                                              NOTE: Managed by the driver. */
         bool isEncryptionEnabled;       /**< LoRa P2P encryption status.
                                              NOTE: Managed by the driver. */
+        bool isRxTimeout;               /**< LoRa P2P receive timeout.
+                                             NOTE: Managed by the driver. */
         uint16_t Timeout;               /**< Receive timeout.
                                              NOTE: Managed by the driver. */
-        TaskHandle_t Handle;            /**< Handle for the P2P receive task.
+        TaskHandle_t Handle;            /**< Task handle for the P2P receive task from the "RAK3172_P2P_Listen" function.
+                                             NOTE: Managed by the driver. */
+        QueueHandle_t* ListenQueue;     /**< Pointer to listen queue used by the "RAK3172_P2P_Listen" function.
                                              NOTE: Managed by the driver. */
     } P2P;
 } RAK3172_t;

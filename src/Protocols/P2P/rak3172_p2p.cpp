@@ -302,7 +302,6 @@ RAK3172_Error_t RAK3172_P2P_GetPower(const RAK3172_t* const p_Device, uint8_t* c
 
 RAK3172_Error_t RAK3172_P2P_Transmit(const RAK3172_t* const p_Device, const uint8_t* const p_Buffer, uint8_t Length)
 {
-    char Buffer[3];
     std::string Payload;
 
     if((p_Buffer == NULL) && (Length > 0))
@@ -317,6 +316,8 @@ RAK3172_Error_t RAK3172_P2P_Transmit(const RAK3172_t* const p_Device, const uint
     // Encode the payload into an ASCII string.
     for(uint8_t i = 0; i < Length; i++)
     {
+        char Buffer[3];
+
         sprintf(Buffer, "%02x", ((uint8_t*)p_Buffer)[i]);
         Payload += std::string(Buffer);
     }

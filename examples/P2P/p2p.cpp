@@ -5,7 +5,7 @@
 #include <freertos/task.h>
 #include <freertos/event_groups.h>
 
-#include "rak3172.h"
+#include <rak3172.h>
 
 #ifdef CONFIG_RAK3172_RESET_USE_HW
     static RAK3172_t _Device = RAK3172_DEFAULT_CONFIG(CONFIG_RAK3172_UART_PORT, CONFIG_RAK3172_UART_RX, CONFIG_RAK3172_UART_TX, CONFIG_RAK3172_UART_BAUD, CONFIG_RAK3172_RESET_PIN, false);
@@ -91,22 +91,15 @@ static void applicationTask(void* p_Parameter)
     }
 }
 
-static void StartApplication(void)
+extern "C" void app_main(void)
 {
     ESP_LOGI(TAG, "Starting application.");
 
-    _applicationHandle = xTaskCreateStatic(applicationTask, "applicationTask", 8192, NULL, 1, _applicationStack, &_applicationBuffer);
+    _applicationHandle = xTaskCreateStatic(applicationTask, "applicationTask", sizeof(_applicationStack), NULL, 1, _applicationStack, &_applicationBuffer);
     if(_applicationHandle == NULL)
     {
         ESP_LOGE(TAG, "    Unable to create application task!");
 
         esp_restart();
     }
-}
-
-extern "C" void app_main(void)
-{
-    ESP_LOGI(TAG, "IDF: %s", esp_get_idf_version());
-
-	StartApplication();
 }

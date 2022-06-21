@@ -157,7 +157,7 @@ RAK3172_Error_t RAK3172_P2P_GetPower(const RAK3172_t* const p_Device, uint8_t* c
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_P2P_Transmit(RAK3172_t* const p_Device, const uint8_t* const p_Buffer, uint8_t Length);
+RAK3172_Error_t RAK3172_P2P_Transmit(const RAK3172_t* const p_Device, const uint8_t* const p_Buffer, uint8_t Length);
 
 /** @brief              Receive a single P2P packet.
  *                      NOTE: This is a blocking fuction!

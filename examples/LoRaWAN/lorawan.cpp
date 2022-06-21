@@ -1,4 +1,5 @@
 #include <esp_log.h>
+#include <esp_task_wdt.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -67,6 +68,8 @@ static void applicationTask(void* p_Parameter)
 
     while(true)
     {
+        esp_task_wdt_reset();
+
         Error = RAK3172_LoRaWAN_Transmit(&_Device, 1, Payload, sizeof(Payload), true);
         if(Error == RAK3172_ERR_INVALID_RESPONSE)
         {

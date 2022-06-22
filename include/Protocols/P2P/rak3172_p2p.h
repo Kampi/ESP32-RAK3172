@@ -171,19 +171,27 @@ RAK3172_Error_t RAK3172_P2P_Transmit(const RAK3172_t* const p_Device, const uint
  */
 RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* const p_Device, RAK3172_Rx_t* const p_Message, uint16_t Timeout);
 
-/** @brief          Start the listening mode to receive LoRa P2P message.
- *  @param p_Device Pointer to RAK3172 device object
- *  @param p_Queue  Pointer to receive queue with RAK3172_Rx_t* objects
- *                  NOTE: Make sure you perform a "delete" on these objects after the operation to avoid memory leaks!
- *  @param Timeout  (Optional) Timeout in milliseconds.
- *                  NOTE: 0 will stop the receiving, 65534 will disable the timeout (only with firmware v1.0.3 and later) and 65535 will disable the timeout and the device stops when a packet was received.
- *  @param CoreID   (Optional) Core ID for the listening task
- *  @param Priority (Optional) Listening task priority
- *  @return         RAK3172_ERR_OK when successful
- *                  RAK3172_ERR_INVALID_STATE when the receive task can´t get started
- *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
+/** @brief              Start the listening mode to receive LoRa P2P message.
+ *  @param p_Device     Pointer to RAK3172 device object
+ *  @param Timeout      (Optional) Timeout in milliseconds.
+ *                      NOTE: 0 will stop the receiving, 65534 will disable the timeout (only with firmware v1.0.3 and later) and 65535 will disable the timeout and the device stops when a packet was received.
+ *  @param CoreID       (Optional) Core ID for the listening task
+ *  @param Priority     (Optional) Listening task priority
+ *  @param QueueSize    (Optional) Size of the receive queue
+ *  @return             RAK3172_ERR_OK when successful
+ *                      RAK3172_ERR_INVALID_STATE when the receive task can´t get started
+ *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_P2P_Listen(RAK3172_t* const p_Device, QueueHandle_t* p_Queue, uint16_t Timeout = RAK_REC_REPEAT, uint8_t CoreID = 1, uint8_t Priority = 16);
+RAK3172_Error_t RAK3172_P2P_Listen(RAK3172_t* const p_Device, uint16_t Timeout = RAK_REC_REPEAT, uint8_t CoreID = 1, uint8_t Priority = 16, uint8_t QueueSize = 8);
+
+/** @brief              Pop an item from the message queue.
+ *  @param p_Device     Pointer to RAK3172 device object
+ *  @param p_Message    Pointer to message object
+ *  @return             RAK3172_ERR_OK when successful
+ *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
+ *                      RAK3172_ERR_FAIL when no item was poped from the queue
+ */
+RAK3172_Error_t RAK3172_P2P_PopItem(const RAK3172_t* const p_Device, RAK3172_Rx_t* p_Message);
 
 /** @brief          Stop the listening mode.
  *  @param p_Device Pointer to RAK3172 device object

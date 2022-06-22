@@ -59,7 +59,7 @@
                                                                                                 .isEncryptionEnabled = false,               \
                                                                                                 .isRxTimeout = false,                       \
                                                                                                 .Timeout = 0,                               \
-                                                                                                .Handle = NULL,                             \
+                                                                                                .ListenHandle = NULL,                       \
                                                                                                 .ListenQueue = NULL,                        \
                                                                                             }                                               \
                                                                                         }
@@ -96,7 +96,7 @@
                                                                             .isEncryptionEnabled = false,                                   \
                                                                             .isRxTimeout = false,                                           \
                                                                             .Timeout = 0,                                                   \
-                                                                            .Handle = NULL,                                                 \
+                                                                            .ListenHandle = NULL,                                           \
                                                                             .ListenQueue = NULL,                                            \
                                                                         }                                                                   \
                                                                     }

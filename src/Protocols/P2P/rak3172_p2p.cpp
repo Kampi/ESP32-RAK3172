@@ -44,24 +44,23 @@ static void RAK3172_P2P_ReceiveTask(void* p_Arg)
 
     while(Device->P2P.Active)
     {
-        RAK3172_Rx_t Message;
         RAK3172_Rx_t* FromQueue = NULL;
 
         if(xQueueReceive(Device->Internal.ReceiveQueue, &FromQueue, 20 / portTICK_PERIOD_MS) == pdPASS)
         {
-            Message.RSSI = FromQueue->RSSI;
-            Message.SNR = FromQueue->SNR;
+            if(Device->P2P.Timeout != RAK_REC_REPEAT)
+            {
+                Device->P2P.isRxTimeout = true;
+                Device->Internal.isBusy = false;
+                Device->P2P.Active = false;
+            }
 
-            // TODO: Strings sind hier doof...
-            Message.Payload = FromQueue->Payload;
-
-            delete FromQueue;
-
-            xQueueSend(Device->Internal.ReceiveQueue, &Message, 0);
+            xQueueSend(Device->P2P.ListenQueue, &FromQueue, 0);
         }
     }
 
     vTaskSuspend(NULL);
+    vTaskDelete(NULL);
 }
 
 RAK3172_Error_t RAK3172_P2P_Init(RAK3172_t* const p_Device, uint32_t Frequency, RAK3172_PSF_t Spread, RAK3172_BW_t Bandwidth, RAK3172_CR_t CodeRate, uint16_t Preamble, uint8_t Power, uint32_t Timeout)
@@ -319,11 +318,9 @@ RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* const p_Device, RAK3172_Rx_t* con
     return RAK3172_ERR_TIMEOUT;
 }
 
-RAK3172_Error_t RAK3172_P2P_Listen(RAK3172_t* const p_Device, QueueHandle_t* p_Queue, uint16_t Timeout, uint8_t CoreID, uint8_t Priority)
+RAK3172_Error_t RAK3172_P2P_Listen(RAK3172_t* const p_Device, uint16_t Timeout, uint8_t CoreID, uint8_t Priority, uint8_t QueueSize)
 {
-    std::string Version;
-
-    if((p_Device == NULL) || (p_Queue == NULL))
+    if((p_Device == NULL) || (QueueSize == 0))
     {
         return RAK3172_ERR_INVALID_ARG;
     }
@@ -332,20 +329,64 @@ RAK3172_Error_t RAK3172_P2P_Listen(RAK3172_t* const p_Device, QueueHandle_t* p_Q
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+PRECV=" + std::to_string(p_Device->P2P.Timeout)));
 
-    p_Device->P2P.ListenQueue = p_Queue;
-
-    if(p_Device->P2P.Handle != NULL)
+    p_Device->P2P.ListenQueue = xQueueCreate(QueueSize, sizeof(RAK3172_Rx_t*));
+    if(p_Device->P2P.ListenQueue == NULL)
     {
-        vTaskDelete(p_Device->P2P.Handle);
+        RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+PRECV=0"));
+
+        return RAK3172_ERR_NO_MEM;
     }
 
-    xTaskCreatePinnedToCore(RAK3172_P2P_ReceiveTask, "receiveTask", 2048, p_Device, Priority, &p_Device->P2P.Handle, CoreID);
-    if(p_Device->P2P.Handle == NULL)
+    if(p_Device->P2P.ListenHandle != NULL)
+    {
+        vTaskDelete(p_Device->P2P.ListenHandle);
+    }
+
+    xTaskCreatePinnedToCore(RAK3172_P2P_ReceiveTask, "receiveTask", 2048, p_Device, Priority, &p_Device->P2P.ListenHandle, CoreID);
+    if(p_Device->P2P.ListenHandle == NULL)
+    {
+        vQueueDelete(p_Device->P2P.ListenQueue);
+        RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+PRECV=0"));
+
+        return RAK3172_ERR_INVALID_STATE;
+    }
+
+    p_Device->P2P.isRxTimeout = false;
+    p_Device->Internal.isBusy = true;
+
+    return RAK3172_ERR_OK;
+}
+
+RAK3172_Error_t RAK3172_P2P_PopItem(const RAK3172_t* const p_Device, RAK3172_Rx_t* p_Message)
+{
+    uint8_t Items;
+    RAK3172_Rx_t* FromQueue;
+
+    if((p_Device == NULL) || (p_Device->P2P.ListenQueue == NULL) || (p_Message == 0))
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+    else if(p_Device->P2P.ListenHandle == NULL)
     {
         return RAK3172_ERR_INVALID_STATE;
     }
 
-    p_Device->Internal.isBusy = true;
+    Items = uxQueueMessagesWaiting(p_Device->P2P.ListenQueue);
+    ESP_LOGD(TAG, "Items in queue: %u", Items);
+
+    if(Items == 0)
+    {
+        return RAK3172_ERR_FAIL;
+    }
+
+    if(xQueueReceive(p_Device->P2P.ListenQueue, &FromQueue, 0) != pdPASS)
+    {
+        return RAK3172_ERR_FAIL;
+    }
+
+    *p_Message = *FromQueue;
+
+    delete FromQueue;
 
     return RAK3172_ERR_OK;
 }
@@ -354,12 +395,14 @@ RAK3172_Error_t RAK3172_P2P_Stop(RAK3172_t* const p_Device)
 {
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+PRECV=" + std::to_string(RAK_REC_STOP)));
 
-    if(p_Device->P2P.Handle != NULL)
-    {
-        vTaskDelete(p_Device->P2P.Handle);
-    }   
-
+    p_Device->P2P.Active = false;
     p_Device->Internal.isBusy = false;
+
+    if(p_Device->P2P.ListenHandle != NULL)
+    {
+        vTaskSuspend(p_Device->P2P.ListenHandle);
+        vTaskDelete(p_Device->P2P.ListenHandle);
+    }
 
     return RAK3172_ERR_OK;
 }
@@ -371,7 +414,7 @@ bool RAK3172_P2P_isListening(const RAK3172_t* const p_Device)
         return false;
     }
 
-    return p_Device->Internal.isBusy;
+    return (p_Device->P2P.isRxTimeout == false);
 }
 
 #endif

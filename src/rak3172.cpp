@@ -175,11 +175,11 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                     Device->LoRaWAN.isJoined = true;
                                 }
                                 // Join failed.
-                            #ifdef CONFIG_RAK3172_USE_RUI3
-                                else if(Response->find("JOIN_FAILED_RX_TIMEOUT") != std::string::npos)
-                            #else
-                                else if(Response->find("JOIN FAILED") != std::string::npos)
-                            #endif
+                                #ifdef CONFIG_RAK3172_USE_RUI3
+                                    else if(Response->find("JOIN_FAILED_RX_TIMEOUT") != std::string::npos)
+                                #else
+                                    else if(Response->find("JOIN FAILED") != std::string::npos)
+                                #endif
                                 {
                                     ESP_LOGD(TAG, "Not joined...");
 
@@ -187,21 +187,21 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                     Device->LoRaWAN.isJoined = false;
                                 }
                                 // Transmission failed.
-                            #ifdef CONFIG_RAK3172_USE_RUI3
-                                else if(Response->find("SEND_CONFIRMED_FAILED") != std::string::npos)
-                            #else
-                                else if(Response->find("SEND CONFIRMED FAILED") != std::string::npos)
-                            #endif
+                                #ifdef CONFIG_RAK3172_USE_RUI3
+                                    else if(Response->find("SEND_CONFIRMED_FAILED") != std::string::npos)
+                                #else
+                                    else if(Response->find("SEND CONFIRMED FAILED") != std::string::npos)
+                                #endif
                                 {
                                     Device->Internal.isBusy = false;
                                     Device->LoRaWAN.ConfirmError = true;
                                 }
                                 // Transmission was successful.
-                            #ifdef CONFIG_RAK3172_USE_RUI3
-                                else if(Response->find("SEND_CONFIRMED_OK") != std::string::npos)
-                            #else
-                                else if(Response->find("SEND CONFIRMED OK") != std::string::npos)
-                            #endif
+                                #ifdef CONFIG_RAK3172_USE_RUI3
+                                    else if(Response->find("SEND_CONFIRMED_OK") != std::string::npos)
+                                #else
+                                    else if(Response->find("SEND CONFIRMED OK") != std::string::npos)
+                                #endif
                                 {
                                     Device->Internal.isBusy = false;
                                     Device->LoRaWAN.ConfirmError = false;

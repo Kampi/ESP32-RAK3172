@@ -61,8 +61,7 @@ static void applicationTask(void* p_Parameter)
         ESP_LOGI(TAG, " Payload: %s", Message.Payload.c_str());
     }
 
-    QueueHandle_t Queue = xQueueCreate(8, sizeof(RAK3172_Rx_t));
-    Error = RAK3172_P2P_Listen(&_Device, &Queue, 60000);
+    Error = RAK3172_P2P_Listen(&_Device, 60000);
     if(Error != RAK3172_ERR_OK)
     {
         ESP_LOGE(TAG, "Can not start LoRa listening! Error: 0x%04X", Error);
@@ -70,23 +69,20 @@ static void applicationTask(void* p_Parameter)
 
     while(true)
     {
-        uint8_t Items;
-
-        esp_task_wdt_reset();
-
-        Items = uxQueueMessagesWaiting(Queue);
-        ESP_LOGI(TAG, "Items in queue: %u", Items);
-
-        if(Items > 0)
+        if(RAK3172_P2P_isListening(&_Device))
         {
             RAK3172_Rx_t Message;
 
-            if(xQueueReceive(Queue, &Message, 0) == pdPASS)
+            if(RAK3172_P2P_PopItem(&_Device, &Message) == RAK3172_ERR_OK)
             {
                 ESP_LOGI(TAG, " RSSI: %i", Message.RSSI);
                 ESP_LOGI(TAG, " SNR: %i", Message.SNR);
                 ESP_LOGI(TAG, " Payload: %s", Message.Payload.c_str());
             }
+        }
+        else
+        {
+            ESP_LOGI(TAG, "Not listening...");
         }
 
         vTaskDelay(1000 / portTICK_RATE_MS);

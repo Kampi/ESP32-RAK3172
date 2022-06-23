@@ -113,7 +113,7 @@ RAK3172_Error_t RAK3172_P2P_SetFrequency(const RAK3172_t* const p_Device, uint32
     return RAK3172_SendCommand(p_Device, "AT+PFREQ=" + std::to_string(Freq));
 }
 
-RAK3172_Error_t RAK3172_P2P_GetFrequency(const RAK3172_t* const p_Device, uint32_t* p_Freq)
+RAK3172_Error_t RAK3172_P2P_GetFrequency(const RAK3172_t* const p_Device, uint32_t* const p_Freq)
 {
     std::string Value;
 
@@ -139,7 +139,7 @@ RAK3172_Error_t RAK3172_P2P_SetSpreading(const RAK3172_t* const p_Device, RAK317
     return RAK3172_SendCommand(p_Device, "AT+PSF=" + std::to_string(Spread));
 }
 
-RAK3172_Error_t RAK3172_P2P_GetSpreading(const RAK3172_t* const p_Device, RAK3172_PSF_t* p_Spread)
+RAK3172_Error_t RAK3172_P2P_GetSpreading(const RAK3172_t* const p_Device, RAK3172_PSF_t* const p_Spread)
 {
     std::string Value;
 
@@ -165,7 +165,7 @@ RAK3172_Error_t RAK3172_P2P_SetBandwidth(const RAK3172_t* const p_Device, RAK317
     return RAK3172_SendCommand(p_Device, "AT+PBW=" + std::to_string(Bandwidth));
 }
 
-RAK3172_Error_t RAK3172_P2P_GetBandwidth(const RAK3172_t* const p_Device, RAK3172_BW_t* p_Bandwidth)
+RAK3172_Error_t RAK3172_P2P_GetBandwidth(const RAK3172_t* const p_Device, RAK3172_BW_t* const p_Bandwidth)
 {
     std::string Value;
 
@@ -191,7 +191,7 @@ RAK3172_Error_t RAK3172_P2P_SetCodeRate(const RAK3172_t* const p_Device, RAK3172
     return RAK3172_SendCommand(p_Device, "AT+PCR=" + std::to_string(CodeRate));  
 }
 
-RAK3172_Error_t RAK3172_P2P_GetCodeRate(const RAK3172_t* const p_Device, RAK3172_CR_t* p_CodeRate)
+RAK3172_Error_t RAK3172_P2P_GetCodeRate(const RAK3172_t* const p_Device, RAK3172_CR_t* const p_CodeRate)
 {
     std::string Value;
 
@@ -217,7 +217,7 @@ RAK3172_Error_t RAK3172_P2P_SetPreamble(const RAK3172_t* const p_Device, uint16_
     return RAK3172_SendCommand(p_Device, "AT+PPL=" + std::to_string(Preamble));  
 }
 
-RAK3172_Error_t RAK3172_P2P_GetPreamble(const RAK3172_t* const p_Device, uint16_t* p_Preamble)
+RAK3172_Error_t RAK3172_P2P_GetPreamble(const RAK3172_t* const p_Device, uint16_t* const p_Preamble)
 {
     std::string Value;
 
@@ -357,11 +357,11 @@ RAK3172_Error_t RAK3172_P2P_PopItem(const RAK3172_t* const p_Device, RAK3172_Rx_
     uint8_t Items;
     RAK3172_Rx_t* FromQueue;
 
-    if((p_Device == NULL) || (p_Device->P2P.ListenQueue == NULL) || (p_Message == 0))
+    if((p_Device == NULL) || (p_Message == NULL))
     {
         return RAK3172_ERR_INVALID_ARG;
     }
-    else if(p_Device->P2P.ListenHandle == NULL)
+    else if((p_Device->P2P.ListenHandle == NULL) || (p_Device->P2P.ListenQueue == NULL))
     {
         return RAK3172_ERR_INVALID_STATE;
     }

@@ -29,7 +29,7 @@
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  */
-RAK3172_Error_t RAK3172_P2P_EnableEncryption(RAK3172_t* const p_Device, const uint8_t* const p_Key);
+RAK3172_Error_t RAK3172_P2P_EnableEncryption(RAK3172_t* const p_Device, const RAK3172_EncryptKey_t p_Key);
 
 /** @brief          Disable the LoRa P2P encryption.
  *  @param p_Device Pointer to RAK3172 device object
@@ -42,6 +42,6 @@ RAK3172_Error_t RAK3172_P2P_DisableEncryption(RAK3172_t* const p_Device);
  *  @param p_Enabled    Pointer to encryption status
  *  @return             RAK3172_ERR_OK when successful
  */
-RAK3172_Error_t RAK3172_P2P_isEncryptionEnabled(const RAK3172_t* const p_Device, bool* p_Enabled);
+RAK3172_Error_t RAK3172_P2P_isEncryptionEnabled(const RAK3172_t* const p_Device, bool* const p_Enabled);
 
 #endif /* RAK3172_P2P_RUI3_H_ */

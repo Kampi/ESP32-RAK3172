@@ -23,7 +23,7 @@
 
 #include "rak3172.h"
 
-RAK3172_Error_t RAK3172_P2P_EnableEncryption(RAK3172_t* const p_Device, const uint8_t* const p_Key)
+RAK3172_Error_t RAK3172_P2P_EnableEncryption(RAK3172_t* const p_Device, const RAK3172_EncryptKey_t p_Key)
 {
     std::string Key;
     char Buffer[3];
@@ -56,7 +56,7 @@ RAK3172_Error_t RAK3172_P2P_DisableEncryption(RAK3172_t* const p_Device)
     return RAK3172_ERR_OK;
 }
 
-RAK3172_Error_t RAK3172_P2P_isEncryptionEnabled(const RAK3172_t* const p_Device, bool* p_Enabled)
+RAK3172_Error_t RAK3172_P2P_isEncryptionEnabled(const RAK3172_t* const p_Device, bool* const p_Enabled)
 {
     std::string Value;
 

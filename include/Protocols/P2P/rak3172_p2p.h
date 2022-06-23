@@ -66,7 +66,7 @@ RAK3172_Error_t RAK3172_P2P_SetFrequency(const RAK3172_t* const p_Device, uint32
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_P2P_GetFrequency(const RAK3172_t* const p_Device, uint32_t* p_Freq);
+RAK3172_Error_t RAK3172_P2P_GetFrequency(const RAK3172_t* const p_Device, uint32_t* const p_Freq);
 
 /** @brief          Set the P2P mode spreading factor.
  *  @param p_Device Pointer to RAK3172 device object
@@ -82,7 +82,7 @@ RAK3172_Error_t RAK3172_P2P_SetSpreading(const RAK3172_t* const p_Device, RAK317
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_P2P_GetSpreading(const RAK3172_t* const p_Device, RAK3172_PSF_t* p_Spread);
+RAK3172_Error_t RAK3172_P2P_GetSpreading(const RAK3172_t* const p_Device, RAK3172_PSF_t* const p_Spread);
 
 /** @brief              Set the P2P mode bandwidth.
  *  @param p_Device     Pointer to RAK3172 device object
@@ -98,7 +98,7 @@ RAK3172_Error_t RAK3172_P2P_SetBandwidth(const RAK3172_t* const p_Device, RAK317
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_P2P_GetBandwidth(const RAK3172_t* const p_Device, RAK3172_BW_t* p_Bandwidth);
+RAK3172_Error_t RAK3172_P2P_GetBandwidth(const RAK3172_t* const p_Device, RAK3172_BW_t* const p_Bandwidth);
 
 /** @brief          Set the P2P mode code rate.
  *  @param p_Device Pointer to RAK3172 device object
@@ -114,7 +114,7 @@ RAK3172_Error_t RAK3172_P2P_SetCodeRate(const RAK3172_t* const p_Device, RAK3172
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_P2P_GetCodeRate(const RAK3172_t* const p_Device, RAK3172_CR_t* p_CodeRate);
+RAK3172_Error_t RAK3172_P2P_GetCodeRate(const RAK3172_t* const p_Device, RAK3172_CR_t* const p_CodeRate);
 
 /** @brief          Set the P2P mode preamble.
  *  @param p_Device Pointer to RAK3172 device object
@@ -131,7 +131,7 @@ RAK3172_Error_t RAK3172_P2P_SetPreamble(const RAK3172_t* const p_Device, uint16_
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  */
-RAK3172_Error_t RAK3172_P2P_GetPreamble(const RAK3172_t* const p_Device, uint16_t* p_Preamble);
+RAK3172_Error_t RAK3172_P2P_GetPreamble(const RAK3172_t* const p_Device, uint16_t* const p_Preamble);
 
 /** @brief          Set the P2P mode transmission power.
  *  @param p_Device Pointer to RAK3172 device object
@@ -191,7 +191,7 @@ RAK3172_Error_t RAK3172_P2P_Listen(RAK3172_t* const p_Device, uint16_t Timeout =
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                      RAK3172_ERR_FAIL when no item was poped from the queue
  */
-RAK3172_Error_t RAK3172_P2P_PopItem(const RAK3172_t* const p_Device, RAK3172_Rx_t* p_Message);
+RAK3172_Error_t RAK3172_P2P_PopItem(const RAK3172_t* const p_Device, RAK3172_Rx_t* const p_Message);
 
 /** @brief          Stop the listening mode.
  *  @param p_Device Pointer to RAK3172 device object

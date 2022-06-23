@@ -49,8 +49,13 @@
  */
 typedef void (*RAK3172_Wait_t)(void);
 
+/** @brief  Encryption key definition.
+ *          NOTE: Only used with RUI3 API support enabled.
+ */
+typedef uint8_t RAK3172_EncryptKey_t[8];
+
 /** @brief  Supported channel modes.
- *          NOTE: Only usable when using RUI3 interface.
+ *          NOTE: Only used with RUI3 API support enabled.
  */
 typedef enum
 {

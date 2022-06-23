@@ -308,11 +308,6 @@ RAK3172_Error_t RAK3172_P2P_Receive(RAK3172_t* const p_Device, RAK3172_Rx_t* con
 
             return RAK3172_ERR_OK;
         }
-
-/*
-        esp_sleep_enable_timer_wakeup(20 * 1000ULL);
-        esp_light_sleep_start();
-        vTaskDelay(20);*/
     } while(p_Device->P2P.isRxTimeout == false);
 
     return RAK3172_ERR_TIMEOUT;

@@ -45,25 +45,12 @@
  */
 #define RAK3172_NO_TIMEOUT                                      0
 
-/** @brief      Generic error check macro.
- *  @param Func Function that should be checked
- */
-#define RAK3172_ERROR_CHECK(Func)                               do                                                                                                  \
-                                                                {                                                                                                   \
-                                                                    RAK3172_Error_t Error = Func;                                                                   \
-                                                                    if(Error != RAK3172_ERR_OK)                                                                     \
-                                                                    {                                                                                               \
-                                                                        ESP_LOGE("RAK3172", "Error check failed in (%s) at line (%u)!", __FUNCTION__, __LINE__);    \
-                                                                        return Error;                                                                               \
-                                                                    }                                                                                               \
-                                                                } while(0);
-
 /** @brief Hook for a custom wait callback.
  */
 typedef void (*RAK3172_Wait_t)(void);
 
 /** @brief  Supported channel modes.
- *          NOTE: Only usable when using RUI3.
+ *          NOTE: Only usable when using RUI3 interface.
  */
 typedef enum
 {
@@ -220,7 +207,7 @@ typedef struct
     #endif
 	RAK3172_Baud_t Baudrate;		    /**< Baud rate for the module communication. */
     RAK3172_Mode_t Mode;                /**< Current device mode. */
-    RAK3172_Info_t* Info;               /**< Pointer to optional device information object. */
+    RAK3172_Info_t* Info;               /**< (Optional) Pointer to device information object. */
     struct
     {
         TaskHandle_t Handle;            /**< Handle for the UART receive task.
@@ -235,7 +222,7 @@ typedef struct
                                              NOTE: Managed by the driver. */
         QueueHandle_t EventQueue;       /**< Event queue used by the UART driver for the pattern detection.
                                              NOTE: Managed by the driver. */
-        QueueHandle_t ReceiveQueue;     /**< Pointer to receive message queue.
+        QueueHandle_t ReceiveQueue;     /**< Receive message queue.
                                              NOTE: Managed by the driver. */
     } Internal;
     struct
@@ -259,7 +246,7 @@ typedef struct
                                              NOTE: Managed by the driver. */
         TaskHandle_t ListenHandle;      /**< Task handle for the P2P receive task from the "RAK3172_P2P_Listen" function.
                                              NOTE: Managed by the driver. */
-        QueueHandle_t ListenQueue;      /**< Pointer to listen queue used by the "RAK3172_P2P_Listen" function.
+        QueueHandle_t ListenQueue;      /**< Listen queue used by the "RAK3172_P2P_Listen" function.
                                              NOTE: Managed by the driver. */
     } P2P;
 } RAK3172_t;

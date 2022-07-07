@@ -353,6 +353,7 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
     }
 
     p_Device->Internal.isInitialized = false;
+    p_Device->Internal.isBusy = false;
 
     esp_log_level_set("uart", ESP_LOG_NONE);
 
@@ -590,9 +591,6 @@ void RAK3172_Deinit(RAK3172_t* const p_Device)
         return;
     }
 
-    free(p_Device->Internal.RxBuffer);
-    p_Device->Internal.RxBuffer = NULL;
-
     vTaskSuspend(p_Device->Internal.Handle);
     vTaskDelete(p_Device->Internal.Handle);
 
@@ -606,6 +604,9 @@ void RAK3172_Deinit(RAK3172_t* const p_Device)
     vQueueDelete(p_Device->Internal.MessageQueue);
     vQueueDelete(p_Device->Internal.ReceiveQueue);
 
+    free(p_Device->Internal.RxBuffer);
+    p_Device->Internal.RxBuffer = NULL;
+
     gpio_config_t Conf = {
         .pin_bit_mask = ((1ULL << p_Device->Rx) | (1ULL << p_Device->Tx)),
         .mode = GPIO_MODE_OUTPUT,
@@ -617,6 +618,8 @@ void RAK3172_Deinit(RAK3172_t* const p_Device)
     gpio_config(&Conf);
     gpio_set_level(p_Device->Rx, true);
     gpio_set_level(p_Device->Tx, false);
+
+	p_Device->Internal.isInitialized = false;
 }
 
 RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* const p_Device)

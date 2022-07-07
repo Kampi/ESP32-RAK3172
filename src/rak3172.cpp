@@ -461,7 +461,9 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
 
     if(uart_flush(p_Device->Interface))
     {
-        return RAK3172_ERR_INVALID_STATE;
+        Error = RAK3172_ERR_INVALID_STATE;
+
+        goto RAK3172_Init_Error;
     }
 
     xQueueReset(p_Device->Internal.MessageQueue);
@@ -501,7 +503,9 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
         // Echo mode is enabled. Need to receive one more line.
         if(xQueueReceive(p_Device->Internal.MessageQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
-            return RAK3172_ERR_TIMEOUT;
+            Error = RAK3172_ERR_TIMEOUT;
+
+            goto RAK3172_Init_Error;
         }
         delete Dummy;
 
@@ -515,27 +519,35 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
         uart_write_bytes(p_Device->Interface, "ATE\r\n", std::string("ATE\r\n").length());
         if(xQueueReceive(p_Device->Internal.MessageQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
-            return RAK3172_ERR_TIMEOUT;
+            Error = RAK3172_ERR_TIMEOUT;
+
+            goto RAK3172_Init_Error;
         }
         delete Dummy;
 
         #ifndef CONFIG_RAK3172_USE_RUI3
             if(xQueueReceive(p_Device->Internal.MessageQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
             {
-                return RAK3172_ERR_TIMEOUT;
+                Error = RAK3172_ERR_TIMEOUT;
+
+                goto RAK3172_Init_Error;
             }
             delete Dummy;
         #endif
 
         if(xQueueReceive(p_Device->Internal.MessageQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
-            return RAK3172_ERR_TIMEOUT;
+            Error = RAK3172_ERR_TIMEOUT;
+
+            goto RAK3172_Init_Error;
         }
 
         // Error during initialization when everything else except 'OK' is received.
         if(Dummy->find("OK") == std::string::npos)
         {
-            return RAK3172_ERR_FAIL;
+            Error = RAK3172_ERR_FAIL;
+
+            goto RAK3172_Init_Error;
         }
         delete Dummy;
     }
@@ -563,6 +575,8 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
     return RAK3172_ERR_OK;
 
 RAK3172_Init_Error:
+    vQueueDelete(p_Device->Internal.MessageQueue);
+    vQueueDelete(p_Device->Internal.ReceiveQueue);
 	free(p_Device->Internal.RxBuffer);
 	p_Device->Internal.isInitialized = false;
 

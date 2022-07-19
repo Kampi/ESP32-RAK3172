@@ -34,6 +34,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <sdkconfig.h>
+
 #include "rak3172_errors.h"
 #include "rak3172_config.h"
 
@@ -69,6 +71,7 @@ typedef enum
 {
     RAK_MODE_P2P        = 0,            /**< LoRa P2P mode. */
     RAK_MODE_LORAWAN,                   /**< LoRaWAN mode. */
+    RAK_MODE_P2P_FSK,                   /**< P2P FSK mode. */
 } RAK3172_Mode_t;
 
 /** @brief Supported join modes.
@@ -238,6 +241,10 @@ typedef struct
                                              NOTE: Managed by the driver. */
         bool ConfirmError;              /**< Message confirmation failed.
                                              NOTE: Managed by the driver. */
+        #ifndef CONFIG_RAK3172_USE_RUI3
+            uint8_t AttemptCounter;     /**< Attempt counter for the join process.
+                                             NOTE: Managed by the driver. */
+        #endif
     } LoRaWAN;
     struct
     {

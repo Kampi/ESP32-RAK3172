@@ -77,15 +77,16 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetABPKeys(const RAK3172_t* const p_Device, cons
  *                          NOTE: This is a blocking function!
  *  @param p_Device         Pointer to RAK3172 device object
  *  @param Timeout          (Optional) Timeout in seconds
- *                          NOTE: Set to 0 to disable the timeout function
+ *                          NOTE: Set to 0 to disable the timeout function.
  *  @param Attempts         (Optional) No. of join attempts
+ *                          NOTE: Must be greater than zero!
  *  @param EnableAutoJoin   (Optional) Enable auto join after power up
  *  @param Interval         (Optional) Reattempt interval
  *  @param on_Wait          (Optional) Hook for a custom wait function
  *                          NOTE: The function call is time critical. Prevent delay periods.
  *  @return                 RAK3172_ERR_OK when joined
- *                          RAK3172_ERR_FAIL when a transmission error occurs
- *                          RAK3172_ERR_TIMEOUT when the number of JOIN attemps has expired
+ *                          RAK3172_ERR_FAIL when the device has not joined the network and a join timeout has occured
+ *                          RAK3172_ERR_TIMEOUT when a join timeout has occured
  *                          RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  */
 RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Timeout = 0, uint8_t Attempts = 5, bool EnableAutoJoin = false, uint8_t Interval = 10, RAK3172_Wait_t on_Wait = NULL);

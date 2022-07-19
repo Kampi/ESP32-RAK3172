@@ -68,20 +68,18 @@ RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* const p_Device);
 
 /** @brief          Perform a software reset of the device.
  *  @param p_Device Pointer to RAK3172 device object
- *  @param Timeout  (Optional) Timeout for the device reset in seconds
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device, uint32_t Timeout = 10);
+RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device);
 
 #ifdef CONFIG_RAK3172_RESET_USE_HW
     /** @brief          Perform a hardware reset of the device.
      *  @param p_Device Pointer to RAK3172 device object
-     *  @param Timeout  (Optional) Timeout for the device reset in seconds
      *  @return         RAK3172_ERR_OK when successful
      */
-    RAK3172_Error_t RAK3172_HardReset(RAK3172_t* const p_Device, uint32_t Timeout = 10);
+    RAK3172_Error_t RAK3172_HardReset(RAK3172_t* const p_Device);
 #endif
 
 /** @brief          Transmit an AT command to the RAK3172 module.

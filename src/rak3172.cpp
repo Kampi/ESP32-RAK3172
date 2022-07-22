@@ -620,17 +620,8 @@ void RAK3172_Deinit(RAK3172_t* const p_Device)
     free(p_Device->Internal.RxBuffer);
     p_Device->Internal.RxBuffer = NULL;
 
-    gpio_config_t Conf = {
-        .pin_bit_mask = ((1ULL << p_Device->Rx) | (1ULL << p_Device->Tx)),
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-
-    gpio_config(&Conf);
-    gpio_set_level(p_Device->Rx, true);
-    gpio_set_level(p_Device->Tx, false);
+    gpio_reset_pin((gpio_num_t)p_Device->Rx);
+    gpio_reset_pin((gpio_num_t)p_Device->Tx);
 
 	p_Device->Internal.isInitialized = false;
 }

@@ -165,7 +165,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Ti
 {
     uint32_t TimeNow;
 
-    if((p_Device == NULL) || (Attempts == 0))
+    if((p_Device == NULL) || (Attempts == 0) || (Interval < 7))
     {
         return RAK3172_ERR_INVALID_ARG;
     }
@@ -180,6 +180,10 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Ti
 
     // Start the joining procedure.
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+JOIN=1:" + std::to_string(EnableAutoJoin) + ":" + std::to_string(Interval) + ":" + std::to_string(Attempts)));
+
+    #ifndef CONFIG_RAK3172_USE_RUI3
+        p_Device->LoRaWAN.AttemptCounter = Attempts;
+    #endif
 
     p_Device->Internal.isBusy = true;
 
@@ -198,12 +202,32 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Ti
             return RAK3172_ERR_TIMEOUT;
         }
 
-        esp_sleep_enable_timer_wakeup(20 * 1000ULL);
-        esp_light_sleep_start();
-        vTaskDelay(20);
-    } while(p_Device->LoRaWAN.isJoined == false);
+        if(on_Wait != NULL)
+        {
+            on_Wait();
+        }
 
-    p_Device->Internal.isBusy = false;
+        // TODO: Add attempt counter for non RUI3 based firmware, because otherwise the device will loop forever
+        #ifndef CONFIG_RAK3172_USE_RUI3
+            if(p_Device->LoRaWAN.AttemptCounter == 0)
+            {
+                RAK3172_LoRaWAN_StopJoin(p_Device);
+
+                break;
+            }
+        #endif
+
+        vTaskDelay(20 / portTICK_PERIOD_MS);
+    } while((p_Device->LoRaWAN.isJoined == false) && (p_Device->Internal.isBusy == true));
+
+    #ifndef CONFIG_RAK3172_USE_RUI3
+        p_Device->Internal.isBusy = false;
+    #endif
+
+    if(p_Device->LoRaWAN.isJoined == false)
+    {
+        return RAK3172_ERR_FAIL;
+    }
 
     return RAK3172_ERR_OK;
 }
@@ -294,9 +318,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port
                 Wait();
             }
 
-            esp_sleep_enable_timer_wakeup(20 * 1000ULL);
-            esp_light_sleep_start();
-            vTaskDelay(20);
+            vTaskDelay(20 / portTICK_PERIOD_MS);
         } while(p_Device->Internal.isBusy);
     }
 

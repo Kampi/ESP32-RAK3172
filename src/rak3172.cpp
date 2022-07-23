@@ -171,7 +171,10 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                 {
                                     ESP_LOGD(TAG, "Joined...");
 
-                                    Device->Internal.isBusy = false;
+                                    #ifdef CONFIG_RAK3172_USE_RUI3
+                                        Device->Internal.isBusy = false;
+                                    #endif
+
                                     Device->LoRaWAN.isJoined = true;
                                 }
                                 // Join failed.
@@ -183,7 +186,15 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                 {
                                     ESP_LOGD(TAG, "Not joined...");
 
-                                    Device->Internal.isBusy = false;
+                                    #ifdef CONFIG_RAK3172_USE_RUI3
+                                        Device->Internal.isBusy = false;
+                                    #else
+                                        if(Device->LoRaWAN.AttemptCounter > 0)
+                                        {
+                                            Device->LoRaWAN.AttemptCounter--;
+                                        }
+                                    #endif
+
                                     Device->LoRaWAN.isJoined = false;
                                 }
                                 // Transmission failed.
@@ -385,6 +396,7 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
     #ifdef CONFIG_RAK3172_RESET_USE_HW
         ESP_LOGI(TAG, "     Pin: %u", p_Device->Reset);
         ESP_LOGI(TAG, "     [x] Hardware reset");
+        ESP_LOGI(TAG, "     [ ] Software reset");
 
         _Reset_Config.pin_bit_mask = (1ULL << p_Device->Reset);
 
@@ -418,6 +430,7 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
         #endif
     #else
         ESP_LOGI(TAG, "     [ ] Hardware reset");
+        ESP_LOGI(TAG, "     [x] Software reset");
     #endif
 
     if(uart_driver_install(p_Device->Interface, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_QUEUE_LENGTH, &p_Device->Internal.EventQueue, 0) ||
@@ -607,17 +620,8 @@ void RAK3172_Deinit(RAK3172_t* const p_Device)
     free(p_Device->Internal.RxBuffer);
     p_Device->Internal.RxBuffer = NULL;
 
-    gpio_config_t Conf = {
-        .pin_bit_mask = ((1ULL << p_Device->Rx) | (1ULL << p_Device->Tx)),
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-
-    gpio_config(&Conf);
-    gpio_set_level(p_Device->Rx, true);
-    gpio_set_level(p_Device->Tx, false);
+    gpio_reset_pin((gpio_num_t)p_Device->Rx);
+    gpio_reset_pin((gpio_num_t)p_Device->Tx);
 
 	p_Device->Internal.isInitialized = false;
 }
@@ -651,7 +655,7 @@ RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* const p_Device)
     return RAK3172_ERR_OK;
 }
 
-RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device, uint32_t Timeout)
+RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device)
 {
     std::string Command;
 
@@ -672,7 +676,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device, uint32_t Timeout)
     Command = "ATZ\r\n";
     uart_write_bytes(p_Device->Interface, Command.c_str(), Command.length());
 
-    RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, Timeout));
+    RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, 10 * 1000UL));
 
     ESP_LOGI(TAG, "     Successful!");
 
@@ -680,7 +684,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device, uint32_t Timeout)
 }
 
 #ifdef CONFIG_RAK3172_RESET_USE_HW
-    RAK3172_Error_t RAK3172_HardReset(RAK3172_t* const p_Device, uint32_t Timeout)
+    RAK3172_Error_t RAK3172_HardReset(RAK3172_t* const p_Device)
     {
         if(p_Device == NULL)
         {
@@ -718,7 +722,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device, uint32_t Timeout)
         vTaskDelay(500 / portTICK_PERIOD_MS);
 
         #ifdef CONFIG_RAK3172_USE_RUI3
-            RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, Timeout));
+            RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, 10 * 1000UL));
         #endif
 
         ESP_LOGI(TAG, "     Successful!");

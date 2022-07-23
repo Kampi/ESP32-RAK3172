@@ -21,7 +21,7 @@
 
 #ifdef CONFIG_RAK3172_USE_RUI3
 
-#include "../include/rak3172.h"
+#include "rak3172.h"
 
 RAK3172_Error_t RAK3172_GetCLIVersion(const RAK3172_t* const p_Device, std::string* const p_Version)
 {

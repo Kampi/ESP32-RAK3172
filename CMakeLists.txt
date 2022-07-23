@@ -1,5 +1,6 @@
 set(COMPONENT_SRCS
     "src/rak3172.cpp"
+    "src/rak3172_rftest.cpp"
     "src/Commands/rak3172_commands.cpp"
     "src/Commands/rak3172_commands_rui3.cpp"
     "src/Protocols/LoRaWAN/rak3172_lorawan.cpp"

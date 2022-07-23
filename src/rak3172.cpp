@@ -23,7 +23,7 @@
 
 #include <sdkconfig.h>
 
-#include "../include/rak3172.h"
+#include "rak3172.h"
 
 #define STRINGIFY(s)                            STR(s)
 #define STR(s)                                  #s

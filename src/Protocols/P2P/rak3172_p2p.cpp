@@ -29,7 +29,7 @@
 #include <freertos/event_groups.h>
 #include <freertos/queue.h>
 
-#include "../include/rak3172.h"
+#include "rak3172.h"
 
 static const char* TAG = "RAK3172_P2P";
 

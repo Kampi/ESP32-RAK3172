@@ -100,12 +100,10 @@ RAK3172_Error_t RAK3172_LoRaWAN_StopJoin(const RAK3172_t* const p_Device);
 
 /** @brief          Check if the module has joined the network.
  *  @param p_Device Pointer to RAK3172 device object
- *  @param p_Joined Pointer to joining state. #true when joined
- *  @return         RAK3172_ERR_OK when successful
- *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_FAIL when a transmission error occurs
+ *  @param Refresh  (Optional) Set to #true to refresh the state from the device. Otherwise use the known state.
+ *  @return         #true when the device has joined the network
  */
-RAK3172_Error_t RAK3172_LoRaWAN_isJoined(RAK3172_t* const p_Device, bool* const p_Joined);
+bool RAK3172_LoRaWAN_isJoined(RAK3172_t* const p_Device, bool Refresh = true);
 
 /** @brief          Start a LoRaWAN data transmission.
  *                  NOTE: This is a blocking function!

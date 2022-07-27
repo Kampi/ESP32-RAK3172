@@ -42,7 +42,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Init(RAK3172_t* const p_Device, uint8_t TxPwr, u
 
     // Stop an ongoing joining process.
     RAK3172_ERROR_CHECK(RAK3172_LoRaWAN_StopJoin(p_Device));
-    RAK3172_ERROR_CHECK(RAK3172_LoRaWAN_isJoined(p_Device, &p_Device->LoRaWAN.isJoined));
+    p_Device->LoRaWAN.isJoined = RAK3172_LoRaWAN_isJoined(p_Device, true);
 
     p_Device->Internal.isBusy = false;
 
@@ -237,13 +237,17 @@ RAK3172_Error_t RAK3172_LoRaWAN_StopJoin(const RAK3172_t* const p_Device)
     return RAK3172_SendCommand(p_Device, "AT+JOIN=0:0:7:0");
 }
 
-RAK3172_Error_t RAK3172_LoRaWAN_isJoined(RAK3172_t* const p_Device, bool* const p_Joined)
+bool RAK3172_LoRaWAN_isJoined(RAK3172_t* const p_Device, bool Refresh)
 {
     std::string Value;
 
-    if((p_Device == NULL) || (p_Joined == NULL))
+    if(p_Device == NULL)
     {
-        return RAK3172_ERR_INVALID_ARG;
+        return false;
+    }
+    else if(Refresh == false)
+    {
+        return p_Device->LoRaWAN.isJoined;
     }
 
     p_Device->LoRaWAN.isJoined = false;
@@ -255,9 +259,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_isJoined(RAK3172_t* const p_Device, bool* const 
         p_Device->LoRaWAN.isJoined = true;
     }
 
-    *p_Joined = p_Device->LoRaWAN.isJoined;
-
-    return RAK3172_ERR_OK;
+    return p_Device->LoRaWAN.isJoined;
 }
 
 RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t* const p_Device, uint8_t Port, const uint8_t* const p_Buffer, uint8_t Length)

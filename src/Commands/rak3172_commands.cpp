@@ -23,6 +23,92 @@
 
 static const char* TAG = "RAK3172";
 
+
+RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string Command, std::string* const p_Value, std::string* const p_Status)
+{
+    std::string* Response = NULL;
+    RAK3172_Error_t Error = RAK3172_ERR_OK;
+
+    if(p_Device == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+    else if(p_Device->Internal.isBusy)
+    {
+        ESP_LOGE(TAG, "Device busy!");
+
+        return RAK3172_ERR_BUSY;
+    }
+    else if(p_Device->Internal.isInitialized == false)
+    {
+        return RAK3172_ERR_INVALID_STATE;
+    }
+
+    // Clear the queue and drop all items.
+    xQueueReset(p_Device->Internal.MessageQueue);
+
+    // Transmit the command.
+    ESP_LOGI(TAG, "Transmit command: %s", Command.c_str());
+    uart_write_bytes(p_Device->Interface, (const char*)Command.c_str(), Command.length());
+    uart_write_bytes(p_Device->Interface, "\r\n", 2);
+
+    // Copy the value if needed.
+    if(p_Value != NULL)
+    {
+        if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        {
+            return RAK3172_ERR_TIMEOUT;
+        }
+
+        #ifdef CONFIG_RAK3172_USE_RUI3
+            // Remove the command from the response.
+            size_t Index;
+
+            Index = Response->find("=");
+            *Response = Response->substr(Index + 1);
+        #endif
+
+        *p_Value = *Response;
+        delete Response;
+
+        ESP_LOGI(TAG, "     Value: %s", p_Value->c_str());
+    }
+
+    #ifndef CONFIG_RAK3172_USE_RUI3
+        // Receive the line feed before the status.
+        if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        {
+            return RAK3172_ERR_TIMEOUT;
+        }
+        delete Response;
+    #endif
+
+    // Receive the trailing status code.
+    if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+    {
+        return RAK3172_ERR_TIMEOUT;
+    }
+
+    ESP_LOGI(TAG, "     Status: %s", Response->c_str());
+
+    // Transmission is without error when 'OK' as status code and when no event data are received.
+    if(Response->find("OK") == std::string::npos)
+    {
+        Error = RAK3172_ERR_FAIL;
+    }
+
+    // Copy the status string if needed.
+    if(p_Status != NULL)
+    {
+        *p_Status = *Response;
+    }
+    ESP_LOGD(TAG, "    Error: %i", (int)Error);
+
+    delete Response;
+
+    return Error;
+}
+
 RAK3172_Error_t RAK3172_GetFWVersion(const RAK3172_t* const p_Device, std::string* const p_Version)
 {
     if(p_Version == NULL)

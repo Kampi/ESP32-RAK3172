@@ -23,7 +23,6 @@ static const char* TAG 							= "main";
 
 static void applicationTask(void* p_Parameter)
 {
-    bool Status = false;
     RAK3172_Error_t Error;
     RAK3172_Info_t Info;
 
@@ -45,13 +44,7 @@ static void applicationTask(void* p_Parameter)
         ESP_LOGE(TAG, "Can not initialize RAK3172 LoRaWAN! Error: 0x%04X", Error);
     }
 
-    Error = RAK3172_LoRaWAN_isJoined(&_Device, &Status);
-    if(Error != RAK3172_ERR_OK)
-    {
-        ESP_LOGE(TAG, "Error: 0x%04X", Error);
-    }
-
-    if(Status == false)
+    if(RAK3172_LoRaWAN_isJoined(&_Device) == false)
     {
         ESP_LOGI(TAG, "Not joined. Rejoin...");
 

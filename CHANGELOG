@@ -35,6 +35,7 @@
 									Rework event handling
 									Remove LoRaWAN transmit timeout
 									Improve parameter checking in different functions
+									Improve sleep handling of the driver
 									Add error output to "RAK3172_ERROR_CHECK"
 									Change license to MIT
 									Code optimizations

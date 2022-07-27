@@ -38,7 +38,7 @@
 /** @brief  Get the version number of the RAK3172 library.
  *  @return Library version
  */
-const inline __attribute__((always_inline)) std::string RAK3172_LibVersion(void)
+inline __attribute__((always_inline)) const std::string RAK3172_LibVersion(void)
 {
     #if((defined RAK3172_LIB_MAJOR) && (defined RAK3172_LIB_MINOR) && (defined RAK3172_LIB_BUILD))
         return std::string(STRINGIFY(RAK3172_LIB_MAJOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_MINOR)) + "." + std::string(STRINGIFY(RAK3172_LIB_BUILD));
@@ -52,6 +52,7 @@ const inline __attribute__((always_inline)) std::string RAK3172_LibVersion(void)
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_STATE when the serial interface can not initialized
+ *                  RAK3172_ERR_TIMEOUT when the driver isn´t able to communicate with the device (i. e. wrong UART settings)
  */
 RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device);
 
@@ -59,6 +60,14 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device);
  *  @param p_Device Pointer to RAK3172 device object
  */
 void RAK3172_Deinit(RAK3172_t* const p_Device);
+
+/** @brief          Use this function to perform a quick initialization of the driver after leaving the sleep mode.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
+ *                  RAK3172_ERR_INVALID_STATE when the serial interface can not initialized
+ */
+RAK3172_Error_t RAK3172_WakeUp(RAK3172_t* const p_Device);
 
 /** @brief          Perform a factory reset of the device.
  *  @param p_Device Pointer to RAK3172 device object

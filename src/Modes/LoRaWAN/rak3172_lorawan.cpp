@@ -19,7 +19,7 @@
 
 #include <sdkconfig.h>
 
-#ifdef CONFIG_RAK3172_PROT_WITH_LORAWAN
+#ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN
 
 #include <esp_log.h>
 #include <esp_sleep.h>

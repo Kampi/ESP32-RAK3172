@@ -19,7 +19,7 @@
 
 #include <sdkconfig.h>
 
-#if((defined CONFIG_RAK3172_USE_RUI3) & (defined CONFIG_RAK3172_PROT_WITH_P2P))
+#if((defined CONFIG_RAK3172_USE_RUI3) & (defined CONFIG_RAK3172_MODE_WITH_P2P))
 
 #include "rak3172.h"
 

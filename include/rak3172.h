@@ -23,12 +23,16 @@
 #include "Definitions/rak3172_defs.h"
 #include "Definitions/rak3172_errors.h"
 
-#ifdef CONFIG_RAK3172_PROT_WITH_P2P
-    #include "Protocols/P2P/rak3172_p2p.h"
+#ifdef CONFIG_RAK3172_MODE_WITH_P2P
+    #include "Modes/P2P/rak3172_p2p.h"
 #endif
 
-#ifdef CONFIG_RAK3172_PROT_WITH_LORAWAN
-    #include "Protocols/LoRaWAN/rak3172_lorawan.h"
+#ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN
+    #include "Modes/LoRaWAN/rak3172_lorawan.h"
+#endif
+
+#ifdef CONFIG_RAK3172_MODE_WITH_RF
+    #include "Modes/RF/rak317_rf.h"
 #endif
 
 #ifdef CONFIG_RAK3172_USE_RUI3
@@ -47,7 +51,7 @@ inline __attribute__((always_inline)) const std::string RAK3172_LibVersion(void)
     #endif
 }
 
-/** @brief          Initialize the driver and the RAK3172 SoM.
+/** @brief          Initialize the driver and the RAK3172 module.
  *  @param p_Device Pointer to RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function

@@ -88,7 +88,6 @@ RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t* const p_Device, std::string* co
 RAK3172_Error_t RAK3172_Sleep(const RAK3172_t* const p_Device, uint32_t Duration);
 
 /** @brief          Lock the device UART.
- *                  TODO: Not tested!
  *  @param p_Device Pointer to RAK3172 device object
  *  @param Password Password
  *  @return         RAK3172_ERR_OK when successful
@@ -98,7 +97,6 @@ RAK3172_Error_t RAK3172_Sleep(const RAK3172_t* const p_Device, uint32_t Duration
 RAK3172_Error_t RAK3172_Lock(const RAK3172_t* const p_Device, std::string Password);
 
 /** @brief          Unlock the device UART.
- *                  TODO: Not tested!
  *  @param p_Device Pointer to RAK3172 device object
  *  @param Password Password
  *  @return         RAK3172_ERR_OK when successful

@@ -1,5 +1,5 @@
  /*
- * rak3172_rftest.cpp
+ * rak3172_rf.cpp
  *
  *  Copyright (C) Daniel Kampert, 2022
  *	Website: www.kampis-elektroecke.de
@@ -17,8 +17,14 @@
  * Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
 
-#include <esp_log.h>
-
 #include <sdkconfig.h>
 
+#ifdef CONFIG_RAK3172_MODE_WITH_RF
+
+#include <esp_log.h>
+
 #include "rak3172.h"
+
+static const char* TAG = "RAK3172_RF";
+
+#endif

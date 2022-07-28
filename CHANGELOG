@@ -19,7 +19,6 @@
 									Update CHANGELOG
 									Change version number to 3.0.0
 4.0.0								Fix error in splash screen handling in function "RAK3172_SetMode"
-									Rename error codes
 									Add RAK3172 device structure initialization macro
 									Add firmware version check
 									Add factory reset
@@ -35,6 +34,7 @@
 									Add option for UART to support ESP32 power management modes
 									Rework event handling
 									Remove LoRaWAN transmit timeout
+									Rename error codes
 									Improve parameter checking in different functions
 									Improve sleep handling of the driver
 									Add error output to "RAK3172_ERROR_CHECK"

@@ -1,5 +1,4 @@
 menu "RAK3172"
-
     config RAK3172_USE_RUI3
         bool "RUI3 support"
         default y
@@ -13,17 +12,23 @@ menu "RAK3172"
             Perform a factory reset during the device driver initialization.
 
     menu "Modes"
-        config RAK3172_PROT_WITH_LORAWAN
+        config RAK3172_MODE_WITH_LORAWAN
             bool "Include LoRaWAN"
             default y
             help
                 Enable this option if you want to use the LoRaWAN mode.
 
-        config RAK3172_PROT_WITH_P2P
+        config RAK3172_MODE_WITH_P2P
             bool "Include P2P"
             default n
             help
                 Enable this option if you want to use the LoRa P2P mode.
+
+        config RAK3172_MODE_WITH_RF
+            bool "Include RF test"
+            default n
+            help
+                Enable this option if you want to use the RF test options.
     endmenu
 
     menu "UART"
@@ -79,7 +84,6 @@ menu "RAK3172"
             default 14
             help
                 Tx pin used by the UART interface.
-
     endmenu
 
     menu "Reset"
@@ -157,5 +161,4 @@ menu "RAK3172"
             help
                 Set the error base for the driver.
     endmenu
-
 endmenu

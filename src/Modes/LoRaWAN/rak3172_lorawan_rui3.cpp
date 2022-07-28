@@ -19,7 +19,7 @@
 
 #include <sdkconfig.h>
 
-#if((defined CONFIG_RAK3172_USE_RUI3) & (defined CONFIG_RAK3172_PROT_WITH_LORAWAN))
+#if((defined CONFIG_RAK3172_USE_RUI3) & (defined CONFIG_RAK3172_MODE_WITH_LORAWAN))
 
 #include "rak3172.h"
 
@@ -83,9 +83,8 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetEightChannelMode(const RAK3172_t* const p_Dev
     return RAK3172_ERR_OK;
 }
 
-RAK3172_Error_t RAK3172_LoRaWAN_GetChannelRSSI(const RAK3172_t* const p_Device, std::list<int>* p_RSSI)
+RAK3172_Error_t RAK3172_LoRaWAN_GetChannelRSSI(const RAK3172_t* const p_Device, std::vector<int>* p_RSSI)
 {
-    size_t Index;
     std::string Dummy;
     std::string Value;
 
@@ -101,7 +100,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetChannelRSSI(const RAK3172_t* const p_Device, 
         Dummy = Value.substr(0, Value.find(","));
         Value.erase(0, Dummy.length() + 1);
 
-        RSSI->push_back(std::stoi(Dummy.substr(Dummy.find(":") + 1)));
+        p_RSSI->push_back(std::stoi(Dummy.substr(Dummy.find(":") + 1)));
     } while(Value.length() > 0);
 
     return RAK3172_ERR_OK;

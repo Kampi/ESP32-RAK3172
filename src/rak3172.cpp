@@ -57,7 +57,7 @@ static uart_config_t _RAK3172_UART_Config = {
     .stop_bits              = UART_STOP_BITS_1,
     .flow_ctrl              = UART_HW_FLOWCTRL_DISABLE,
     .rx_flow_ctrl_thresh    = 0,
-#ifdef CONFIG_PM_ENABLE
+#if(defined CONFIG_PM_ENABLE) && (defined CONFIG_IDF_TARGET_ESP32)
     #if SOC_UART_SUPPORT_REF_TICK
         .source_clk         = UART_SCLK_REF_TICK,
     #else
@@ -161,7 +161,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
                         ESP_LOGD(TAG, "     Response: %s", Response->c_str());
 
-                        #ifdef CONFIG_RAK3172_PROT_WITH_LORAWAN
+                        #ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN
                             if((Device->Mode == RAK_MODE_LORAWAN) && (Response->find("+EVT") != std::string::npos))
                             {
                                 ESP_LOGD(TAG, "Event: %s", Response->c_str());
@@ -288,7 +288,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                 delete Response;
                             }
                         #endif
-                        #ifdef CONFIG_RAK3172_PROT_WITH_P2P
+                        #ifdef CONFIG_RAK3172_MODE_WITH_P2P
                             if((Device->Mode == RAK_MODE_P2P) && (Response->find("+EVT") != std::string::npos))
                             {
                                 ESP_LOGD(TAG, "Event: %s", Response->c_str());
@@ -464,13 +464,13 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
     ESP_LOGI(TAG, "Use library version: %s", RAK3172_LibVersion().c_str());
 
     ESP_LOGI(TAG, "Modes:");
-    #ifdef CONFIG_RAK3172_PROT_WITH_LORAWAN
+    #ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN
         ESP_LOGI(TAG, "     [x] LoRaWAN");
     #else
         ESP_LOGI(TAG, "     [ ] LoRaWAN");
     #endif
 
-    #ifdef CONFIG_RAK3172_PROT_WITH_P2P
+    #ifdef CONFIG_RAK3172_MODE_WITH_P2P
         ESP_LOGI(TAG, "     [x] P2P");
     #else
         ESP_LOGI(TAG, "     [ ] P2P");

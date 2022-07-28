@@ -47,7 +47,7 @@ inline __attribute__((always_inline)) const std::string RAK3172_LibVersion(void)
     #endif
 }
 
-/** @brief          Initialize the receiving task and initialize the RAK3172 SoM.
+/** @brief          Initialize the driver and the RAK3172 SoM.
  *  @param p_Device Pointer to RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
@@ -56,12 +56,12 @@ inline __attribute__((always_inline)) const std::string RAK3172_LibVersion(void)
  */
 RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device);
 
-/** @brief          Deinitialize the RAK3172 communication interface.
+/** @brief          Deinitialize the RAK3172 driver.
  *  @param p_Device Pointer to RAK3172 device object
  */
 void RAK3172_Deinit(RAK3172_t* const p_Device);
 
-/** @brief          
+/** @brief          Prepare the driver for entering sleep mode.
  *  @param p_Device Pointer to RAK3172 device object
  */
 void RAK3172_PrepareSleep(RAK3172_t* const p_Device);
@@ -108,7 +108,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device);
  */
 RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string Command, std::string* const p_Value = NULL, std::string* const p_Status = NULL);
 
-/** @brief              Get the firmware version of the RAK3172 SoM.
+/** @brief              Get the firmware version of the RAK3172 module.
  *  @param p_Device     Pointer to RAK3172 device object
  *  @param p_Version    Pointer to firmware version string
  *  @return             RAK3172_ERR_OK when successful
@@ -117,7 +117,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
  */
 RAK3172_Error_t RAK3172_GetFWVersion(const RAK3172_t* const p_Device, std::string* const p_Version);
 
-/** @brief              Get the serial number of the RAK3172 SoM.
+/** @brief              Get the serial number of the RAK3172 module.
  *  @param p_Device     Pointer to RAK3172 device object
  *  @param p_Serial     Pointer to serial number string
  *  @return             RAK3172_ERR_OK when successful
@@ -125,24 +125,6 @@ RAK3172_Error_t RAK3172_GetFWVersion(const RAK3172_t* const p_Device, std::strin
  *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
 RAK3172_Error_t RAK3172_GetSerialNumber(const RAK3172_t* const p_Device, std::string* const p_Serial);
-
-/** @brief          Get the RSSI value of the last packet.
- *  @param p_Device Pointer to RAK3172 device object
- *  @param p_RSSI   Pointer to RSSI value
- *  @return         RAK3172_ERR_OK when successful
- *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
- */
-RAK3172_Error_t RAK3172_GetRSSI(const RAK3172_t* const p_Device, int* p_RSSI);
-
-/** @brief          Get the SNR value of the last packet.
- *  @param p_Device Pointer to RAK3172 device object
- *  @param p_SNR    Pointer to SNR value
- *  @return         RAK3172_ERR_OK when successful
- *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
- */
-RAK3172_Error_t RAK3172_GetSNR(const RAK3172_t* const p_Device, int* p_SNR);
 
 /** @brief          Set the current operating mode for the module.
  *  @param p_Device Pointer to RAK3172 device object

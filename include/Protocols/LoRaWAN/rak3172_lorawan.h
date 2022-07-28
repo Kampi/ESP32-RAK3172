@@ -383,4 +383,22 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetJoinMode(const RAK3172_t* const p_Device, RAK
  */
 RAK3172_Error_t RAK3172_LoRaWAN_GetJoinMode(const RAK3172_t* const p_Device, RAK3172_JoinMode_t* const p_Mode);
 
+/** @brief          Get the RSSI value of the last packet.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_RSSI   Pointer to RSSI value
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_GetRSSI(const RAK3172_t* const p_Device, int* p_RSSI);
+
+/** @brief          Get the SNR value of the last packet.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_SNR    Pointer to SNR value
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_GetSNR(const RAK3172_t* const p_Device, int* p_SNR);
+
 #endif /* RAK3172_LORAWAN_H_ */

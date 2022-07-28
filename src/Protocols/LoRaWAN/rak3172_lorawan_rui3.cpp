@@ -83,4 +83,28 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetEightChannelMode(const RAK3172_t* const p_Dev
     return RAK3172_ERR_OK;
 }
 
+RAK3172_Error_t RAK3172_LoRaWAN_GetChannelRSSI(const RAK3172_t* const p_Device, std::list<int>* p_RSSI)
+{
+    size_t Index;
+    std::string Dummy;
+    std::string Value;
+
+    if(p_RSSI == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ARSSI=?", &Value));
+
+    do
+    {
+        Dummy = Value.substr(0, Value.find(","));
+        Value.erase(0, Dummy.length() + 1);
+
+        RSSI->push_back(std::stoi(Dummy.substr(Dummy.find(":") + 1)));
+    } while(Value.length() > 0);
+
+    return RAK3172_ERR_OK;
+}
+
 #endif

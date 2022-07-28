@@ -20,6 +20,8 @@
 #ifndef RAK3172_LORAWAN_RUI3_H_
 #define RAK3172_LORAWAN_RUI3_H_
 
+#include <vector>
+
 #include "Definitions/rak3172_defs.h"
 #include "Definitions/rak3172_errors.h"
 
@@ -67,5 +69,14 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetEightChannelMode(const RAK3172_t* const p_Dev
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
 RAK3172_Error_t RAK3172_LoRaWAN_GetEightChannelMode(const RAK3172_t* const p_Device, bool* const p_Enable);
+
+/** @brief          Get the RSSI value from all channels.
+ *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_RSSI   Pointer to RSSI list
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_GetChannelRSSI(const RAK3172_t* const p_Device, std::vector<int>* p_RSSI);
 
 #endif /* RAK3172_LORAWAN_RUI3_H_ */

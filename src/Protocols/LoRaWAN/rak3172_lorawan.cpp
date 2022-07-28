@@ -812,4 +812,36 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetJoinMode(const RAK3172_t* const p_Device, RAK
     return RAK3172_ERR_OK;
 }
 
+RAK3172_Error_t RAK3172_LoRaWAN_GetRSSI(const RAK3172_t* const p_Device, int* p_RSSI)
+{
+    std::string Value;
+
+    if(p_RSSI == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+RSSI=?", &Value));
+
+    *p_RSSI = std::stoi(Value);
+
+    return RAK3172_ERR_OK;
+}
+
+RAK3172_Error_t RAK3172_LoRaWAN_GetSNR(const RAK3172_t* const p_Device, int* p_SNR)
+{
+    std::string Value;
+
+    if(p_SNR == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+SNR=?", &Value));
+
+    *p_SNR = std::stoi(Value);
+
+    return RAK3172_ERR_OK;
+}
+
 #endif

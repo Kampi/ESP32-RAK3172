@@ -47,7 +47,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
     xQueueReset(p_Device->Internal.MessageQueue);
 
     // Transmit the command.
-    ESP_LOGI(TAG, "Transmit command: %s", Command.c_str());
+    ESP_LOGD(TAG, "Transmit command: %s", Command.c_str());
     uart_write_bytes(p_Device->Interface, (const char*)Command.c_str(), Command.length());
     uart_write_bytes(p_Device->Interface, "\r\n", 2);
 
@@ -70,7 +70,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
         *p_Value = *Response;
         delete Response;
 
-        ESP_LOGI(TAG, "     Value: %s", p_Value->c_str());
+        ESP_LOGD(TAG, "     Value: %s", p_Value->c_str());
     }
 
     #ifndef CONFIG_RAK3172_USE_RUI3
@@ -88,7 +88,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
         return RAK3172_ERR_TIMEOUT;
     }
 
-    ESP_LOGI(TAG, "     Status: %s", Response->c_str());
+    ESP_LOGD(TAG, "     Status: %s", Response->c_str());
 
     // Transmission is without error when 'OK' as status code and when no event data are received.
     if(Response->find("OK") == std::string::npos)
@@ -101,7 +101,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
     {
         *p_Status = *Response;
     }
-    ESP_LOGD(TAG, "    Error: %i", (int)Error);
+    ESP_LOGD(TAG, "    Error: 0x%X", (int)Error);
 
     delete Response;
 
@@ -126,38 +126,6 @@ RAK3172_Error_t RAK3172_GetSerialNumber(const RAK3172_t* const p_Device, std::st
     }
 
     return RAK3172_SendCommand(p_Device, "AT+SN=?", p_Serial);
-}
-
-RAK3172_Error_t RAK3172_GetRSSI(const RAK3172_t* const p_Device, int* p_RSSI)
-{
-    std::string Value;
-
-    if(p_RSSI == NULL)
-    {
-        return RAK3172_ERR_INVALID_ARG;
-    }
-
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+RSSI=?", &Value));
-
-    *p_RSSI = std::stoi(Value);
-
-    return RAK3172_ERR_OK;
-}
-
-RAK3172_Error_t RAK3172_GetSNR(const RAK3172_t* const p_Device, int* p_SNR)
-{
-    std::string Value;
-
-    if(p_SNR == NULL)
-    {
-        return RAK3172_ERR_INVALID_ARG;
-    }
-
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+SNR=?", &Value));
-
-    *p_SNR = std::stoi(Value);
-
-    return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_SetMode(RAK3172_t* const p_Device, RAK3172_Mode_t Mode)
@@ -227,7 +195,7 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* const p_Device, RAK3172_Mode_t Mode)
 
     // The mode was changed. Set the new mode.
     p_Device->Mode = Mode;
-    ESP_LOGI(TAG, "New mode: %u", p_Device->Mode);
+    ESP_LOGD(TAG, "New mode: %u", p_Device->Mode);
 
 RAK3172_SetMode_Exit:
     p_Device->Internal.isBusy = false;

@@ -42,11 +42,11 @@
 
 #ifdef CONFIG_RAK3172_RESET_USE_HW
     static gpio_config_t _RAK3172_Reset_Config = {
-        .pin_bit_mask = 0,
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE,
+        .pin_bit_mask       = 0,
+        .mode               = GPIO_MODE_OUTPUT,
+        .pull_up_en         = GPIO_PULLUP_DISABLE,
+        .pull_down_en       = GPIO_PULLDOWN_DISABLE,
+        .intr_type          = GPIO_INTR_DISABLE,
     };
 #endif
 
@@ -68,7 +68,7 @@ static uart_config_t _RAK3172_UART_Config = {
 #endif
 };
 
-static const char* TAG = "RAK3172";
+static const char* TAG      = "RAK3172";
 
 /** @brief          Receive the splash screen after a reset.
  *  @param p_Device Pointer to RAK3172 device object
@@ -123,7 +123,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
     while(true)
     {
-        if(xQueueReceive(Device->Internal.EventQueue, (void*)&Event, 20))
+        if(xQueueReceive(Device->Internal.EventQueue, (void*)&Event, 20 / portTICK_PERIOD_MS))
         {
             size_t BufferedSize;
             uint32_t PatternPos;
@@ -146,7 +146,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
                         ESP_LOGD(TAG, "     Pattern detected at position %u. Use buffered size: %u", PatternPos, BufferedSize);
 
-                        uart_read_bytes(Device->Interface, Device->Internal.RxBuffer, PatternPos, 10);
+                        uart_read_bytes(Device->Interface, Device->Internal.RxBuffer, PatternPos, 10 / portTICK_PERIOD_MS);
 
                         // Copy the data from the buffer into the string.
                         for(uint32_t i = 0; i < PatternPos; i++)
@@ -362,6 +362,8 @@ static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t* const p_Device)
 {
     RAK3172_Error_t Error;
 
+    esp_log_level_set("uart", ESP_LOG_NONE);
+
     if(uart_driver_install(p_Device->Interface, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_QUEUE_LENGTH, &p_Device->Internal.EventQueue, 0) ||
        uart_param_config(p_Device->Interface, &_RAK3172_UART_Config) ||
        uart_set_pin(p_Device->Interface, p_Device->Tx, p_Device->Rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) ||
@@ -449,8 +451,6 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
 
     p_Device->Internal.isInitialized = false;
     p_Device->Internal.isBusy = false;
-
-    esp_log_level_set("uart", ESP_LOG_NONE);
 
     _RAK3172_UART_Config.baud_rate = p_Device->Baudrate;
 

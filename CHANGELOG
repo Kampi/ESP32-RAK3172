@@ -27,7 +27,8 @@
 									Add "RAK3172_ERR_NOT_CONNECTED" in LoRaWAN mode
 									Add error check for "RAK3172_LoRaWAN_SetRX1Delay" and "RAK3172_LoRaWAN_SetRX2Delay"
 									Add function to set / get the LoRaWAN join mode (ABP or OTAA)
-									And functions to get / set the join (1/2) and Rx (1/2) delays
+									Add functions to get / set the join (1/2) and Rx (1/2) delays
+									Add function to get the RSSI value from all channels in LoRaWAN mode 
 									Add option to enable / disable a hardware reset
 									Add support for core affinity
 									Add support for RUI3 based firmware

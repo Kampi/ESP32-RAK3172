@@ -23,11 +23,11 @@
 #include "Definitions/rak3172_defs.h"
 #include "Definitions/rak3172_errors.h"
 
-#ifdef CONFIG_RAK3172_WITH_P2P
+#ifdef CONFIG_RAK3172_PROT_WITH_P2P
     #include "Protocols/P2P/rak3172_p2p.h"
 #endif
 
-#ifdef CONFIG_RAK3172_WITH_LORAWAN
+#ifdef CONFIG_RAK3172_PROT_WITH_LORAWAN
     #include "Protocols/LoRaWAN/rak3172_lorawan.h"
 #endif
 
@@ -61,11 +61,16 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device);
  */
 void RAK3172_Deinit(RAK3172_t* const p_Device);
 
+/** @brief          
+ *  @param p_Device Pointer to RAK3172 device object
+ */
+void RAK3172_PrepareSleep(RAK3172_t* const p_Device);
+
 /** @brief          Use this function to perform a quick initialization of the driver after leaving the sleep mode.
  *  @param p_Device Pointer to RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
- *                  RAK3172_ERR_INVALID_STATE when the serial interface can not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the device was not initialized before
  */
 RAK3172_Error_t RAK3172_WakeUp(RAK3172_t* const p_Device);
 

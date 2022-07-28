@@ -23,7 +23,6 @@
 
 static const char* TAG = "RAK3172";
 
-
 RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string Command, std::string* const p_Value, std::string* const p_Status)
 {
     std::string* Response = NULL;

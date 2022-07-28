@@ -19,7 +19,7 @@
 
 #include <sdkconfig.h>
 
-#if((defined CONFIG_RAK3172_USE_RUI3) & (defined CONFIG_RAK3172_WITH_LORAWAN))
+#if((defined CONFIG_RAK3172_USE_RUI3) & (defined CONFIG_RAK3172_PROT_WITH_LORAWAN))
 
 #include "rak3172.h"
 

@@ -241,10 +241,8 @@ typedef struct
                                              NOTE: Managed by the driver. */
         bool ConfirmError;              /**< Message confirmation failed.
                                              NOTE: Managed by the driver. */
-        #ifndef CONFIG_RAK3172_USE_RUI3
-            uint8_t AttemptCounter;     /**< Attempt counter for the join process.
-                                             NOTE: Managed by the driver. */
-        #endif
+        uint8_t AttemptCounter;         /**< Attempt counter for the join process.
+                                             NOTE: Managed by the driver and only used when RUI3 isn´t used. */
     } LoRaWAN;
     struct
     {

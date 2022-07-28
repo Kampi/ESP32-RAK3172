@@ -41,7 +41,7 @@
 #endif
 
 #ifdef CONFIG_RAK3172_RESET_USE_HW
-    static gpio_config_t _Reset_Config = {
+    static gpio_config_t _RAK3172_Reset_Config = {
         .pin_bit_mask = 0,
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -50,7 +50,7 @@
     };
 #endif
 
-static uart_config_t _UART_Config = {
+static uart_config_t _RAK3172_UART_Config = {
     .baud_rate              = 9600,
     .data_bits              = UART_DATA_8_BITS,
     .parity                 = UART_PARITY_DISABLE,
@@ -161,7 +161,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
                         ESP_LOGD(TAG, "     Response: %s", Response->c_str());
 
-                        #ifdef CONFIG_RAK3172_WITH_LORAWAN
+                        #ifdef CONFIG_RAK3172_PROT_WITH_LORAWAN
                             if((Device->Mode == RAK_MODE_LORAWAN) && (Response->find("+EVT") != std::string::npos))
                             {
                                 ESP_LOGD(TAG, "Event: %s", Response->c_str());
@@ -288,7 +288,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                 delete Response;
                             }
                         #endif
-                        #ifdef CONFIG_RAK3172_WITH_P2P
+                        #ifdef CONFIG_RAK3172_PROT_WITH_P2P
                             if((Device->Mode == RAK_MODE_P2P) && (Response->find("+EVT") != std::string::npos))
                             {
                                 ESP_LOGD(TAG, "Event: %s", Response->c_str());
@@ -334,9 +334,9 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                     xQueueSend(Device->Internal.ReceiveQueue, &Received, 0);
                                 }
                             }
+                            // Any other messages from the module.
+                            else
                         #endif
-                        // Any other messages from the module.
-                        else
                         {
                             xQueueSend(Device->Internal.MessageQueue, &Response, 0);
                         }
@@ -363,7 +363,7 @@ static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t* const p_Device)
     RAK3172_Error_t Error;
 
     if(uart_driver_install(p_Device->Interface, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_QUEUE_LENGTH, &p_Device->Internal.EventQueue, 0) ||
-       uart_param_config(p_Device->Interface, &_UART_Config) ||
+       uart_param_config(p_Device->Interface, &_RAK3172_UART_Config) ||
        uart_set_pin(p_Device->Interface, p_Device->Tx, p_Device->Rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) ||
        uart_enable_pattern_det_baud_intr(p_Device->Interface, '\n', 1, 1, 0, 0) ||
        uart_pattern_queue_reset(p_Device->Interface, CONFIG_RAK3172_TASK_QUEUE_LENGTH))
@@ -452,7 +452,7 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
 
     esp_log_level_set("uart", ESP_LOG_NONE);
 
-    _UART_Config.baud_rate = p_Device->Baudrate;
+    _RAK3172_UART_Config.baud_rate = p_Device->Baudrate;
 
     ESP_LOGI(TAG, "UART config:");
     ESP_LOGI(TAG, "     Interface: %u", p_Device->Interface);
@@ -464,13 +464,13 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
     ESP_LOGI(TAG, "Use library version: %s", RAK3172_LibVersion().c_str());
 
     ESP_LOGI(TAG, "Modes:");
-    #ifdef CONFIG_RAK3172_WITH_LORAWAN
+    #ifdef CONFIG_RAK3172_PROT_WITH_LORAWAN
         ESP_LOGI(TAG, "     [x] LoRaWAN");
     #else
         ESP_LOGI(TAG, "     [ ] LoRaWAN");
     #endif
 
-    #ifdef CONFIG_RAK3172_WITH_P2P
+    #ifdef CONFIG_RAK3172_PROT_WITH_P2P
         ESP_LOGI(TAG, "     [x] P2P");
     #else
         ESP_LOGI(TAG, "     [ ] P2P");
@@ -482,22 +482,22 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
         ESP_LOGI(TAG, "     [x] Hardware reset");
         ESP_LOGI(TAG, "     [ ] Software reset");
 
-        _Reset_Config.pin_bit_mask = (1ULL << p_Device->Reset);
+        _RAK3172_Reset_Config.pin_bit_mask = (1ULL << p_Device->Reset);
 
         // Configure the pull-up / pull-down resistor.
         #ifdef CONFIG_RAK3172_RESET_USE_PULL
             #ifdef CONFIG_RAK3172_RESET_INVERT
                 ESP_LOGI(TAG, "     [x] Internal pull-down");
-                _Reset_Config.pull_down_en = GPIO_PULLDOWN_ENABLE,
+                _RAK3172_Reset_Config.pull_down_en = GPIO_PULLDOWN_ENABLE,
             #else
                 ESP_LOGI(TAG, "     [x] Internal pull-up");
-                _Reset_Config.pull_up_en = GPIO_PULLUP_ENABLE;
+                _RAK3172_Reset_Config.pull_up_en = GPIO_PULLUP_ENABLE;
             #endif
         #else
             ESP_LOGI(TAG, "     [x] No pull-up / pull-down");
         #endif
 
-        if(gpio_config(&_Reset_Config) != ESP_OK)
+        if(gpio_config(&_RAK3172_Reset_Config) != ESP_OK)
         {
             return RAK3172_ERR_INVALID_STATE;
         }
@@ -623,6 +623,36 @@ void RAK3172_Deinit(RAK3172_t* const p_Device)
 	p_Device->Internal.isInitialized = false;
 }
 
+void RAK3172_PrepareSleep(RAK3172_t* const p_Device)
+{
+    if(p_Device == NULL)
+    {
+        return;
+    }
+
+    gpio_reset_pin(p_Device->Rx);
+    gpio_reset_pin(p_Device->Tx);
+}
+
+RAK3172_Error_t RAK3172_WakeUp(RAK3172_t* const p_Device)
+{
+    std::string Response;
+
+    if(p_Device == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+    else if(p_Device->Internal.isInitialized == false)
+    {
+        return RAK3172_ERR_INVALID_STATE;
+    }
+
+    p_Device->Internal.isInitialized = false;
+    p_Device->Internal.isBusy = false;
+
+    return RAK3172_BasicInit(p_Device);
+}
+
 RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* const p_Device)
 {
     std::string Command;
@@ -650,25 +680,6 @@ RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* const p_Device)
     ESP_LOGI(TAG, "     Successful!");
 
     return RAK3172_ERR_OK;
-}
-
-RAK3172_Error_t RAK3172_WakeUp(RAK3172_t* const p_Device)
-{
-    std::string Response;
-
-    if(p_Device == NULL)
-    {
-        return RAK3172_ERR_INVALID_ARG;
-    }
-    else if(p_Device->Internal.isInitialized == false)
-    {
-        return RAK3172_ERR_INVALID_STATE;
-    }
-
-    p_Device->Internal.isInitialized = false;
-    p_Device->Internal.isBusy = false;
-
-    return RAK3172_BasicInit(p_Device);
 }
 
 RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device)

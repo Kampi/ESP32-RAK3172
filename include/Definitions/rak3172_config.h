@@ -53,6 +53,7 @@
                                                                                                 .Join = RAK_JOIN_ABP,                       \
                                                                                                 .isJoined = false,                          \
                                                                                                 .ConfirmError = false,                      \
+                                                                                                .AttemptCounter = 0,                        \
                                                                                             },                                              \
                                                                                             .P2P = {                                        \
                                                                                                 .Active = false,                            \
@@ -90,6 +91,7 @@
                                                                             .Join = RAK_JOIN_ABP,                                           \
                                                                             .isJoined = false,                                              \
                                                                             .ConfirmError = false,                                          \
+                                                                            .AttemptCounter = 0,                                            \
                                                                         },                                                                  \
                                                                         .P2P = {                                                            \
                                                                             .Active = false,                                                \

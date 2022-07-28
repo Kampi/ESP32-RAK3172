@@ -22,24 +22,30 @@
 
 #include <stdint.h>
 
+#include <sdkconfig.h>
+
+#ifndef CONFIG_RAK3172_MISC_ERROR_BASE
+    #define CONFIG_RAK3172_MISC_ERROR_BASE                      0xA000
+#endif
+
 typedef uint32_t RAK3172_Error_t;
 
 /** @brief      Generic error check macro.
  *  @param Func Function that should be checked
  */
-#define RAK3172_ERROR_CHECK(Func)                               do                                                                                                  \
-                                                                {                                                                                                   \
-                                                                    RAK3172_Error_t Error = Func;                                                                   \
-                                                                    if(Error != RAK3172_ERR_OK)                                                                     \
-                                                                    {                                                                                               \
-                                                                        ESP_LOGE("RAK3172", "Error check failed in (%s) at line (%u)!", __FUNCTION__, __LINE__);    \
-                                                                        return Error;                                                                               \
-                                                                    }                                                                                               \
+#define RAK3172_ERROR_CHECK(Func)                               do                                                                                                              \
+                                                                {                                                                                                               \
+                                                                    RAK3172_Error_t Error = Func;                                                                               \
+                                                                    if(Error != RAK3172_ERR_OK)                                                                                 \
+                                                                    {                                                                                                           \
+                                                                        ESP_LOGE("RAK3172", "Error check failed in (%s) at line (%u): 0x%x", __FUNCTION__, __LINE__, Error);    \
+                                                                        return Error;                                                                                           \
+                                                                    }                                                                                                           \
                                                                 } while(0);
 
 /** @brief RAK3172 error base.
  */
-#define RAK3172_ERR_BASE                0xA000
+#define RAK3172_ERR_BASE                CONFIG_RAK3172_MISC_ERROR_BASE
 
 /** @brief No error.
  */

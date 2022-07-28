@@ -19,7 +19,7 @@
 
 #include <sdkconfig.h>
 
-#ifdef CONFIG_RAK3172_WITH_P2P
+#ifdef CONFIG_RAK3172_PROT_WITH_P2P
 
 #include <esp_log.h>
 #include <esp_sleep.h>

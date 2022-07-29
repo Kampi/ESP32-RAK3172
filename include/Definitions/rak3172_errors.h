@@ -38,7 +38,7 @@ typedef uint32_t RAK3172_Error_t;
                                                                     RAK3172_Error_t Error = Func;                                                                               \
                                                                     if(Error != RAK3172_ERR_OK)                                                                                 \
                                                                     {                                                                                                           \
-                                                                        ESP_LOGE("RAK3172", "Error check failed in (%s) at line (%u): 0x%x", __FUNCTION__, __LINE__, Error);    \
+                                                                        ESP_LOGE("RAK3172", "Error check failed in (%s) at line (%u): 0x%X", __FUNCTION__, __LINE__, Error);    \
                                                                         return Error;                                                                                           \
                                                                     }                                                                                                           \
                                                                 } while(0);

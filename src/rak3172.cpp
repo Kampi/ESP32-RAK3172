@@ -625,13 +625,16 @@ void RAK3172_Deinit(RAK3172_t* const p_Device)
 
 void RAK3172_PrepareSleep(RAK3172_t* const p_Device)
 {
-    if(p_Device == NULL)
+    if((p_Device == NULL) || (p_Device->Internal.isInitialized == false))
     {
         return;
     }
 
     gpio_reset_pin(p_Device->Rx);
     gpio_reset_pin(p_Device->Tx);
+
+    p_Device->Internal.isInitialized = false;
+    p_Device->Internal.isBusy = false;
 }
 
 RAK3172_Error_t RAK3172_WakeUp(RAK3172_t* const p_Device)
@@ -642,12 +645,12 @@ RAK3172_Error_t RAK3172_WakeUp(RAK3172_t* const p_Device)
     {
         return RAK3172_ERR_INVALID_ARG;
     }
-    else if(p_Device->Internal.isInitialized == false)
+    else if(p_Device->Internal.isInitialized == true)
     {
-        return RAK3172_ERR_INVALID_STATE;
+        return RAK3172_ERR_OK;
     }
 
-    p_Device->Internal.isInitialized = false;
+    p_Device->Internal.isInitialized = true;
     p_Device->Internal.isBusy = false;
 
     return RAK3172_BasicInit(p_Device);

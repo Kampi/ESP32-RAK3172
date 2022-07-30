@@ -123,7 +123,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
     while(true)
     {
-        if(xQueueReceive(Device->Internal.EventQueue, (void*)&Event, 20 / portTICK_PERIOD_MS))
+        if(xQueueReceive(Device->Internal.EventQueue, (void*)&Event, 20))
         {
             size_t BufferedSize;
             uint32_t PatternPos;
@@ -146,7 +146,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
                         ESP_LOGD(TAG, "     Pattern detected at position %u. Use buffered size: %u", PatternPos, BufferedSize);
 
-                        uart_read_bytes(Device->Interface, Device->Internal.RxBuffer, PatternPos, 10 / portTICK_PERIOD_MS);
+                        uart_read_bytes(Device->Interface, Device->Internal.RxBuffer, PatternPos, 10);
 
                         // Copy the data from the buffer into the string.
                         for(uint32_t i = 0; i < PatternPos; i++)
@@ -527,7 +527,8 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
 
     vTaskDelay(500 / portTICK_PERIOD_MS);
 
-    #ifdef CONFIG_RAK3172_FACTORY_RESET
+    // Firmware without RUI3 will produce a MIC mismatch when using a factory reset during the initialization.
+    #if(defined CONFIG_RAK3172_FACTORY_RESET) && (defined CONFIG_RAK3172_USE_RUI3)
         RAK3172_ERROR_CHECK(RAK3172_FactoryReset(p_Device));
     #endif
 

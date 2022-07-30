@@ -47,7 +47,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
     xQueueReset(p_Device->Internal.MessageQueue);
 
     // Transmit the command.
-    ESP_LOGD(TAG, "Transmit command: %s", Command.c_str());
+    ESP_LOGI(TAG, "Transmit command: %s", Command.c_str());
     uart_write_bytes(p_Device->Interface, (const char*)Command.c_str(), Command.length());
     uart_write_bytes(p_Device->Interface, "\r\n", 2);
 
@@ -70,7 +70,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
         *p_Value = *Response;
         delete Response;
 
-        ESP_LOGD(TAG, "     Value: %s", p_Value->c_str());
+        ESP_LOGI(TAG, "     Value: %s", p_Value->c_str());
     }
 
     #ifndef CONFIG_RAK3172_USE_RUI3
@@ -88,7 +88,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
         return RAK3172_ERR_TIMEOUT;
     }
 
-    ESP_LOGD(TAG, "     Status: %s", Response->c_str());
+    ESP_LOGI(TAG, "     Status: %s", Response->c_str());
 
     // Transmission is without error when 'OK' as status code and when no event data are received.
     if(Response->find("OK") == std::string::npos)

@@ -207,7 +207,6 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Ti
             on_Wait();
         }
 
-        // TODO: Add attempt counter for non RUI3 based firmware, because otherwise the device will loop forever
         #ifndef CONFIG_RAK3172_USE_RUI3
             if(p_Device->LoRaWAN.AttemptCounter == 0)
             {

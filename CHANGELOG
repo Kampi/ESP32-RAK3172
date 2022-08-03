@@ -32,6 +32,7 @@
 									Add support for core affinity
 									Add support for RUI3 based firmware
 									Add option for UART to support ESP32 power management modes
+									Add option for non-blocking "RAK3172_LoRaWAN_StartJoin" function
 									Rework event handling
 									Remove LoRaWAN transmit timeout
 									Rename error codes

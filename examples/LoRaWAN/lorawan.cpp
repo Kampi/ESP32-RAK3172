@@ -48,7 +48,7 @@ static void applicationTask(void* p_Parameter)
     {
         ESP_LOGI(TAG, "Not joined. Rejoin...");
 
-        Error = RAK3172_LoRaWAN_StartJoin(&_Device, RAK3172_NO_TIMEOUT, LORAWAN_JOIN_ATTEMPTS, false, LORAWAN_MAX_JOIN_INTERVAL_S, NULL);
+        Error = RAK3172_LoRaWAN_StartJoin(&_Device, LORAWAN_JOIN_ATTEMPTS, RAK3172_NO_TIMEOUT, false, LORAWAN_MAX_JOIN_INTERVAL_S, NULL);
         if(Error != RAK3172_ERR_OK)
         {
             ESP_LOGE(TAG, "Can not join network! Error: 0x%04X", Error);

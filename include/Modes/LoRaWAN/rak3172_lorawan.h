@@ -76,10 +76,14 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetABPKeys(const RAK3172_t* const p_Device, cons
 /** @brief                  Start the joining process.
  *                          NOTE: This is a blocking function!
  *  @param p_Device         Pointer to RAK3172 device object
- *  @param Timeout          (Optional) Timeout in seconds
- *                          NOTE: Set to 0 to disable the timeout function.
  *  @param Attempts         (Optional) No. of join attempts
  *                          NOTE: Must be greater than zero!
+ *                          NOTE: Only used when \ref Block is set to #true (default).
+ *  @param Timeout          (Optional) Timeout in seconds
+ *                          NOTE: Set to 0 to disable the timeout function.
+ *                          NOTE: Only used when \ref Block is set to #true (default).
+ *  @param Block            (Optional) Enable / Disable the blocking of this function
+ *                          NOTE: Only supported with RUI3 firmware.
  *  @param EnableAutoJoin   (Optional) Enable auto join after power up
  *  @param Interval         (Optional) Reattempt interval
  *  @param on_Wait          (Optional) Hook for a custom wait function
@@ -89,7 +93,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetABPKeys(const RAK3172_t* const p_Device, cons
  *                          RAK3172_ERR_TIMEOUT when a join timeout has occured
  *                          RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  */
-RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Timeout = 0, uint8_t Attempts = 5, bool EnableAutoJoin = false, uint8_t Interval = 10, RAK3172_Wait_t on_Wait = NULL);
+RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint8_t Attempts = 5, uint32_t Timeout = 0, bool Block = true, bool EnableAutoJoin = false, uint8_t Interval = 10, RAK3172_Wait_t on_Wait = NULL);
 
 /** @brief          Stop the joining process.
  *  @param p_Device Pointer to RAK3172 device object

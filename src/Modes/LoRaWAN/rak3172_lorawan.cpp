@@ -161,11 +161,11 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetABPKeys(const RAK3172_t* const p_Device, cons
     return RAK3172_SendCommand(p_Device, "AT+DEVADDR=" + DevADDRString);
 }
 
-RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Timeout, uint8_t Attempts, bool EnableAutoJoin, uint8_t Interval, RAK3172_Wait_t on_Wait)
+RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint8_t Attempts, uint32_t Timeout, bool Block, bool EnableAutoJoin, uint8_t Interval, RAK3172_Wait_t on_Wait)
 {
     uint32_t TimeNow;
 
-    if((p_Device == NULL) || (Attempts == 0) || (Interval < 7))
+    if((p_Device == NULL) || ((Attempts == 0) && (Block == true)) || (Interval < 7))
     {
         return RAK3172_ERR_INVALID_ARG;
     }
@@ -177,6 +177,12 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Ti
     {
         return RAK3172_ERR_OK;
     }
+    #ifndef CONFIG_RAK3172_USE_RUI3
+        else if(Block == false)
+        {
+            return RAK3172_ERR_INVALID_ARG;
+        }
+    #endif
 
     // Start the joining procedure.
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+JOIN=1:" + std::to_string(EnableAutoJoin) + ":" + std::to_string(Interval) + ":" + std::to_string(Attempts)));
@@ -217,13 +223,13 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t* const p_Device, uint32_t Ti
         #endif
 
         vTaskDelay(20 / portTICK_PERIOD_MS);
-    } while((p_Device->LoRaWAN.isJoined == false) && (p_Device->Internal.isBusy == true));
+    } while((Block == true) && (p_Device->LoRaWAN.isJoined == false) && (p_Device->Internal.isBusy == true));
 
     #ifndef CONFIG_RAK3172_USE_RUI3
         p_Device->Internal.isBusy = false;
     #endif
 
-    if(p_Device->LoRaWAN.isJoined == false)
+    if((Block == true) && (p_Device->LoRaWAN.isJoined == false))
     {
         return RAK3172_ERR_FAIL;
     }

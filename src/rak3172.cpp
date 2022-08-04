@@ -356,7 +356,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 /** @brief          Perform the basic initialization of the driver.
  *  @param p_Device Pointer to RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
- *                  RAK3172_ERR_NO_MEM when the message queues, the task or the receive buffer can not be created
+ *                  RAK3172_ERR_NO_MEM when the message queues, the task or the receive buffer Cannot be created
  */
 static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t* const p_Device)
 {
@@ -638,6 +638,8 @@ void RAK3172_PrepareSleep(RAK3172_t* const p_Device)
         return;
     }
 
+    ESP_LOGI(TAG, "Prepare driver for entering sleep mode...");
+
     gpio_reset_pin(p_Device->Rx);
     gpio_reset_pin(p_Device->Tx);
 
@@ -657,6 +659,8 @@ RAK3172_Error_t RAK3172_WakeUp(RAK3172_t* const p_Device)
     {
         return RAK3172_ERR_OK;
     }
+
+    ESP_LOGI(TAG, "Wake up driver from sleep mode...");
 
     p_Device->Internal.isInitialized = true;
     p_Device->Internal.isBusy = false;

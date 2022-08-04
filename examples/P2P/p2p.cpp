@@ -29,7 +29,7 @@ static void applicationTask(void* p_Parameter)
     Error = RAK3172_Init(&_Device);
     if(Error != RAK3172_ERR_OK)
     {
-        ESP_LOGE(TAG, "Can not initialize RAK3172! Error: 0x%04X", Error);
+        ESP_LOGE(TAG, "Cannot initialize RAK3172! Error: 0x%04X", Error);
     }
 
     ESP_LOGI(TAG, "Firmware: %s", Info.Firmware.c_str());
@@ -39,20 +39,20 @@ static void applicationTask(void* p_Parameter)
     Error = RAK3172_P2P_Init(&_Device, 868000000, RAK_PSF_12, RAK_BW_125, RAK_CR_3, 200, 14);
     if(Error != RAK3172_ERR_OK)
     {
-        ESP_LOGE(TAG, "Can not initialize RAK3172 LoRaWAN! Error: 0x%04X", Error);
+        ESP_LOGE(TAG, "Cannot initialize RAK3172 LoRaWAN! Error: 0x%04X", Error);
     }
 
     Error = RAK3172_P2P_Transmit(&_Device, Payload, sizeof(Payload) / sizeof(Payload[0]));
     if(Error != RAK3172_ERR_OK)
     {
-        ESP_LOGE(TAG, "Can not transmit LoRa message! Error: 0x%04X", Error);
+        ESP_LOGE(TAG, "Cannot transmit LoRa message! Error: 0x%04X", Error);
     }
 
     RAK3172_Rx_t Message;
     Error = RAK3172_P2P_Receive(&_Device, &Message, 10000);
     if(Error != RAK3172_ERR_OK)
     {
-        ESP_LOGE(TAG, "Can not receive LoRa message! Error: 0x%04X", Error);
+        ESP_LOGE(TAG, "Cannot receive LoRa message! Error: 0x%04X", Error);
     }
     else
     {
@@ -64,7 +64,7 @@ static void applicationTask(void* p_Parameter)
     Error = RAK3172_P2P_Listen(&_Device, 60000);
     if(Error != RAK3172_ERR_OK)
     {
-        ESP_LOGE(TAG, "Can not start LoRa listening! Error: 0x%04X", Error);
+        ESP_LOGE(TAG, "Cannot start LoRa listening! Error: 0x%04X", Error);
     }
 
     while(true)

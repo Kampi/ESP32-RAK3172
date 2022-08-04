@@ -55,7 +55,7 @@ inline __attribute__((always_inline)) const std::string RAK3172_LibVersion(void)
  *  @param p_Device Pointer to RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
- *                  RAK3172_ERR_INVALID_STATE when the serial interface can not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the serial interface Cannot initialized
  *                  RAK3172_ERR_TIMEOUT when the driver isn´t able to communicate with the device (i. e. wrong UART settings)
  */
 RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device);

@@ -31,7 +31,7 @@ static void applicationTask(void* p_Parameter)
     Error = RAK3172_Init(&_Device);
     if(Error != RAK3172_ERR_OK)
     {
-        ESP_LOGE(TAG, "Can not initialize RAK3172! Error: 0x%04X", Error);
+        ESP_LOGE(TAG, "Cannot initialize RAK3172! Error: 0x%04X", Error);
     }
 
     ESP_LOGI(TAG, "Firmware: %s", Info.Firmware.c_str());
@@ -41,7 +41,7 @@ static void applicationTask(void* p_Parameter)
     Error = RAK3172_LoRaWAN_Init(&_Device, 16, 3, RAK_JOIN_OTAA, DEVEUI, APPEUI, APPKEY, 'A', RAK_BAND_EU868, RAK_SUB_BAND_NONE);
     if(Error != RAK3172_ERR_OK)
     {
-        ESP_LOGE(TAG, "Can not initialize RAK3172 LoRaWAN! Error: 0x%04X", Error);
+        ESP_LOGE(TAG, "Cannot initialize RAK3172 LoRaWAN! Error: 0x%04X", Error);
     }
 
     if(RAK3172_LoRaWAN_isJoined(&_Device) == false)
@@ -51,7 +51,7 @@ static void applicationTask(void* p_Parameter)
         Error = RAK3172_LoRaWAN_StartJoin(&_Device, LORAWAN_JOIN_ATTEMPTS, RAK3172_NO_TIMEOUT, false, LORAWAN_MAX_JOIN_INTERVAL_S, NULL);
         if(Error != RAK3172_ERR_OK)
         {
-            ESP_LOGE(TAG, "Can not join network! Error: 0x%04X", Error);
+            ESP_LOGE(TAG, "Cannot join network! Error: 0x%04X", Error);
         }
     }
     else
@@ -66,7 +66,7 @@ static void applicationTask(void* p_Parameter)
         Error = RAK3172_LoRaWAN_Transmit(&_Device, 1, Payload, sizeof(Payload), true);
         if(Error == RAK3172_ERR_INVALID_RESPONSE)
         {
-            ESP_LOGE(TAG, "Can not transmit message! Error: 0x%04X", Error);
+            ESP_LOGE(TAG, "Cannot transmit message! Error: 0x%04X", Error);
         }
         else
         {
@@ -76,7 +76,7 @@ static void applicationTask(void* p_Parameter)
             Error = RAK3172_LoRaWAN_Receive(&_Device, &Message);
             if(Error != RAK3172_ERR_OK)
             {
-                ESP_LOGE(TAG, "Can not receive message! Error: 0x%04X", Error);
+                ESP_LOGE(TAG, "Cannot receive message! Error: 0x%04X", Error);
             }
             else
             {

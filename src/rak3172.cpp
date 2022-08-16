@@ -489,7 +489,7 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device)
         ESP_LOGI(TAG, "     [x] Hardware reset");
         ESP_LOGI(TAG, "     [ ] Software reset");
 
-        _RAK3172_Reset_Config.pin_bit_mask = (1ULL << p_Device->Reset);
+        _RAK3172_Reset_Config.pin_bit_mask = BIT(p_Device->Reset);
 
         // Configure the pull-up / pull-down resistor.
         #ifdef CONFIG_RAK3172_RESET_USE_PULL

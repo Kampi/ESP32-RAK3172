@@ -33,6 +33,10 @@ menu "RAK3172"
     endmenu
 
     menu "UART"
+		config RAK3172_UART_IRAM
+			bool "Place ISR in IRAM"
+			default n
+
         config RAK3172_UART_PORT
             int "Port number"
             range 0 2
@@ -60,7 +64,6 @@ menu "RAK3172"
 
             config RAK3172_BAUD_115200
                 bool "115200"
-
         endchoice
 
         config RAK3172_UART_BAUD

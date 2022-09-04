@@ -360,6 +360,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
  */
 static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t* const p_Device)
 {
+	uint8_t Flags = 0;
     RAK3172_Error_t Error;
 
     esp_log_level_set("uart", ESP_LOG_NONE);
@@ -371,7 +372,11 @@ static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t* const p_Device)
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    if(uart_driver_install(p_Device->Interface, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_QUEUE_LENGTH, &p_Device->Internal.EventQueue, 0) ||
+	#ifdef CONFIG_RAK3172_UART_IRAM
+		Flags = ESP_INTR_FLAG_IRAM;
+	#endif
+
+    if(uart_driver_install(p_Device->Interface, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_QUEUE_LENGTH, &p_Device->Internal.EventQueue, Flags) ||
        uart_param_config(p_Device->Interface, &_RAK3172_UART_Config) ||
        uart_set_pin(p_Device->Interface, p_Device->Tx, p_Device->Rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) ||
        uart_enable_pattern_det_baud_intr(p_Device->Interface, '\n', 1, 1, 0, 0) ||

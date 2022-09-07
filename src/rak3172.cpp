@@ -90,7 +90,7 @@ static RAK3172_Error_t RAK3172_ReceiveSplashScreen(RAK3172_t& p_Device, uint16_t
             return RAK3172_ERR_TIMEOUT;
         }
 
-        ESP_LOGI(TAG, "Response: %s", Response->c_str());
+        ESP_LOGD(TAG, "Response: %s", Response->c_str());
 
         // The driver is compiled for RUI3, but an older splash screen was received (version 1.4.0 and below).
         #ifdef CONFIG_RAK3172_USE_RUI3
@@ -437,8 +437,7 @@ static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t& p_Device)
     xQueueReset(p_Device.Internal.MessageQueue);
     p_Device.Internal.isInitialized = true;
 
-    // One last "AT" to wake up the device in case the device is in sleep mode.
-    return RAK3172_ERR_OK; /*RAK3172_SendCommand(p_Device, "AT");*/
+    return RAK3172_ERR_OK;
 
 RAK3172_BasicInit_Error_4:
     vTaskSuspend(p_Device.Internal.Handle);
@@ -509,12 +508,12 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t& p_Device)
         #else
             ESP_LOGI(TAG, "     [x] No pull-up / pull-down");
         #endif
-/*
+
         if(gpio_config(&_RAK3172_Reset_Config) != ESP_OK)
         {
             return RAK3172_ERR_INVALID_STATE;
         }
-*/
+
         // Set the reset pin when no pull-up / pull-down resistor should be used.
         #ifdef CONFIG_RAK3172_RESET_USE_PULL
             #ifdef CONFIG_RAK3172_RESET_INVERT
@@ -533,7 +532,7 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t& p_Device)
     RAK3172_ERROR_CHECK(RAK3172_BasicInit(p_Device));
 
     #ifdef CONFIG_RAK3172_RESET_USE_HW
-        //RAK3172_ERROR_CHECK(RAK3172_HardReset(p_Device));
+        RAK3172_ERROR_CHECK(RAK3172_HardReset(p_Device));
     #else
         RAK3172_ERROR_CHECK(RAK3172_SoftReset(p_Device));
     #endif

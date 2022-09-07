@@ -362,6 +362,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
  */
 static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t& p_Device)
 {
+	uint8_t Flags = 0;
     RAK3172_Error_t Error;
 
     esp_log_level_set("uart", ESP_LOG_NONE);

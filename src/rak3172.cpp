@@ -374,6 +374,10 @@ static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t& p_Device)
         return RAK3172_ERR_INVALID_ARG;
     }
 
+    #if CONFIG_RAK3172_UART_IRAM
+        FLAGS = ESP_INTR_FLAG_IRAM;
+    #endif
+
     ESP_LOGI(TAG, "UART config:");
     ESP_LOGI(TAG, "     Interface: %u", p_Device.Interface);
     ESP_LOGI(TAG, "     Buffer size: %u",CONFIG_RAK3172_TASK_BUFFER_SIZE);
@@ -382,7 +386,7 @@ static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t& p_Device)
     ESP_LOGI(TAG, "     Tx: %u", p_Device.Tx);
     ESP_LOGI(TAG, "     Baudrate: %u", p_Device.Baudrate);
 
-    if(uart_driver_install(p_Device.Interface, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_QUEUE_LENGTH, &p_Device.Internal.EventQueue, 0) ||
+    if(uart_driver_install(p_Device.Interface, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_QUEUE_LENGTH, &p_Device.Internal.EventQueue, Flags) ||
        uart_param_config(p_Device.Interface, &_RAK3172_UART_Config) ||
        uart_set_pin(p_Device.Interface, p_Device.Tx, p_Device.Rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) ||
        uart_enable_pattern_det_baud_intr(p_Device.Interface, '\n', 1, 1, 0, 0) ||

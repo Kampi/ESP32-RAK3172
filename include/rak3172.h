@@ -52,56 +52,56 @@ inline __attribute__((always_inline)) const std::string RAK3172_LibVersion(void)
 }
 
 /** @brief          Initialize the driver and the RAK3172 module.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_STATE when the serial interface Cannot initialized
  *                  RAK3172_ERR_TIMEOUT when the driver isn´t able to communicate with the device (i. e. wrong UART settings)
  */
-RAK3172_Error_t RAK3172_Init(RAK3172_t* const p_Device);
+RAK3172_Error_t RAK3172_Init(RAK3172_t& p_Device);
 
 /** @brief          Deinitialize the RAK3172 driver.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  */
-void RAK3172_Deinit(RAK3172_t* const p_Device);
+void RAK3172_Deinit(RAK3172_t& p_Device);
 
 /** @brief          Prepare the driver for entering sleep mode.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  */
-void RAK3172_PrepareSleep(RAK3172_t* const p_Device);
+void RAK3172_PrepareSleep(RAK3172_t& p_Device);
 
 /** @brief          Use this function to perform a quick initialization of the driver after leaving the sleep mode.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_STATE when the device was not initialized before
  */
-RAK3172_Error_t RAK3172_WakeUp(RAK3172_t* const p_Device);
+RAK3172_Error_t RAK3172_WakeUp(RAK3172_t& p_Device);
 
 /** @brief          Perform a factory reset of the device.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
  */
-RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t* const p_Device);
+RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t& p_Device);
 
 /** @brief          Perform a software reset of the device.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device);
+RAK3172_Error_t RAK3172_SoftReset(RAK3172_t& p_Device);
 
 #ifdef CONFIG_RAK3172_RESET_USE_HW
     /** @brief          Perform a hardware reset of the device.
-     *  @param p_Device Pointer to RAK3172 device object
+     *  @param p_Device RAK3172 device object
      *  @return         RAK3172_ERR_OK when successful
      */
-    RAK3172_Error_t RAK3172_HardReset(RAK3172_t* const p_Device);
+    RAK3172_Error_t RAK3172_HardReset(RAK3172_t& p_Device);
 #endif
 
 /** @brief          Transmit an AT command to the RAK3172 module.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @param Command  RAK3172 command
  *  @param p_Value  (Optional) Pointer to returned value.
  *  @param p_Status (Optional) Pointer to status string
@@ -110,59 +110,59 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t* const p_Device);
  *                  RAK3172_ERR_FAIL when an event happens, when the status is not "OK" or when the device is busy
  *                  RAK3172_ERR_TIMEOUT when a receive timeout occurs
  */
-RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string Command, std::string* const p_Value = NULL, std::string* const p_Status = NULL);
+RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Command, std::string* const p_Value = NULL, std::string* const p_Status = NULL);
 
 /** @brief              Get the firmware version of the RAK3172 module.
- *  @param p_Device     Pointer to RAK3172 device object
+ *  @param p_Device     RAK3172 device object
  *  @param p_Version    Pointer to firmware version string
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetFWVersion(const RAK3172_t* const p_Device, std::string* const p_Version);
+RAK3172_Error_t RAK3172_GetFWVersion(const RAK3172_t& p_Device, std::string* const p_Version);
 
 /** @brief              Get the serial number of the RAK3172 module.
- *  @param p_Device     Pointer to RAK3172 device object
+ *  @param p_Device     RAK3172 device object
  *  @param p_Serial     Pointer to serial number string
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetSerialNumber(const RAK3172_t* const p_Device, std::string* const p_Serial);
+RAK3172_Error_t RAK3172_GetSerialNumber(const RAK3172_t& p_Device, std::string* const p_Serial);
 
 /** @brief          Set the current operating mode for the module.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @param Mode     RAK3172 operating mode
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_SetMode(RAK3172_t* const p_Device, RAK3172_Mode_t Mode);
+RAK3172_Error_t RAK3172_SetMode(RAK3172_t& p_Device, RAK3172_Mode_t Mode);
 
 /** @brief          Get the current operating mode for the module.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetMode(RAK3172_t* const p_Device);
+RAK3172_Error_t RAK3172_GetMode(RAK3172_t& p_Device);
 
 /** @brief          Set the baudrate of the module.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @param Baud     Module baudrate
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_SetBaud(RAK3172_t* const p_Device, RAK3172_Baud_t Baud);
+RAK3172_Error_t RAK3172_SetBaud(RAK3172_t& p_Device, RAK3172_Baud_t Baud);
 
 /** @brief          Get the baudrate of the module.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @param p_Baud   Pointer to module baudrate
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_GetBaud(RAK3172_t* const p_Device, RAK3172_Baud_t* p_Baud);
+RAK3172_Error_t RAK3172_GetBaud(RAK3172_t& p_Device, RAK3172_Baud_t* p_Baud);
 
 #endif /* RAK3172_H_ */

@@ -26,57 +26,57 @@
 #include "Definitions/rak3172_errors.h"
 
 /** @brief          Get the network ID of the current network.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @param p_Enable Pointer to network ID
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetNetID(const RAK3172_t* const p_Device, std::string* const p_ID);
+RAK3172_Error_t RAK3172_LoRaWAN_GetNetID(const RAK3172_t& p_Device, std::string* const p_ID);
 
 /** @brief          Enable / Disable the single channel mode.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @param Enable   Enable / Disable the masked channel mode
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetSingleChannelMode(const RAK3172_t* const p_Device, bool Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_SetSingleChannelMode(const RAK3172_t& p_Device, bool Enable);
 
 /** @brief          Get the status of the single channel mode.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @param p_Enable Pointer to status of masked channel mode
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetSingleChannelMode(const RAK3172_t* const p_Device, bool* const p_Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_GetSingleChannelMode(const RAK3172_t& p_Device, bool* const p_Enable);
 
 /** @brief          Enable / Disable the eight channel mode.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @param Enable   Enable / Disable the masked channel mode
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetEightChannelMode(const RAK3172_t* const p_Device, bool Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_SetEightChannelMode(const RAK3172_t& p_Device, bool Enable);
 
 /** @brief          Get the status of the eight channel mode.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @param p_Enable Pointer to status of masked channel mode
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetEightChannelMode(const RAK3172_t* const p_Device, bool* const p_Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_GetEightChannelMode(const RAK3172_t& p_Device, bool* const p_Enable);
 
 /** @brief          Get the RSSI value from all channels.
- *  @param p_Device Pointer to RAK3172 device object
+ *  @param p_Device RAK3172 device object
  *  @param p_RSSI   Pointer to RSSI list
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetChannelRSSI(const RAK3172_t* const p_Device, std::vector<int>* p_RSSI);
+RAK3172_Error_t RAK3172_LoRaWAN_GetChannelRSSI(const RAK3172_t& p_Device, std::vector<int>* p_RSSI);
 
 #endif /* RAK3172_LORAWAN_RUI3_H_ */

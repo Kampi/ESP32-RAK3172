@@ -23,38 +23,34 @@
 
 static const char* TAG = "RAK3172";
 
-RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string Command, std::string* const p_Value, std::string* const p_Status)
+RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Command, std::string* const p_Value, std::string* const p_Status)
 {
     std::string* Response = NULL;
     RAK3172_Error_t Error = RAK3172_ERR_OK;
 
-    if(p_Device == NULL)
-    {
-        return RAK3172_ERR_INVALID_ARG;
-    }
-    else if(p_Device->Internal.isBusy)
+    if(p_Device.Internal.isBusy)
     {
         ESP_LOGE(TAG, "Device busy!");
 
         return RAK3172_ERR_BUSY;
     }
-    else if(p_Device->Internal.isInitialized == false)
+    else if(p_Device.Internal.isInitialized == false)
     {
         return RAK3172_ERR_INVALID_STATE;
     }
 
     // Clear the queue and drop all items.
-    xQueueReset(p_Device->Internal.MessageQueue);
+    xQueueReset(p_Device.Internal.MessageQueue);
 
     // Transmit the command.
     ESP_LOGI(TAG, "Transmit command: %s", Command.c_str());
-    uart_write_bytes(p_Device->Interface, (const char*)Command.c_str(), Command.length());
-    uart_write_bytes(p_Device->Interface, "\r\n", 2);
+    uart_write_bytes(p_Device.Interface, (const char*)Command.c_str(), Command.length());
+    uart_write_bytes(p_Device.Interface, "\r\n", 2);
 
     // Copy the value if needed.
     if(p_Value != NULL)
     {
-        if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device.Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
@@ -75,7 +71,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
 
     #ifndef CONFIG_RAK3172_USE_RUI3
         // Receive the line feed before the status.
-        if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device.Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
@@ -83,7 +79,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
     #endif
 
     // Receive the trailing status code.
-    if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+    if(xQueueReceive(p_Device.Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
     {
         return RAK3172_ERR_TIMEOUT;
     }
@@ -108,7 +104,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t* const p_Device, std::string
     return Error;
 }
 
-RAK3172_Error_t RAK3172_GetFWVersion(const RAK3172_t* const p_Device, std::string* const p_Version)
+RAK3172_Error_t RAK3172_GetFWVersion(const RAK3172_t& p_Device, std::string* const p_Version)
 {
     if(p_Version == NULL)
     {
@@ -118,7 +114,7 @@ RAK3172_Error_t RAK3172_GetFWVersion(const RAK3172_t* const p_Device, std::strin
     return RAK3172_SendCommand(p_Device, "AT+VER=?", p_Version);
 }
 
-RAK3172_Error_t RAK3172_GetSerialNumber(const RAK3172_t* const p_Device, std::string* const p_Serial)
+RAK3172_Error_t RAK3172_GetSerialNumber(const RAK3172_t& p_Device, std::string* const p_Serial)
 {
     if(p_Serial == NULL)
     {
@@ -128,34 +124,30 @@ RAK3172_Error_t RAK3172_GetSerialNumber(const RAK3172_t* const p_Device, std::st
     return RAK3172_SendCommand(p_Device, "AT+SN=?", p_Serial);
 }
 
-RAK3172_Error_t RAK3172_SetMode(RAK3172_t* const p_Device, RAK3172_Mode_t Mode)
+RAK3172_Error_t RAK3172_SetMode(RAK3172_t& p_Device, RAK3172_Mode_t Mode)
 {
     std::string Command;
     std::string* Response;
     RAK3172_Error_t Error = RAK3172_ERR_OK;
 
-    if(p_Device == NULL)
-    {
-        return RAK3172_ERR_INVALID_ARG;
-    }
-    else if(p_Device->Internal.isInitialized == false)
+    if(p_Device.Internal.isInitialized == false)
     {
         return RAK3172_ERR_INVALID_RESPONSE;
     }
-    else if(p_Device->Mode == Mode)
+    else if(p_Device.Mode == Mode)
     {
         return RAK3172_ERR_OK;
     }
 
-    p_Device->Internal.isBusy = true;
+    p_Device.Internal.isBusy = true;
 
     // Transmit the command.
     Command = "AT+NWM=" + std::to_string((uint32_t)Mode) + "\r\n";
-    uart_write_bytes(p_Device->Interface, (const char*)Command.c_str(), Command.length());
+    uart_write_bytes(p_Device.Interface, (const char*)Command.c_str(), Command.length());
 
     #ifndef CONFIG_RAK3172_USE_RUI3
         // Receive the line feed before the status.
-        if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device.Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             Error = RAK3172_ERR_TIMEOUT;
             goto RAK3172_SetMode_Exit;
@@ -164,7 +156,7 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* const p_Device, RAK3172_Mode_t Mode)
     #endif
 
     // Receive the trailing status code.
-    if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+    if(xQueueReceive(p_Device.Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
     {
         Error = RAK3172_ERR_TIMEOUT;
         goto RAK3172_SetMode_Exit;
@@ -183,39 +175,39 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t* const p_Device, RAK3172_Mode_t Mode)
     delete Response;
     do
     {
-        if(xQueueReceive(p_Device->Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) == pdFAIL)
+        if(xQueueReceive(p_Device.Internal.MessageQueue, &Response, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) == pdFAIL)
         {
-            p_Device->Internal.isBusy = false;
+            p_Device.Internal.isBusy = false;
         }
         else
         {
             delete Response;
         }
-    } while(p_Device->Internal.isBusy);
+    } while(p_Device.Internal.isBusy);
 
     // The mode was changed. Set the new mode.
-    p_Device->Mode = Mode;
-    ESP_LOGD(TAG, "New mode: %u", p_Device->Mode);
+    p_Device.Mode = Mode;
+    ESP_LOGD(TAG, "New mode: %u", p_Device.Mode);
 
 RAK3172_SetMode_Exit:
-    p_Device->Internal.isBusy = false;
+    p_Device.Internal.isBusy = false;
     return Error;
 }
 
-RAK3172_Error_t RAK3172_GetMode(RAK3172_t* const p_Device)
+RAK3172_Error_t RAK3172_GetMode(RAK3172_t& p_Device)
 {
     std::string Value;
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+NWM=?", &Value));
 
-    p_Device->Mode = (RAK3172_Mode_t)std::stoi(Value);
+    p_Device.Mode = (RAK3172_Mode_t)std::stoi(Value);
 
     return RAK3172_ERR_OK;
 }
 
-RAK3172_Error_t RAK3172_SetBaud(const RAK3172_t* const p_Device, RAK3172_Baud_t Baud)
+RAK3172_Error_t RAK3172_SetBaud(const RAK3172_t& p_Device, RAK3172_Baud_t Baud)
 {
-    if(p_Device->Baudrate == Baud)
+    if(p_Device.Baudrate == Baud)
     {
         return RAK3172_ERR_OK;
     }
@@ -223,7 +215,7 @@ RAK3172_Error_t RAK3172_SetBaud(const RAK3172_t* const p_Device, RAK3172_Baud_t 
     return RAK3172_SendCommand(p_Device, "AT+BAUD=" + std::to_string((uint32_t)Baud));
 }
 
-RAK3172_Error_t RAK3172_GetBaud(const RAK3172_t* const p_Device, RAK3172_Baud_t* p_Baud)
+RAK3172_Error_t RAK3172_GetBaud(const RAK3172_t& p_Device, RAK3172_Baud_t* p_Baud)
 {
     std::string Value;
 

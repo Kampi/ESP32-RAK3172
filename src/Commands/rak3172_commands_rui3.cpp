@@ -23,7 +23,7 @@
 
 #include "rak3172.h"
 
-RAK3172_Error_t RAK3172_GetCLIVersion(const RAK3172_t* const p_Device, std::string* const p_Version)
+RAK3172_Error_t RAK3172_GetCLIVersion(const RAK3172_t& p_Device, std::string* const p_Version)
 {
     if(p_Version == NULL)
     {
@@ -33,7 +33,7 @@ RAK3172_Error_t RAK3172_GetCLIVersion(const RAK3172_t* const p_Device, std::stri
     return RAK3172_SendCommand(p_Device, "AT+CLIVER=?", p_Version);
 }
 
-RAK3172_Error_t RAK3172_GetAPIVersion(const RAK3172_t* const p_Device, std::string* const p_Version)
+RAK3172_Error_t RAK3172_GetAPIVersion(const RAK3172_t& p_Device, std::string* const p_Version)
 {
     if(p_Version == NULL)
     {
@@ -43,7 +43,7 @@ RAK3172_Error_t RAK3172_GetAPIVersion(const RAK3172_t* const p_Device, std::stri
     return RAK3172_SendCommand(p_Device, "AT+APIVER=?", p_Version);
 }
 
-RAK3172_Error_t RAK3172_GetBuildTime(const RAK3172_t* const p_Device, std::string* const p_BuildTime)
+RAK3172_Error_t RAK3172_GetBuildTime(const RAK3172_t& p_Device, std::string* const p_BuildTime)
 {
     if(p_BuildTime == NULL)
     {
@@ -53,7 +53,7 @@ RAK3172_Error_t RAK3172_GetBuildTime(const RAK3172_t* const p_Device, std::strin
     return RAK3172_SendCommand(p_Device, "AT+BUILDTIME=?", p_BuildTime);
 }
 
-RAK3172_Error_t RAK3172_GetRepoInfo(const RAK3172_t* const p_Device, std::string* const p_Repo)
+RAK3172_Error_t RAK3172_GetRepoInfo(const RAK3172_t& p_Device, std::string* const p_Repo)
 {
     if(p_Repo == NULL)
     {
@@ -63,7 +63,7 @@ RAK3172_Error_t RAK3172_GetRepoInfo(const RAK3172_t* const p_Device, std::string
     return RAK3172_SendCommand(p_Device, "AT+REPOINFO=?", p_Repo);
 }
 
-RAK3172_Error_t RAK3172_GetModel(const RAK3172_t* const p_Device, std::string* const p_Model)
+RAK3172_Error_t RAK3172_GetModel(const RAK3172_t& p_Device, std::string* const p_Model)
 {
     if(p_Model == NULL)
     {
@@ -73,7 +73,7 @@ RAK3172_Error_t RAK3172_GetModel(const RAK3172_t* const p_Device, std::string* c
     return RAK3172_SendCommand(p_Device, "AT+HWMODEL=?", p_Model);
 }
 
-RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t* const p_Device, std::string* const p_ID)
+RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t& p_Device, std::string* const p_ID)
 {
     if(p_ID == NULL)
     {
@@ -83,12 +83,12 @@ RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t* const p_Device, std::string* co
     return RAK3172_SendCommand(p_Device, "AT+HWID=?", p_ID);
 }
 
-RAK3172_Error_t RAK3172_Sleep(const RAK3172_t* const p_Device, uint32_t Duration)
+RAK3172_Error_t RAK3172_Sleep(const RAK3172_t& p_Device, uint32_t Duration)
 {
     return RAK3172_SendCommand(p_Device, "AT+SLEEP=" + std::to_string(Duration));
 }
 
-RAK3172_Error_t RAK3172_Lock(const RAK3172_t* const p_Device, std::string Password)
+RAK3172_Error_t RAK3172_Lock(const RAK3172_t& p_Device, std::string Password)
 {
     if((Password.length() < 1) || (Password.length() > 8))
     {
@@ -97,19 +97,19 @@ RAK3172_Error_t RAK3172_Lock(const RAK3172_t* const p_Device, std::string Passwo
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+PWORD=" + Password));
 
-    uart_write_bytes(p_Device->Interface, "AT+LOCK\r\n", std::string("AT+LOCK\r\n").length());
+    uart_write_bytes(p_Device.Interface, "AT+LOCK\r\n", std::string("AT+LOCK\r\n").length());
 
     return RAK3172_ERR_FAIL;
 }
 
-RAK3172_Error_t RAK3172_Unlock(const RAK3172_t* const p_Device, std::string Password)
+RAK3172_Error_t RAK3172_Unlock(const RAK3172_t& p_Device, std::string Password)
 {
-    if((p_Device == NULL) || (Password.length() < 1) || (Password.length() > 8))
+    if((Password.length() < 1) || (Password.length() > 8))
     {
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    uart_write_bytes(p_Device->Interface, Password.c_str(), Password.length());
+    uart_write_bytes(p_Device.Interface, Password.c_str(), Password.length());
 
     return RAK3172_ERR_FAIL;
 }

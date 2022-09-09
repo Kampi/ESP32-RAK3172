@@ -43,7 +43,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Comma
     xQueueReset(p_Device.Internal.MessageQueue);
 
     // Transmit the command.
-    ESP_LOGI(TAG, "Transmit command: %s", Command.c_str());
+    ESP_LOGD(TAG, "Transmit command: %s", Command.c_str());
     uart_write_bytes(p_Device.Interface, (const char*)Command.c_str(), Command.length());
     uart_write_bytes(p_Device.Interface, "\r\n", 2);
 

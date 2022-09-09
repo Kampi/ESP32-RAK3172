@@ -18,7 +18,7 @@
 									Update documentation
 									Update CHANGELOG
 									Change version number to 3.0.0
-4.0.0								Fix error in splash screen handling in function "RAK3172_SetMode"
+4.0.0			09.09.2022			Fix error in splash screen handling in function "RAK3172_SetMode"
 									Add RAK3172 device structure initialization macro
 									Add firmware version check
 									Add factory reset

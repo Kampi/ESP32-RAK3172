@@ -375,7 +375,7 @@ static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t& p_Device)
     }
 
     #if CONFIG_RAK3172_UART_IRAM
-        FLAGS = ESP_INTR_FLAG_IRAM;
+        Flags = ESP_INTR_FLAG_IRAM;
     #endif
 
     ESP_LOGI(TAG, "UART config:");

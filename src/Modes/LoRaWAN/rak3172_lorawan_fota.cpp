@@ -1,5 +1,5 @@
  /*
- * rak3172_rf.cpp
+ * rak3172_lorawan_fota.cpp
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
@@ -19,12 +19,10 @@
 
 #include <sdkconfig.h>
 
-#ifdef CONFIG_RAK3172_MODE_WITH_RF
+#if(defined CONFIG_RAK3172_MODE_WITH_LORAWAN) && (defined CONFIG_RAK3172_MODE_WITH_LORAWAN_FOTA)
+
+#include <string.h>
 
 #include "rak3172.h"
-
-#include "../../Arch/Logging/rak3172_logging.h"
-
-static const char* TAG = "RAK3172_RF";
 
 #endif

@@ -1,9 +1,9 @@
  /*
  * rak3172_lorawan_rui3.cpp
  *
- *  Copyright (C) Daniel Kampert, 2022
+ *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 driver for ESP32.
+ *  File info: RAK3172 serial driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -25,7 +25,15 @@
 
 RAK3172_Error_t RAK3172_LoRaWAN_GetNetID(const RAK3172_t& p_Device, std::string* const p_ID)
 {
-    if(p_Device.Internal.isInitialized == false)
+    if(p_ID == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+    else if(p_Device.Mode != RAK_MODE_LORAWAN)
+    {
+        return RAK3172_ERR_INVALID_MODE;
+    }
+    else if(p_Device.Internal.isInitialized == false)
     {
         return RAK3172_ERR_INVALID_RESPONSE;
     }
@@ -39,6 +47,11 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetNetID(const RAK3172_t& p_Device, std::string*
 
 RAK3172_Error_t RAK3172_LoRaWAN_SetSingleChannelMode(const RAK3172_t& p_Device, bool Enable)
 {
+    if(p_Device.Mode != RAK_MODE_LORAWAN)
+    {
+        return RAK3172_ERR_INVALID_MODE;
+    }
+
     return RAK3172_SendCommand(p_Device, "AT+CHS=" + std::to_string(Enable));
 }
 
@@ -50,16 +63,25 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetSingleChannelMode(const RAK3172_t& p_Device, 
     {
         return RAK3172_ERR_INVALID_ARG;
     }
+    else if(p_Device.Mode != RAK_MODE_LORAWAN)
+    {
+        return RAK3172_ERR_INVALID_MODE;
+    }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+CHS=?", &Value));
 
-    *p_Enable = (bool)std::stoi(Value);
+    *p_Enable = static_cast<bool>(std::stoi(Value));
 
     return RAK3172_ERR_OK;
 }
 
 RAK3172_Error_t RAK3172_LoRaWAN_SetEightChannelMode(const RAK3172_t& p_Device, bool Enable)
 {
+    if(p_Device.Mode != RAK_MODE_LORAWAN)
+    {
+        return RAK3172_ERR_INVALID_MODE;
+    }
+
     return RAK3172_SendCommand(p_Device, "AT+CHE=" + std::to_string(Enable));
 }
 
@@ -71,10 +93,14 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetEightChannelMode(const RAK3172_t& p_Device, b
     {
         return RAK3172_ERR_INVALID_ARG;
     }
+    else if(p_Device.Mode != RAK_MODE_LORAWAN)
+    {
+        return RAK3172_ERR_INVALID_MODE;
+    }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+CHE=?", &Value));
 
-    *p_Enable = (bool)std::stoi(Value);
+    *p_Enable = static_cast<bool>(std::stoi(Value));
 
     return RAK3172_ERR_OK;
 }
@@ -87,6 +113,10 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetChannelRSSI(const RAK3172_t& p_Device, std::v
     if(p_RSSI == NULL)
     {
         return RAK3172_ERR_INVALID_ARG;
+    }
+    else if(p_Device.Mode != RAK_MODE_LORAWAN)
+    {
+        return RAK3172_ERR_INVALID_MODE;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ARSSI=?", &Value));

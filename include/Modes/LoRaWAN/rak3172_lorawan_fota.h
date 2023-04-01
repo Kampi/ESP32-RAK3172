@@ -1,7 +1,7 @@
  /*
- * rak3172_p2p.h
+ * rak3172_lorawan_fota.h
  *
- *  Copyright (C) Daniel Kampert, 2022
+ *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 driver for ESP32.
  *
@@ -17,31 +17,9 @@
  * Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
 
-#ifndef RAK3172_P2P_RUI3_H_
-#define RAK3172_P2P_RUI3_H_
+#ifndef RAK3172_LORAWAN_FOTA_H_
+#define RAK3172_LORAWAN_FOTA_H_
 
-#include "Definitions/rak3172_defs.h"
-#include "Definitions/rak3172_errors.h"
+#include "rak3172_defs.h"
 
-/** @brief          Enable the LoRa P2P encryption.
- *  @param p_Device Pointer to RAK3172 device object
- *  @param p_Key    Pointer to encryption key (8 bytes)
- *  @return         RAK3172_ERR_OK when successful
- *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- */
-RAK3172_Error_t RAK3172_P2P_EnableEncryption(RAK3172_t* const p_Device, const RAK3172_EncryptKey_t p_Key);
-
-/** @brief          Disable the LoRa P2P encryption.
- *  @param p_Device Pointer to RAK3172 device object
- *  @return         RAK3172_ERR_OK when successful
- */
-RAK3172_Error_t RAK3172_P2P_DisableEncryption(RAK3172_t* const p_Device);
-
-/** @brief              Get the status of the LoRa P2P encryption.
- *  @param p_Device     Pointer to RAK3172 device object
- *  @param p_Enabled    Pointer to encryption status
- *  @return             RAK3172_ERR_OK when successful
- */
-RAK3172_Error_t RAK3172_P2P_isEncryptionEnabled(const RAK3172_t* const p_Device, bool* const p_Enabled);
-
-#endif /* RAK3172_P2P_RUI3_H_ */
+#endif /* RAK3172_LORAWAN_FOTA_H_ */

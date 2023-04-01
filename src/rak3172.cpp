@@ -1,9 +1,9 @@
  /*
  * rak3172.cpp
  *
- *  Copyright (C) Daniel Kampert, 2022
+ *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 driver for ESP32.
+ *  File info: RAK3172 serial driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -17,28 +17,16 @@
  * Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
 
-#include <esp_log.h>
-
 #include <algorithm>
 
 #include <sdkconfig.h>
 
 #include "rak3172.h"
 
+#include "Arch/Logging/rak3172_logging.h"
+
 #define STRINGIFY(s)                            STR(s)
 #define STR(s)                                  #s
-
-#ifndef CONFIG_RAK3172_TASK_PRIO
-    #define CONFIG_RAK3172_TASK_PRIO            12
-#endif
-
-#ifndef CONFIG_RAK3172_TASK_BUFFER_SIZE
-    #define CONFIG_RAK3172_TASK_BUFFER_SIZE     1024
-#endif
-
-#ifndef CONFIG_RAK3172_TASK_QUEUE_LENGTH
-    #define CONFIG_RAK3172_TASK_QUEUE_LENGTH    8
-#endif
 
 #ifdef CONFIG_RAK3172_RESET_USE_HW
     static gpio_config_t _RAK3172_Reset_Config = {
@@ -58,7 +46,7 @@ static uart_config_t _RAK3172_UART_Config = {
     .flow_ctrl              = UART_HW_FLOWCTRL_DISABLE,
     .rx_flow_ctrl_thresh    = 0,
 #if(defined CONFIG_PM_ENABLE) && (defined CONFIG_IDF_TARGET_ESP32)
-    #if SOC_UART_SUPPORT_REF_TICK
+    #ifdef SOC_UART_SUPPORT_REF_TICK
         .source_clk         = UART_SCLK_REF_TICK,
     #else
         .source_clk         = UART_SCLK_RTC,
@@ -83,20 +71,20 @@ static RAK3172_Error_t RAK3172_ReceiveSplashScreen(RAK3172_t& p_Device, uint16_t
     {
         if(xQueueReceive(p_Device.Internal.MessageQueue, &Response, Timeout / portTICK_PERIOD_MS) != pdPASS)
         {
-            ESP_LOGE(TAG, "     Timeout!");
+            RAK3172_LOGE(TAG, "     Timeout!");
 
             p_Device.Internal.isBusy = false;
 
             return RAK3172_ERR_TIMEOUT;
         }
 
-        ESP_LOGD(TAG, "Response: %s", Response->c_str());
+        RAK3172_LOGD(TAG, "Response: %s", Response->c_str());
 
-        // The driver is compiled for RUI3, but an older splash screen was received (version 1.4.0 and below).
+        // The driver was compiled for RUI3, but an older splash screen was received (version 1.4.0 and below).
         #ifdef CONFIG_RAK3172_USE_RUI3
             if(Response->find("Version.") != std::string::npos)
             {
-                ESP_LOGE(TAG, "Firmware compiled for RUI3, but module firmware does not support RUI3!");
+                RAK3172_LOGE(TAG, "Firmware compiled for RUI3, but module firmware does not support RUI3!");
 
                 p_Device.Internal.isBusy = false;
 
@@ -125,35 +113,64 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
     while(true)
     {
-        if(xQueueReceive(Device->Internal.EventQueue, (void*)&Event, 20))
+        if(xQueueReceive(Device->Internal.EventQueue, (void*)&Event, 20 / portTICK_PERIOD_MS))
         {
             size_t BufferedSize;
-            uint32_t PatternPos;
+            int32_t PatternPos;
 
             switch(Event.type)
             {
+                case UART_FIFO_OVF:
+                {
+                    ESP_LOGW(TAG, "HW FIFO Overflow");
+
+                    uart_flush(Device->UART.Interface);
+                    xQueueReset(Device->Internal.MessageQueue);
+
+                    break;
+                }
+                case UART_BUFFER_FULL:
+                {
+                    ESP_LOGW(TAG, "Ring Buffer Full");
+
+                    uart_flush(Device->UART.Interface);
+                    xQueueReset(Device->Internal.MessageQueue);
+
+                    break;
+                }
                 case UART_PATTERN_DET:
                 {
-                    uart_get_buffered_data_len(Device->Interface, &BufferedSize);
+                    uart_get_buffered_data_len(Device->UART.Interface, &BufferedSize);
 
-                    PatternPos = uart_pattern_pop_pos(Device->Interface);
+                    PatternPos = uart_pattern_pop_pos(Device->UART.Interface);
 
                     if(PatternPos == -1)
                     {
-                        uart_flush_input(Device->Interface);
+                        uart_flush_input(Device->UART.Interface);
+                        xQueueReset(Device->Internal.MessageQueue);
                     }
                     else
                     {
+                        int BytesRead;
                         std::string* Response = new std::string();
 
-                        ESP_LOGD(TAG, "     Pattern detected at position %u. Use buffered size: %u", PatternPos, BufferedSize);
+                        RAK3172_LOGD(TAG, "     Pattern detected at position %u. Use buffered size: %u", static_cast<unsigned int>(PatternPos), static_cast<unsigned int>(BufferedSize));
 
-                        uart_read_bytes(Device->Interface, Device->Internal.RxBuffer, PatternPos, 10);
+                        BytesRead = uart_read_bytes(Device->UART.Interface, Device->Internal.RxBuffer, PatternPos, 10);
+                        if(BytesRead == -1)
+                        {
+                            uart_flush(Device->UART.Interface);
+                            xQueueReset(Device->Internal.MessageQueue);
+
+                            break;
+                        }
 
                         // Copy the data from the buffer into the string.
-                        for(uint32_t i = 0; i < PatternPos; i++)
+                        for(uint32_t i = 0; i < BytesRead; i++)
                         {
-                            char Character = (char)Device->Internal.RxBuffer[i];
+                            char Character;
+
+                            Character = Device->Internal.RxBuffer[i];
 
                             if((Character != '\n') && (Character != '\r'))
                             {
@@ -161,22 +178,23 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                             }
                         }
 
-                        ESP_LOGD(TAG, "     Response: %s", Response->c_str());
+                        RAK3172_LOGD(TAG, "     Response: %s", Response->c_str());
 
                         #ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN
                             if((Device->Mode == RAK_MODE_LORAWAN) && (Response->find("+EVT") != std::string::npos))
                             {
-                                ESP_LOGD(TAG, "Event: %s", Response->c_str());
+                                RAK3172_LOGD(TAG, "Event: %s", Response->c_str());
 
-                                // Join was successful
+                                // Join was successful.
                                 if(Response->find("JOINED") != std::string::npos)
                                 {
-                                    ESP_LOGD(TAG, "Joined...");
+                                    RAK3172_LOGD(TAG, " Joined...");
 
-                                    #ifdef CONFIG_RAK3172_USE_RUI3
-                                        Device->Internal.isBusy = false;
+                                    #ifndef CONFIG_RAK3172_USE_RUI3
+                                        Device->Internal.isJoinEvent = true;
                                     #endif
 
+                                    Device->Internal.isBusy = false;
                                     Device->LoRaWAN.isJoined = true;
                                 }
                                 // Join failed.
@@ -186,15 +204,20 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                     else if(Response->find("JOIN FAILED") != std::string::npos)
                                 #endif
                                 {
-                                    ESP_LOGD(TAG, "Not joined...");
+                                    RAK3172_LOGD(TAG, " Not joined...");
 
-                                    #ifdef CONFIG_RAK3172_USE_RUI3
+                                    if(Device->LoRaWAN.AttemptCounter > 0)
+                                    {
+                                        Device->LoRaWAN.AttemptCounter--;
+                                    }
+                                    else
+                                    {
                                         Device->Internal.isBusy = false;
-                                    #else
-                                        if(Device->LoRaWAN.AttemptCounter > 0)
-                                        {
-                                            Device->LoRaWAN.AttemptCounter--;
-                                        }
+                                    }
+
+                                    #ifndef CONFIG_RAK3172_USE_RUI3
+                                        Device->Internal.isBusy = false;
+                                        Device->Internal.isJoinEvent = true;
                                     #endif
 
                                     Device->LoRaWAN.isJoined = false;
@@ -221,11 +244,38 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                 }
                                 else if(Response->find("RX") != std::string::npos)
                                 {
+                                    size_t Index;
                                     std::string Dummy;
                                     RAK3172_Rx_t* Received = new RAK3172_Rx_t();
 
-                                    // Remove "+EVT:RX_x:" from the response.
-                                    Response->erase(Response->find("+EVT:"), std::string("+EVT:").length() + 5);
+                                    // Formats documentation:
+                                    //  FW 1.03     +EVT:RX_1, RSSI -89, SNR 4
+
+                                    // Remove "+EVT:" from the response.
+                                    Response->erase(Response->find("+EVT:"), std::string("+EVT:").length());
+
+                                    // Get the channel number from the "RX_x" part of the response.
+                                    Index = Response->find("RX");
+
+                                    if(Response->at(Index + 1) == '1')
+                                    {
+                                        Received->Group = RAK_RX_GROUP_1;
+                                    }
+                                    else if(Response->at(Index + 1) == '2')
+                                    {
+                                        Received->Group = RAK_RX_GROUP_2;
+                                    }
+                                    else if(Response->at(Index + 1) == 'B')
+                                    {
+                                        Received->Group = RAK_RX_GROUP_B;
+                                    }
+                                    else if(Response->at(Index + 1) == 'C')
+                                    {
+                                        Received->Group = RAK_RX_GROUP_C;
+                                    }
+
+                                    // Remove the "RX_x" from the response.
+                                    Response->erase(0, sizeof("RX_x"));
 
                                     // Get the RSSI value.
                                     #ifdef CONFIG_RAK3172_USE_RUI3
@@ -233,7 +283,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                         Response->erase(0, std::string(Dummy + ":").length());
                                     #else
                                         Dummy = Response->substr(std::string("RSSI").length() + 1, Response->find(","));
-                                        Response->erase(0, std::string(Dummy + ":").length() + 1);
+                                        Response->erase(0, std::string(Dummy).length() + 2);
                                     #endif
                                     Received->RSSI = std::stoi(Dummy);
 
@@ -254,14 +304,14 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                         Response->clear();
                                         do
                                         {
-                                            Bytes = uart_read_bytes(Device->Interface, &Data, 1, 10);
+                                            Bytes = uart_read_bytes(Device->UART.Interface, &Data, 1, 10);
                                             if((Bytes != 0) && (Data != '\r') && (Data != '\n'))
                                             {
                                                 *Response += Data;
                                             }
                                         } while(Bytes != 0);
 
-                                        ESP_LOGD(TAG, "Next line: %s", Response->c_str());
+                                        RAK3172_LOGD(TAG, "Next line: %s", Response->c_str());
 
                                         // Remove all "+EVT" strings.
                                         Response->erase(0, std::string("+EVT:").length());
@@ -279,10 +329,11 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                     // Get the payload.
                                     Received->Payload = *Response;
 
-                                    ESP_LOGD(TAG, "RSSI: %i", Received->RSSI);
-                                    ESP_LOGD(TAG, "SNR: %i", Received->SNR);
-                                    ESP_LOGD(TAG, "Port: %u", Received->Port);
-                                    ESP_LOGD(TAG, "Payload: %s", Received->Payload.c_str());
+                                    RAK3172_LOGI(TAG, "RSSI: %i", Received->RSSI);
+                                    RAK3172_LOGI(TAG, "SNR: %i", Received->SNR);
+                                    RAK3172_LOGI(TAG, "Port: %u", Received->Port);
+                                    RAK3172_LOGI(TAG, "Channel: %u", Received->Group);
+                                    RAK3172_LOGI(TAG, "Payload: %s", Received->Payload.c_str());
 
                                     xQueueSend(Device->Internal.ReceiveQueue, &Received, 0);
                                 }
@@ -293,7 +344,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                         #ifdef CONFIG_RAK3172_MODE_WITH_P2P
                             if((Device->Mode == RAK_MODE_P2P) && (Response->find("+EVT") != std::string::npos))
                             {
-                                ESP_LOGD(TAG, "Event: %s", Response->c_str());
+                                RAK3172_LOGD(TAG, "Event: %s", Response->c_str());
 
                                 if(Response->find("+EVT:RXP2P RECEIVE TIMEOUT") != std::string::npos)
                                 {
@@ -329,9 +380,9 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                     // Get the payload.
                                     Received->Payload = *Response;
 
-                                    ESP_LOGD(TAG, "RSSI: %i", Received->RSSI);
-                                    ESP_LOGD(TAG, "SNR: %i", Received->SNR);
-                                    ESP_LOGD(TAG, "Payload: %s", Received->Payload.c_str());
+                                    RAK3172_LOGD(TAG, "RSSI: %i", Received->RSSI);
+                                    RAK3172_LOGD(TAG, "SNR: %i", Received->SNR);
+                                    RAK3172_LOGD(TAG, "Payload: %s", Received->Payload.c_str());
 
                                     xQueueSend(Device->Internal.ReceiveQueue, &Received, 0);
                                 }
@@ -362,40 +413,49 @@ static void RAK3172_UART_EventTask(void* p_Arg)
  */
 static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t& p_Device)
 {
-    uint8_t Flags = 0;
+    uint8_t Flags;
     RAK3172_Error_t Error;
 
-    esp_log_level_set("uart", ESP_LOG_NONE);
-
-    if(p_Device.Tx == p_Device.Rx)
+    if(p_Device.UART.Tx == p_Device.UART.Rx)
     {
-        ESP_LOGE(TAG, "Invalid Rx and Tx for UART!");
+        RAK3172_LOGE(TAG, "Invalid Rx and Tx for UART!");
 
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    #if CONFIG_RAK3172_UART_IRAM
+    #ifdef CONFIG_RAK3172_UART_IRAM
         Flags = ESP_INTR_FLAG_IRAM;
+    #else
+        Flags = 0;
     #endif
 
-    ESP_LOGI(TAG, "UART config:");
-    ESP_LOGI(TAG, "     Interface: %u", p_Device.Interface);
-    ESP_LOGI(TAG, "     Buffer size: %u",CONFIG_RAK3172_TASK_BUFFER_SIZE);
-    ESP_LOGI(TAG, "     Queue length: %u", CONFIG_RAK3172_TASK_QUEUE_LENGTH);
-    ESP_LOGI(TAG, "     Rx: %u", p_Device.Rx);
-    ESP_LOGI(TAG, "     Tx: %u", p_Device.Tx);
-    ESP_LOGI(TAG, "     Baudrate: %u", p_Device.Baudrate);
+    RAK3172_LOGI(TAG, "UART config:");
+    RAK3172_LOGI(TAG, "     Interface: %u", p_Device.UART.Interface);
+    RAK3172_LOGI(TAG, "     Buffer size: %u", CONFIG_RAK3172_UART_BUFFER_SIZE);
+    RAK3172_LOGI(TAG, "     Stack size: %u", CONFIG_RAK3172_TASK_STACK_SIZE);
+    RAK3172_LOGI(TAG, "     Queue length: %u", CONFIG_RAK3172_UART_QUEUE_LENGTH);
+    RAK3172_LOGI(TAG, "     Rx: %u", p_Device.UART.Rx);
+    RAK3172_LOGI(TAG, "     Tx: %u", p_Device.UART.Tx);
+    RAK3172_LOGI(TAG, "     Baudrate: %u", p_Device.UART.Baudrate);
 
-    if(uart_driver_install(p_Device.Interface, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, CONFIG_RAK3172_TASK_QUEUE_LENGTH, &p_Device.Internal.EventQueue, Flags) ||
-       uart_param_config(p_Device.Interface, &_RAK3172_UART_Config) ||
-       uart_set_pin(p_Device.Interface, p_Device.Tx, p_Device.Rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) ||
-       uart_enable_pattern_det_baud_intr(p_Device.Interface, '\n', 1, 1, 0, 0) ||
-       uart_pattern_queue_reset(p_Device.Interface, CONFIG_RAK3172_TASK_QUEUE_LENGTH))
+    esp_log_level_set("uart", ESP_LOG_NONE);
+    if(uart_driver_install(p_Device.UART.Interface, CONFIG_RAK3172_UART_BUFFER_SIZE, CONFIG_RAK3172_UART_BUFFER_SIZE, CONFIG_RAK3172_UART_QUEUE_LENGTH, &p_Device.Internal.EventQueue, Flags))
     {
         return RAK3172_ERR_INVALID_STATE;
     }
 
-    p_Device.Internal.MessageQueue = xQueueCreate(CONFIG_RAK3172_TASK_QUEUE_LENGTH, sizeof(std::string*));
+    if(uart_param_config(p_Device.UART.Interface, &_RAK3172_UART_Config) ||
+       uart_set_pin(p_Device.UART.Interface, p_Device.UART.Tx, p_Device.UART.Rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) ||
+       uart_enable_pattern_det_baud_intr(p_Device.UART.Interface, '\n', 1, 1, 0, 0) ||
+       uart_pattern_queue_reset(p_Device.UART.Interface, CONFIG_RAK3172_UART_QUEUE_LENGTH)
+      )
+    {
+        uart_driver_delete(p_Device.UART.Interface);
+
+        return RAK3172_ERR_INVALID_STATE;
+    }
+
+    p_Device.Internal.MessageQueue = xQueueCreate(CONFIG_RAK3172_UART_QUEUE_LENGTH, sizeof(std::string*));
     if(p_Device.Internal.MessageQueue == NULL)
     {
         Error = RAK3172_ERR_NO_MEM;
@@ -411,7 +471,7 @@ static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t& p_Device)
         goto RAK3172_BasicInit_Error_2;
     }
 
-    p_Device.Internal.RxBuffer = (uint8_t*)malloc(CONFIG_RAK3172_TASK_BUFFER_SIZE);
+    p_Device.Internal.RxBuffer = (uint8_t*)malloc(CONFIG_RAK3172_UART_BUFFER_SIZE);
     if(p_Device.Internal.RxBuffer == NULL)
     {
         Error = RAK3172_ERR_NO_MEM;
@@ -420,9 +480,9 @@ static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t& p_Device)
     }
 
     #ifdef CONFIG_RAK3172_TASK_CORE_AFFINITY
-        xTaskCreatePinnedToCore(RAK3172_UART_EventTask, "RAK3172_Event", CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device.Internal.Handle, CONFIG_RAK3172_TASK_CORE);
+        xTaskCreatePinnedToCore(RAK3172_UART_EventTask, "RAK3172-Event", CONFIG_RAK3172_TASK_STACK_SIZE, p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device.Internal.Handle, CONFIG_RAK3172_TASK_CORE);
     #else
-        xTaskCreate(RAK3172_UART_EventTask, "RAK3172_Event", CONFIG_RAK3172_TASK_BUFFER_SIZE * 2, &p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device.Internal.Handle);
+        xTaskCreate(RAK3172_UART_EventTask, "RAK3172-Event", CONFIG_RAK3172_TASK_STACK_SIZE, &p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device.Internal.Handle);
     #endif
 
     if(p_Device.Internal.Handle == NULL)
@@ -432,7 +492,7 @@ static RAK3172_Error_t RAK3172_BasicInit(RAK3172_t& p_Device)
         goto RAK3172_BasicInit_Error_4;
     }
 
-    if(uart_flush(p_Device.Interface))
+    if(uart_flush(p_Device.UART.Interface))
     {
         Error = RAK3172_ERR_INVALID_STATE;
 
@@ -457,6 +517,8 @@ RAK3172_BasicInit_Error_2:
 RAK3172_BasicInit_Error_1:
     vQueueDelete(p_Device.Internal.MessageQueue);
 
+    uart_driver_delete(p_Device.UART.Interface);
+
 	p_Device.Internal.isInitialized = false;
 
     return Error;
@@ -476,42 +538,42 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t& p_Device)
     p_Device.Internal.isInitialized = false;
     p_Device.Internal.isBusy = false;
 
-    _RAK3172_UART_Config.baud_rate = p_Device.Baudrate;
+    _RAK3172_UART_Config.baud_rate = p_Device.UART.Baudrate;
 
-    ESP_LOGI(TAG, "Use library version: %s", RAK3172_LibVersion().c_str());
+    RAK3172_LOGI(TAG, "Use library version: %s", RAK3172_LibVersion().c_str());
 
-    ESP_LOGI(TAG, "Modes:");
+    RAK3172_LOGI(TAG, "Modes:");
     #ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN
-        ESP_LOGI(TAG, "     [x] LoRaWAN");
+        RAK3172_LOGI(TAG, "     [x] LoRaWAN");
     #else
-        ESP_LOGI(TAG, "     [ ] LoRaWAN");
+        RAK3172_LOGI(TAG, "     [ ] LoRaWAN");
     #endif
 
     #ifdef CONFIG_RAK3172_MODE_WITH_P2P
-        ESP_LOGI(TAG, "     [x] P2P");
+        RAK3172_LOGI(TAG, "     [x] P2P");
     #else
-        ESP_LOGI(TAG, "     [ ] P2P");
+        RAK3172_LOGI(TAG, "     [ ] P2P");
     #endif
 
-    ESP_LOGI(TAG, "Reset:");
+    RAK3172_LOGI(TAG, "Reset:");
     #ifdef CONFIG_RAK3172_RESET_USE_HW
-        ESP_LOGI(TAG, "     Pin: %u", p_Device.Reset);
-        ESP_LOGI(TAG, "     [x] Hardware reset");
-        ESP_LOGI(TAG, "     [ ] Software reset");
+        RAK3172_LOGI(TAG, "     Pin: %u", p_Device.Reset);
+        RAK3172_LOGI(TAG, "     [x] Hardware reset");
+        RAK3172_LOGI(TAG, "     [ ] Software reset");
 
         _RAK3172_Reset_Config.pin_bit_mask = BIT(p_Device.Reset);
 
         // Configure the pull-up / pull-down resistor.
         #ifdef CONFIG_RAK3172_RESET_USE_PULL
             #ifdef CONFIG_RAK3172_RESET_INVERT
-                ESP_LOGI(TAG, "     [x] Internal pull-down");
+                RAK3172_LOGI(TAG, "     [x] Internal pull-down");
                 _RAK3172_Reset_Config.pull_down_en = GPIO_PULLDOWN_ENABLE,
             #else
-                ESP_LOGI(TAG, "     [x] Internal pull-up");
+                RAK3172_LOGI(TAG, "     [x] Internal pull-up");
                 _RAK3172_Reset_Config.pull_up_en = GPIO_PULLUP_ENABLE;
             #endif
         #else
-            ESP_LOGI(TAG, "     [x] No pull-up / pull-down");
+            RAK3172_LOGI(TAG, "     [x] No pull-up / pull-down");
         #endif
 
         if(gpio_config(&_RAK3172_Reset_Config) != ESP_OK)
@@ -522,16 +584,16 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t& p_Device)
         // Set the reset pin when no pull-up / pull-down resistor should be used.
         #ifdef CONFIG_RAK3172_RESET_USE_PULL
             #ifdef CONFIG_RAK3172_RESET_INVERT
-                ESP_LOGI(TAG, "     [x] Invert");
+                RAK3172_LOGI(TAG, "     [x] Invert");
                 gpio_set_level(p_Device.Reset, false);
             #else
-                ESP_LOGI(TAG, "     [ ] Invert");
+                RAK3172_LOGI(TAG, "     [ ] Invert");
                 gpio_set_level(p_Device.Reset, true);
             #endif
         #endif
     #else
-        ESP_LOGI(TAG, "     [ ] Hardware reset");
-        ESP_LOGI(TAG, "     [x] Software reset");
+        RAK3172_LOGI(TAG, "     [ ] Hardware reset");
+        RAK3172_LOGI(TAG, "     [x] Software reset");
     #endif
 
     RAK3172_ERROR_CHECK(RAK3172_BasicInit(p_Device));
@@ -545,47 +607,47 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t& p_Device)
     vTaskDelay(500 / portTICK_PERIOD_MS);
 
     // Firmware without RUI3 will produce a MIC mismatch when using a factory reset during the initialization.
-    #if(defined CONFIG_RAK3172_FACTORY_RESET) && (defined CONFIG_RAK3172_USE_RUI3)
+    #if((defined CONFIG_RAK3172_FACTORY_RESET) && (defined CONFIG_RAK3172_USE_RUI3))
         RAK3172_ERROR_CHECK(RAK3172_FactoryReset(p_Device));
     #endif
 
     // Check if echo mode is enabled.
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT", NULL, &Response));
-    ESP_LOGD(TAG, "Response from 'AT': %s", Response.c_str());
+    RAK3172_LOGD(TAG, "Response from 'AT': %s", Response.c_str());
     if(Response.find("OK") == std::string::npos)
     {
         std::string* Dummy;
 
         // Echo mode is enabled. Need to receive one more line.
-        if(xQueueReceive(p_Device.Internal.MessageQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device.Internal.MessageQueue, &Dummy, RAK3172_DEFAULT_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
         delete Dummy;
 
-        ESP_LOGD(TAG, "Echo mode enabled. Disabling echo mode...");
+        RAK3172_LOGD(TAG, "Echo mode enabled. Disabling echo mode...");
 
         // Disable echo mode
         //  -> Transmit the command
         //  -> Receive the echo
         //  -> Receive the value
         //  -> Receive the status
-        uart_write_bytes(p_Device.Interface, "ATE\r\n", std::string("ATE\r\n").length());
-        if(xQueueReceive(p_Device.Internal.MessageQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        uart_write_bytes(p_Device.UART.Interface, "ATE\r\n", std::string("ATE\r\n").length());
+        if(xQueueReceive(p_Device.Internal.MessageQueue, &Dummy, RAK3172_DEFAULT_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
         delete Dummy;
 
         #ifndef CONFIG_RAK3172_USE_RUI3
-            if(xQueueReceive(p_Device.Internal.MessageQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+            if(xQueueReceive(p_Device.Internal.MessageQueue, &Dummy, RAK3172_DEFAULT_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
             {
                 return RAK3172_ERR_TIMEOUT;
             }
             delete Dummy;
         #endif
 
-        if(xQueueReceive(p_Device.Internal.MessageQueue, &Dummy, RAK3172_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
+        if(xQueueReceive(p_Device.Internal.MessageQueue, &Dummy, RAK3172_DEFAULT_WAIT_TIMEOUT / portTICK_PERIOD_MS) != pdPASS)
         {
             return RAK3172_ERR_TIMEOUT;
         }
@@ -622,11 +684,11 @@ void RAK3172_Deinit(RAK3172_t& p_Device)
     vTaskSuspend(p_Device.Internal.Handle);
     vTaskDelete(p_Device.Internal.Handle);
 
-    if(uart_is_driver_installed(p_Device.Interface))
+    if(uart_is_driver_installed(p_Device.UART.Interface))
     {
-        uart_flush(p_Device.Interface);
-        uart_disable_pattern_det_intr(p_Device.Interface);
-        uart_driver_delete(p_Device.Interface);
+        uart_flush(p_Device.UART.Interface);
+        uart_disable_pattern_det_intr(p_Device.UART.Interface);
+        uart_driver_delete(p_Device.UART.Interface);
     }
 
     vQueueDelete(p_Device.Internal.MessageQueue);
@@ -635,10 +697,38 @@ void RAK3172_Deinit(RAK3172_t& p_Device)
     free(p_Device.Internal.RxBuffer);
     p_Device.Internal.RxBuffer = NULL;
 
-    gpio_reset_pin((gpio_num_t)p_Device.Rx);
-    gpio_reset_pin((gpio_num_t)p_Device.Tx);
+    gpio_reset_pin(static_cast<gpio_num_t>(p_Device.UART.Rx));
+    gpio_reset_pin(static_cast<gpio_num_t>(p_Device.UART.Tx));
 
-	p_Device.Internal.isInitialized = false;
+    p_Device.Internal.isInitialized = false;
+}
+
+RAK3172_Error_t RAK3172_SetBaudrate(RAK3172_t& p_Device, RAK3172_Baud_t Baudrate)
+{
+    if(p_Device.UART.Baudrate == Baudrate)
+    {
+        return RAK3172_ERR_OK;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+BAUD=" + std::to_string(Baudrate)));
+
+    // Deinitialize the UART interface.
+    if(uart_driver_delete(p_Device.UART.Interface))
+    {
+        return RAK3172_ERR_INVALID_STATE;
+    }
+
+    // Initialize the interface with the new baudrate. Do a rollback if something is going wrong.
+    _RAK3172_UART_Config.baud_rate = Baudrate;
+    if(RAK3172_BasicInit(p_Device) != RAK3172_ERR_OK)
+    {
+        _RAK3172_UART_Config.baud_rate = p_Device.UART.Baudrate;
+        RAK3172_ERROR_CHECK(RAK3172_BasicInit(p_Device));
+    }
+
+    p_Device.UART.Baudrate = Baudrate;
+
+    return RAK3172_ERR_OK;
 }
 
 void RAK3172_PrepareSleep(RAK3172_t& p_Device)
@@ -648,10 +738,10 @@ void RAK3172_PrepareSleep(RAK3172_t& p_Device)
         return;
     }
 
-    ESP_LOGI(TAG, "Prepare driver for entering sleep mode...");
+    RAK3172_LOGI(TAG, "Prepare driver for entering sleep mode...");
 
-    gpio_reset_pin(p_Device.Rx);
-    gpio_reset_pin(p_Device.Tx);
+    gpio_reset_pin(p_Device.UART.Rx);
+    gpio_reset_pin(p_Device.UART.Tx);
 
     p_Device.Internal.isInitialized = false;
     p_Device.Internal.isBusy = false;
@@ -666,7 +756,7 @@ RAK3172_Error_t RAK3172_WakeUp(RAK3172_t& p_Device)
         return RAK3172_ERR_OK;
     }
 
-    ESP_LOGI(TAG, "Wake up driver from sleep mode...");
+    RAK3172_LOGI(TAG, "Wake up driver from sleep mode...");
 
     p_Device.Internal.isInitialized = true;
     p_Device.Internal.isBusy = false;
@@ -683,25 +773,25 @@ RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t& p_Device)
         return RAK3172_ERR_INVALID_STATE;
     }
 
-    ESP_LOGI(TAG, "Perform factory reset...");
+    RAK3172_LOGI(TAG, "Perform factory reset...");
 
     #ifndef CONFIG_RAK3172_USE_RUI3
         std::string Command;
 
         p_Device.Internal.isBusy = true;
         Command = "ATR\r\n";
-        uart_write_bytes(p_Device.Interface, Command.c_str(), Command.length());
-        RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, RAK3172_WAIT_TIMEOUT));
+        uart_write_bytes(p_Device.UART.Interface, Command.c_str(), Command.length());
+        RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, RAK3172_DEFAULT_WAIT_TIMEOUT));
     #else
         RAK3172_SendCommand(p_Device, "ATR");
     #endif
 
-    ESP_LOGI(TAG, "     Successful!");
+    RAK3172_LOGI(TAG, "     Successful!");
 
     return RAK3172_ERR_OK;
 }
 
-RAK3172_Error_t RAK3172_SoftReset(RAK3172_t& p_Device)
+RAK3172_Error_t RAK3172_SoftReset(RAK3172_t& p_Device, uint32_t Timeout)
 {
     std::string Command;
 
@@ -710,60 +800,54 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t& p_Device)
         return RAK3172_ERR_INVALID_STATE;
 	}
 
-    ESP_LOGI(TAG, "Perform software reset...");
+    RAK3172_LOGI(TAG, "Perform software reset...");
 
     p_Device.Internal.isBusy = true;
 
     // Reset the module and read back the slash screen because the current state is unclear.
     Command = "ATZ\r\n";
-    uart_write_bytes(p_Device.Interface, Command.c_str(), Command.length());
+    uart_write_bytes(p_Device.UART.Interface, Command.c_str(), Command.length());
 
-    RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, 10 * 1000UL));
+    RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, Timeout * 1000UL));
 
-    ESP_LOGI(TAG, "     Successful!");
+    RAK3172_LOGI(TAG, "     Successful!");
 
     return RAK3172_ERR_OK;
 }
 
 #ifdef CONFIG_RAK3172_RESET_USE_HW
-    RAK3172_Error_t RAK3172_HardReset(RAK3172_t& p_Device)
+    RAK3172_Error_t RAK3172_HardReset(RAK3172_t& p_Device, uint32_t Timeout)
     {
         if(p_Device.Internal.isInitialized == false)
         {
             return RAK3172_ERR_INVALID_STATE;
         }
 
-        ESP_LOGI(TAG, "Perform hardware reset...");
+        RAK3172_LOGI(TAG, "Perform hardware reset...");
 
-        if(p_Device.isResetInverted)
-        {
+        #ifdef CONFIG_RAK3172_RESET_INVERT
             gpio_set_level(p_Device.Reset, true);
-        }
-        else
-        {
+        #else
             gpio_set_level(p_Device.Reset, false);
-        }
+        #endif
 
         vTaskDelay(500 / portTICK_PERIOD_MS);
 
-        if(p_Device.isResetInverted)
-        {
+        #ifdef CONFIG_RAK3172_RESET_INVERT
             gpio_set_level(p_Device.Reset, false);
-        }
-        else
-        {
+        #else
             gpio_set_level(p_Device.Reset, true);
-        }
+        #endif
 
         vTaskDelay(500 / portTICK_PERIOD_MS);
 
         p_Device.Internal.isBusy = false;
 
         #ifdef CONFIG_RAK3172_USE_RUI3
-            RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, 10 * 1000UL));
+            RAK3172_ERROR_CHECK(RAK3172_ReceiveSplashScreen(p_Device, Timeout * 1000UL));
         #endif
 
-        ESP_LOGI(TAG, "     Successful!");
+        RAK3172_LOGI(TAG, "     Successful!");
 
         return RAK3172_ERR_OK;
     }

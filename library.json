@@ -1,6 +1,6 @@
 {
   "name": "RAK3172",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "keywords": "esp-idf, rak3172, lorawan, lora, esp32",
   "description": "RAK3172 driver for the esp-idf framework.",
   "repository": {
@@ -13,7 +13,7 @@
     "flags": [
       "-Iinclude",
       "-DRAK3172_LIB_MAJOR=4",
-      "-DRAK3172_LIB_MINOR=0",
+      "-DRAK3172_LIB_MINOR=1",
       "-DRAK3172_LIB_BUILD=0"
     ],
     "includeDir": ".",

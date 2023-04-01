@@ -1,9 +1,9 @@
  /*
- * rak3172_rf.cpp
+ * rak3172_logging.h
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 serial driver.
+ *  File info: Logging wrapper for the ESP32.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -17,14 +17,23 @@
  * Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
 
+#ifndef RAK3172_LOGGING_H_
+#define RAK3172_LOGGING_H_
+
+#include <esp_log.h>
+
 #include <sdkconfig.h>
 
-#ifdef CONFIG_RAK3172_MODE_WITH_RF
-
-#include "rak3172.h"
-
-#include "../../Arch/Logging/rak3172_logging.h"
-
-static const char* TAG = "RAK3172_RF";
-
+#ifdef CONFIG_RAK3172_MISC_ENABLE_LOG
+    #define RAK3172_LOGI(tag, format, ...)                      ESP_LOGI(tag, format, ##__VA_ARGS__)
+    #define RAK3172_LOGD(tag, format, ...)                      ESP_LOGD(tag, format, ##__VA_ARGS__)
+    #define RAK3172_LOGW(tag, format, ...)                      ESP_LOGW(tag, format, ##__VA_ARGS__)
+    #define RAK3172_LOGE(tag, format, ...)                      ESP_LOGE(tag, format, ##__VA_ARGS__)
+#else
+    #define RAK3172_LOGI(tag, format, ...)
+    #define RAK3172_LOGD(tag, format, ...)
+    #define RAK3172_LOGW(tag, format, ...)
+    #define RAK3172_LOGE(tag, format, ...)
 #endif
+
+#endif /* RAK3172_LOGGING_H_ */

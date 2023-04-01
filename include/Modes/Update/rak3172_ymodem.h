@@ -1,9 +1,9 @@
  /*
- * rak3172_rf.h
+ * rak3172_ymodem.h
  *
- *  Copyright (C) Daniel Kampert, 2022
+ *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 driver for ESP32.
+ *  File info: RAK3172 serial driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -17,10 +17,18 @@
  * Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
 
-#ifndef RAK3172_RF_H_
-#define RAK3172_RF_H_
+#ifndef RAK3172_YMODEM_H_
+#define RAK3172_YMODEM_H_
 
 #include "Definitions/rak3172_defs.h"
-#include "Definitions/rak3172_errors.h"
 
-#endif /* RAK3172_RF_H_ */
+/** @brief          Deinitialize the RAK3172 driver.
+ *  @param p_Device RAK3172 device object
+ *  @param p_Data   Pointer to firmware data
+ *  @param Length   Length of firmware data
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_STATE when the device was not initialized before
+ */
+RAK3172_Error_t RAK3172_RunUpdate(RAK3172_t& p_Device, const uint8_t* const p_Data, uint32_t Length);
+
+#endif /* RAK3172_YMODEM_H_ */

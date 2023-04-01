@@ -1,9 +1,9 @@
  /*
  * rak3172_p2p_rui3.cpp
  *
- *  Copyright (C) Daniel Kampert, 2022
+ *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 driver for ESP32.
+ *  File info: RAK3172 serial driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -32,23 +32,32 @@ RAK3172_Error_t RAK3172_P2P_EnableEncryption(RAK3172_t& p_Device, const RAK3172_
     {
         return RAK3172_ERR_INVALID_ARG;
     }
+    else if((p_Device.Mode != RAK_MODE_P2P) && (p_Device.Mode != RAK_MODE_P2P_FSK))
+    {
+        return RAK3172_ERR_INVALID_MODE;
+    }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ENCRY=" + std::to_string(true)));
 
     p_Device.P2P.isEncryptionEnabled = true;
 
     // Encode the key into an ASCII string.
-    for(uint8_t i = 0x00; i < 8; i++)
+    for(uint8_t i = 0; i < 8; i++)
     {
         sprintf(Buffer, "%02x", ((uint8_t*)p_Key)[i]);
         Key += std::string(Buffer);
     }
 
-    return RAK3172_SendCommand(p_Device, "AT+ENCKEY=" + Key, NULL, NULL);;
+    return RAK3172_SendCommand(p_Device, "AT+ENCKEY=" + Key, NULL, NULL);
 }
 
 RAK3172_Error_t RAK3172_P2P_DisableEncryption(RAK3172_t& p_Device)
 {
+    if((p_Device.Mode != RAK_MODE_P2P) && (p_Device.Mode != RAK_MODE_P2P_FSK))
+    {
+        return RAK3172_ERR_INVALID_MODE;
+    }
+
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ENCRY=" + std::to_string(false)));
 
     p_Device.P2P.isEncryptionEnabled = false;
@@ -64,10 +73,14 @@ RAK3172_Error_t RAK3172_P2P_isEncryptionEnabled(const RAK3172_t& p_Device, bool*
     {
         return RAK3172_ERR_INVALID_ARG;
     }
+    else if((p_Device.Mode != RAK_MODE_P2P) && (p_Device.Mode != RAK_MODE_P2P_FSK))
+    {
+        return RAK3172_ERR_INVALID_MODE;
+    }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ENCRY=?", &Value));
 
-    *p_Enabled = (bool)std::stoi(Value);
+    *p_Enabled = static_cast<bool>(std::stoi(Value));
 
     return RAK3172_ERR_OK;
 }

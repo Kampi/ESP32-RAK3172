@@ -1,9 +1,9 @@
  /*
  * rak3172_defs.h
  *
- *  Copyright (C) Daniel Kampert, 2022
+ *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 driver for ESP32.
+ *  File info: RAK3172 serial driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -19,8 +19,6 @@
 
 #ifndef RAK3172_DEFS_H_
 #define RAK3172_DEFS_H_
-
-#include <esp_log.h>
 
 #include <driver/uart.h>
 #include <driver/gpio.h>
@@ -41,9 +39,9 @@
 
 /** @brief Timeout for UART receive queue.
  */
-#define RAK3172_WAIT_TIMEOUT                                    500
+#define RAK3172_DEFAULT_WAIT_TIMEOUT                            500
 
-/** @brief No timeout definition (P2P mode).
+/** @brief No timeout definition.
  */
 #define RAK3172_NO_TIMEOUT                                      0
 
@@ -61,44 +59,53 @@ typedef uint8_t RAK3172_EncryptKey_t[8];
  */
 typedef enum
 {
-    RAK_CHANMODE_SINGLE = 1,            /**< Single channel mode. */
-    RAK_CHANMODE_EIGHT  = 2,            /**< Eight channel mode. */
+    RAK_CHANMODE_SINGLE     = 1,        /**< Single channel mode. */
+    RAK_CHANMODE_EIGHT      = 2,        /**< Eight channel mode. */
 } RAK3172_ChanMode_t;
 
 /** @brief Supported operating modes.
  */
 typedef enum
 {
-    RAK_MODE_P2P        = 0,            /**< LoRa P2P mode. */
+    RAK_MODE_P2P            = 0,        /**< LoRa P2P mode. */
     RAK_MODE_LORAWAN,                   /**< LoRaWAN mode. */
     RAK_MODE_P2P_FSK,                   /**< P2P FSK mode. */
 } RAK3172_Mode_t;
-
-/** @brief Supported join modes.
- */
-typedef enum
-{
-    RAK_JOIN_ABP        = 0,            /**< LoRaWAN ABP mode. */
-    RAK_JOIN_OTAA,                      /**< LoRaWAN OTAA mode. */
-} RAK3172_JoinMode_t;
 
 /** @brief Supported baudrates.
  */
 typedef enum
 {
-    RAK_BAUD_4800       = 4800,         /**< Baud rate 4800. */
-    RAK_BAUD_9600       = 9600,         /**< Baud rate 9600. */
-    RAK_BAUD_19200      = 19200,        /**< Baud rate 19200. */
-    RAK_BAUD_38400      = 38400,        /**< Baud rate 38400. */
-    RAK_BAUD_57600      = 57600,        /**< Baud rate 57600. */
-    RAK_BAUD_115200     = 115200,       /**< Baud rate 115200. */
+    RAK_BAUD_4800           = 4800,     /**< Baud rate 4800. */
+    RAK_BAUD_9600           = 9600,     /**< Baud rate 9600. */
+    RAK_BAUD_19200          = 19200,    /**< Baud rate 19200. */
+    RAK_BAUD_38400          = 38400,    /**< Baud rate 38400. */
+    RAK_BAUD_57600          = 57600,    /**< Baud rate 57600. */
+    RAK_BAUD_115200         = 115200,   /**< Baud rate 115200. */
 } RAK3172_Baud_t;
+
+/** @brief LoRaWAN class definitions.
+ */
+typedef enum
+{
+    RAK_CLASS_A             = 'A',      /**< LoRaWAN class A. */
+    RAK_CLASS_B             = 'B',      /**< LoRaWAN class B. */
+    RAK_CLASS_C             = 'C',      /**< LoRaWAN class C. */
+} RAK3172_Class_t;
+
+/** @brief Supported join modes for LoRaWAN.
+ */
+typedef enum
+{
+    RAK_JOIN_ABP            = 0,        /**< LoRaWAN ABP mode. */
+    RAK_JOIN_OTAA,                      /**< LoRaWAN OTAA mode. */
+} RAK3172_JoinMode_t;
 
 /** @brief Supported frequency bands for LoRaWAN.
  */
 typedef enum
 {
-    RAK_BAND_EU433      = 0,            /**< European 433 MHz band. */
+    RAK_BAND_EU433          = 0,        /**< European 433 MHz band. */
     RAK_BAND_CN470,                     /**< Chinese 470 MHz band. */
     RAK_BAND_RU864,                     /**< Russian 864 MHz band. */
     RAK_BAND_IN865,                     /**< Indian 865 MHz band. */
@@ -113,7 +120,7 @@ typedef enum
  */
 typedef enum
 {
-    RAK_DR_0            = 0,            /**< Data rate 0. */
+    RAK_DR_0                = 0,        /**< Data rate 0. */
     RAK_DR_1,                           /**< Data rate 1. */
     RAK_DR_2,                           /**< Data rate 2. */
     RAK_DR_3,                           /**< Data rate 3. */
@@ -127,7 +134,7 @@ typedef enum
  */
 typedef enum
 {
-    RAK_SUB_BAND_NONE   = 0,            /**< No sub band used. */
+    RAK_SUB_BAND_NONE       = 0,        /**< No sub band used. */
     RAK_SUB_BAND_ALL,                   /**< All channels enabled. */
     RAK_SUB_BAND_1,                     /**< Channels 0-7 enabled. */
     RAK_SUB_BAND_2,                     /**< Channels 8-15 enabled. */
@@ -138,20 +145,33 @@ typedef enum
     RAK_SUB_BAND_7,                     /**< Channels 48-55 enabled. */
     RAK_SUB_BAND_8,                     /**< Channels 56-63 enabled. */
     RAK_SUB_BAND_9,                     /**< Channels 64-71 enabled.
-                                             NOTE: Only with band CN470! */
+                                             NOTE:Can only used with band CN470! */
     RAK_SUB_BAND_10,                    /**< Channels 72-79 enabled.
-                                             NOTE: Only with band CN470! */
+                                             NOTE: Can only used with band CN470! */
     RAK_SUB_BAND_11,                    /**< Channels 80-87 enabled.
-                                             NOTE: Only with band CN470! */
+                                             NOTE: Can only used with band CN470! */
     RAK_SUB_BAND_12,                    /**< Channels 88-95 enabled.
-                                             NOTE: Only with band CN470! */
+                                             NOTE: Can only used with band CN470! */
 } RAK3172_SubBand_t;
+
+/** @brief LoRaWAN receive group definitions
+ */
+typedef enum
+{
+    RAK_RX_GROUP_1          = 0,        /**< Receive group 1. */
+    RAK_RX_GROUP_2,                     /**< Receive group 2. */
+    RAK_RX_GROUP_B,                     /**< Receive group B. */
+    RAK_RX_GROUP_C,                     /**< Receive group C. */
+} RAK3172_Rx_Group_t;
 
 /** @brief P2P spreading factor definitions.
  */
 typedef enum
 {
-    RAK_PSF_6           = 6,            /**< Spreading factor 6. */
+    #ifdef CONFIG_RAK3172_USE_RUI3
+        RAK_PSF_5           = 5,        /**< Spreading factor 5. */
+    #endif
+    RAK_PSF_6               = 6,        /**< Spreading factor 6. */
     RAK_PSF_7,                          /**< Spreading factor 7. */
     RAK_PSF_8,                          /**< Spreading factor 8. */
     RAK_PSF_9,                          /**< Spreading factor 9. */
@@ -162,30 +182,46 @@ typedef enum
 
 /** @brief P2P bandwith definitions.
  */
-typedef enum
-{
-    RAK_BW_125          = 125,          /**< 125 kHz bandwidth. */
-    RAK_BW_250          = 250,          /**< 250 kHz bandwidth. */
-    RAK_BW_500          = 500,          /**< 500 kHz bandwidth. */
-} RAK3172_BW_t;
+
+#ifdef CONFIG_RAK3172_USE_RUI3
+    typedef enum
+    {
+        RAK_BW_125          = 0,        /**< 125 kHz bandwidth. */
+        RAK_BW_250,                     /**< 250 kHz bandwidth. */
+        RAK_BW_500,                     /**< 500 kHz bandwidth. */
+        RAK_BW_78,                      /**< 7.8 kHz bandwidth. */
+        RAK_BW_104,                     /**< 10.4 kHz bandwidth. */
+        RAK_BW_1563,                    /**< 15.63 kHz bandwidth. */
+        RAK_BW_2083,                    /**< 20.83 kHz bandwidth. */
+        RAK_BW_3125,                    /**< 31.25 kHz bandwidth. */
+        RAK_BW_625,                     /**< 62.5 kHz bandwidth. */
+    } RAK3172_BW_t;
+#else
+    typedef enum
+    {
+        RAK_BW_125          = 125,      /**< 125 kHz bandwidth. */
+        RAK_BW_250          = 250,      /**< 250 kHz bandwidth. */
+        RAK_BW_500          = 500,      /**< 500 kHz bandwidth. */
+    } RAK3172_BW_t;
+#endif
 
 /** @brief P2P coding rate definitions.
  */
 typedef enum
 {
-    RAK_CR_0            = 0,            /**< Coding rate 0. */
-    RAK_CR_1,                           /**< Coding rate 1. */
-    RAK_CR_2,                           /**< Coding rate 2. */
-    RAK_CR_3,                           /**< Coding rate 3. */
+    RAK_CR_45               = 0,        /**< Coding rate 4/5. */
+    RAK_CR_46,                          /**< Coding rate 4/6. */
+    RAK_CR_47,                          /**< Coding rate 4/7. */
+    RAK_CR_48,                          /**< Coding rate 4/8. */
 } RAK3172_CR_t;
 
-/** @brief Supported receive options.
+/** @brief Supported receive options for P2P mode.
  */
 typedef enum
 {
-    RAK_REC_STOP        = 0,            /**< Stop receiving in LoRa P2P mode. */
-    RAK_REC_REPEAT      = 65534,        /**< Receive messages in a loop without timeout in LoRa P2P mode. */
-    RAK_REC_SINGLE      = 65535,        /**< Receive one message without timeout in LoRa P2P mode. */
+    RAK_REC_STOP            = 0,        /**< Stop receiving in LoRa P2P mode. */
+    RAK_REC_REPEAT          = 65534,    /**< Receive messages in a loop without timeout in LoRa P2P mode. */
+    RAK_REC_SINGLE          = 65535,    /**< Receive one message without timeout in LoRa P2P mode. */
 } RAK3172_RxOpt_t;
 
 /** @brief RAK3172 device information object.
@@ -202,18 +238,20 @@ typedef struct
     std::string RepoInfo;               /**< Firmware repo information. */
 } RAK3172_Info_t;
 
-/** @brief RAK3172 device object.
+/** @brief RAK3172 device object definition.
  */
 typedef struct
 {
-    uart_port_t Interface;              /**< Serial interface used by the device RAK3172 driver. */
-    gpio_num_t Rx;                      /**< Rx pin number. */
-    gpio_num_t Tx;                      /**< Tx pin number. */
+    struct
+    {
+        uart_port_t Interface;          /**< Serial interface used by the device RAK3172 driver. */
+        gpio_num_t Rx;                  /**< Rx pin number (MCU). */
+        gpio_num_t Tx;                  /**< Tx pin number (MCU). */
+	    RAK3172_Baud_t Baudrate;		/**< Baud rate for the module communication. */
+    } UART;
     #ifdef CONFIG_RAK3172_RESET_USE_HW
         gpio_num_t Reset;               /**< Reset pin number. */
-        bool isResetInverted;           /**< */
     #endif
-	RAK3172_Baud_t Baudrate;		    /**< Baud rate for the module communication. */
     RAK3172_Mode_t Mode;                /**< Current device mode. */
     RAK3172_Info_t* Info;               /**< (Optional) Pointer to device information object. */
     struct
@@ -232,6 +270,8 @@ typedef struct
                                              NOTE: Managed by the driver. */
         QueueHandle_t ReceiveQueue;     /**< Receive message queue.
                                              NOTE: Managed by the driver. */
+        bool isJoinEvent;               /**< #true when a join event has occured.
+                                             NOTE: Only used for module firmware without RUI3 interface! */
     } Internal;
     struct
     {
@@ -270,6 +310,23 @@ typedef struct
     int8_t SNR;                         /**< Receiving SNR value. */
     uint8_t Port;                       /**< Port number.
                                              NOTE: Only used in LoRaWAN mode! */
+    RAK3172_Rx_Group_t Group;           /**< Receive group.
+                                             NOTE: Only used in LoRaWAN mode! */
 } RAK3172_Rx_t;
+
+/** @brief RAK3172 multicast group configuration object.
+ */
+typedef struct
+{
+    RAK3172_Class_t Class;              /**< LoRaWAN device class. 
+                                             NOTE: Only class 'B' and 'C' are allowed in the further application! */
+    std::string DevAddr;                /**< Device address. */
+    std::string NwkSKey;                /**< Network session key used by this group. */
+    std::string AppSKey;                /**< App session key used by this group. */
+    RAK3172_DataRate_t Datarate;        /**< Data rate used by this group. */
+    uint32_t Frequency;                 /**< LoRaWAN frequency used by this group. */
+    uint8_t Periodicity;                /**< LoRaWAN ping periodicity used by this group.
+                                             NOTE: Ignored when class is set to 'C' and only values <8 are allowed! */
+} RAK3172_MC_Group_t;
 
 #endif /* RAK3172_DEFS_H_ */

@@ -1,0 +1,53 @@
+menu "RAK3172-Example"
+    config RAK3172_UART_PORT
+        int "UART port number"
+        range 0 2
+        default 1
+        help
+            UART communication port number for the driver.
+            See UART documentation for available port numbers.
+
+    choice
+        prompt "Baud rate"
+        config RAK3172_BAUD_4800
+            bool "4800"
+
+        config RAK3172_BAUD_9600
+            bool "9600"
+
+        config RAK3172_BAUD_19200
+            bool "19200"
+
+        config RAK3172_BAUD_38400
+            bool "38400"
+
+        config RAK3172_BAUD_57600
+            bool "57600"
+
+        config RAK3172_BAUD_115200
+            bool "115200"
+    endchoice
+
+    config RAK3172_UART_BAUD
+        int
+        default 4800 if RAK3172_BAUD_4800
+        default 9600 if RAK3172_BAUD_9600
+        default 19200 if RAK3172_BAUD_19200
+        default 38400 if RAK3172_BAUD_38400
+        default 57600 if RAK3172_BAUD_57600
+        default 115200 if RAK3172_BAUD_115200
+
+    config RAK3172_UART_RX
+        int "Rx pin"
+        range 0 32
+        default 12
+        help
+            Rx pin used by the UART interface.
+
+    config RAK3172_UART_TX
+        int "Tx pin"
+        range 0 32
+        default 14
+        help
+            Tx pin used by the UART interface.
+endmenu

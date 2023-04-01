@@ -1,5 +1,5 @@
  /*
- * rak3172_lorawan_rui3.h
+ * rak3172_lorawan_multicast.h
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
@@ -17,71 +17,66 @@
  * Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
 
-#ifndef RAK3172_LORAWAN_RUI3_H_
-#define RAK3172_LORAWAN_RUI3_H_
-
-#include <vector>
+#ifndef RAK3172_LORAWAN_MULTICAST_H_
+#define RAK3172_LORAWAN_MULTICAST_H_
 
 #include "rak3172_defs.h"
 
-/** @brief          Get the network ID of the current network.
+/** @brief          Add a multicast group.
  *  @param p_Device RAK3172 device object
- *  @param p_Enable Pointer to network ID
+ *  @param Group    Multicast group object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetNetID(const RAK3172_t& p_Device, std::string* const p_ID);
+RAK3172_Error_t RAK3172_LoRaWAN_MC_AddGroup(RAK3172_t& p_Device, RAK3172_MC_Group_t Group);
 
-/** @brief          Enable / Disable the single channel mode.
+/** @brief              Add a multicast group.
+ *  @param p_Device     RAK3172 device object
+ *  @param Class        LoRaWAN device class
+ *  @param DevAddr      Multicast device address as hex string
+ *  @param NwkSKey      NWK session key
+ *  @param AppSKey      APP session key
+ *  @param Frequency    Frequency used by this multicast group in Hz
+ *  @param Datarate     Data rate used by this multicast group
+ *  @param Periodicity  Ping slot periodicity
+ *                      NOTE: This value will be ignored when class is set to 'C'!
+ *  @return             RAK3172_ERR_OK when successful
+ *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                      RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_MC_AddGroup(RAK3172_t& p_Device, RAK3172_Class_t Class, std::string DevAddr, std::string NwkSKey, std::string AppSKey, uint32_t Frequency, RAK3172_DataRate_t Datarate, uint8_t Periodicity = 0);
+
+/** @brief          Remove a multicast group.
  *  @param p_Device RAK3172 device object
- *  @param Enable   Enable / Disable the masked channel mode
+ *  @param Group    Multicast group object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetSingleChannelMode(const RAK3172_t& p_Device, bool Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_MC_RemoveGroup(RAK3172_t& p_Device, RAK3172_MC_Group_t Group);
 
-/** @brief          Get the status of the single channel mode.
+/** @brief          Remove a multicast group.
  *  @param p_Device RAK3172 device object
- *  @param p_Enable Pointer to status of masked channel mode
+ *  @param Datarate Data rate used by this multicast group
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
-RAK3172_Error_t RAK3172_LoRaWAN_GetSingleChannelMode(const RAK3172_t& p_Device, bool* const p_Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_MC_RemoveGroup(RAK3172_t& p_Device, std::string DevAddr);
 
-/** @brief          Enable / Disable the eight channel mode.
+/** @brief          Get the configured multicast group.
  *  @param p_Device RAK3172 device object
- *  @param Enable   Enable / Disable the masked channel mode
+ *  @param p_Group  Pointer to multicast group object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
-RAK3172_Error_t RAK3172_LoRaWAN_SetEightChannelMode(const RAK3172_t& p_Device, bool Enable);
+RAK3172_Error_t RAK3172_LoRaWAN_MC_ListGroup(RAK3172_t& p_Device, RAK3172_MC_Group_t* p_Group);
 
-/** @brief          Get the status of the eight channel mode.
- *  @param p_Device RAK3172 device object
- *  @param p_Enable Pointer to status of masked channel mode
- *  @return         RAK3172_ERR_OK when successful
- *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
- *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
- */
-RAK3172_Error_t RAK3172_LoRaWAN_GetEightChannelMode(const RAK3172_t& p_Device, bool* const p_Enable);
-
-/** @brief          Get the RSSI value from all channels.
- *  @param p_Device RAK3172 device object
- *  @param p_RSSI   Pointer to RSSI list
- *  @return         RAK3172_ERR_OK when successful
- *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
- *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
- */
-RAK3172_Error_t RAK3172_LoRaWAN_GetChannelRSSI(const RAK3172_t& p_Device, std::vector<int>* p_RSSI);
-
-#endif /* RAK3172_LORAWAN_RUI3_H_ */
+#endif /* RAK3172_LORAWAN_MULTICAST_H_ */

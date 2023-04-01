@@ -1,9 +1,9 @@
  /*
  * rak3172.h
  *
- *  Copyright (C) Daniel Kampert, 2022
+ *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 driver for ESP32.
+ *  File info: RAK3172 serial driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -20,23 +20,26 @@
 #ifndef RAK3172_H_
 #define RAK3172_H_
 
-#include "Definitions/rak3172_defs.h"
-#include "Definitions/rak3172_errors.h"
-
-#ifdef CONFIG_RAK3172_MODE_WITH_P2P
-    #include "Modes/P2P/rak3172_p2p.h"
-#endif
-
-#ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN
-    #include "Modes/LoRaWAN/rak3172_lorawan.h"
-#endif
-
-#ifdef CONFIG_RAK3172_MODE_WITH_RF
-    #include "Modes/RF/rak317_rf.h"
-#endif
+#include "rak3172_defs.h"
 
 #ifdef CONFIG_RAK3172_USE_RUI3
     #include "rak3172_commands_rui3.h"
+#endif
+
+#ifdef CONFIG_RAK3172_MODE_WITH_P2P
+    #include "P2P/rak3172_p2p.h"
+#endif
+
+#ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN
+    #include "LoRaWAN/rak3172_lorawan.h"
+#endif
+
+#ifdef CONFIG_RAK3172_MODE_WITH_RF
+    #include "RF/rak3172_rf.h"
+#endif
+
+#ifdef CONFIG_RAK3172_MODE_WITH_UPDATE
+    #include "Update/rak3172_ymodem.h"
 #endif
 
 /** @brief  Get the version number of the RAK3172 library.
@@ -49,6 +52,14 @@ inline __attribute__((always_inline)) const std::string RAK3172_LibVersion(void)
     #else
         return "<Not defined>";
     #endif
+}
+
+/** @brief  Get the current baud rate of the device.
+ *  @return Device baud rate
+ */
+inline __attribute__((always_inline)) RAK3172_Baud_t RAK3172_GetBaud(const RAK3172_t& p_Device)
+{
+    return p_Device.UART.Baudrate;
 }
 
 /** @brief          Initialize the driver and the RAK3172 module.
@@ -64,6 +75,15 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t& p_Device);
  *  @param p_Device RAK3172 device object
  */
 void RAK3172_Deinit(RAK3172_t& p_Device);
+
+/** @brief          Set the baudrate of the module.
+ *  @param p_Device RAK3172 device object
+ *  @param Baudrate Module baudrate
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ */
+RAK3172_Error_t RAK3172_SetBaudrate(RAK3172_t& p_Device, RAK3172_Baud_t Baudrate);
 
 /** @brief          Prepare the driver for entering sleep mode.
  *  @param p_Device RAK3172 device object
@@ -81,23 +101,27 @@ RAK3172_Error_t RAK3172_WakeUp(RAK3172_t& p_Device);
 /** @brief          Perform a factory reset of the device.
  *  @param p_Device RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
 RAK3172_Error_t RAK3172_FactoryReset(RAK3172_t& p_Device);
 
 /** @brief          Perform a software reset of the device.
  *  @param p_Device RAK3172 device object
+ *  @param Timeout  (Optional) Timeout in seconds
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_SoftReset(RAK3172_t& p_Device);
+RAK3172_Error_t RAK3172_SoftReset(RAK3172_t& p_Device, uint32_t Timeout = 10);
 
 #ifdef CONFIG_RAK3172_RESET_USE_HW
     /** @brief          Perform a hardware reset of the device.
      *  @param p_Device RAK3172 device object
+     *  @param Timeout  (Optional) Timeout in seconds
      *  @return         RAK3172_ERR_OK when successful
+     *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
      */
-    RAK3172_Error_t RAK3172_HardReset(RAK3172_t& p_Device);
+    RAK3172_Error_t RAK3172_HardReset(RAK3172_t& p_Device, uint32_t Timeout = 10);
 #endif
 
 /** @brief          Transmit an AT command to the RAK3172 module.
@@ -147,22 +171,13 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t& p_Device, RAK3172_Mode_t Mode);
  */
 RAK3172_Error_t RAK3172_GetMode(RAK3172_t& p_Device);
 
-/** @brief          Set the baudrate of the module.
- *  @param p_Device RAK3172 device object
- *  @param Baud     Module baudrate
- *  @return         RAK3172_ERR_OK when successful
- *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+/** @brief              Get the baudrate of the module.
+ *  @param p_Device     RAK3172 device object
+ *  @param p_Baudrate   Pointer to module baudrate
+ *  @return             RAK3172_ERR_OK when successful
+ *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_SetBaud(RAK3172_t& p_Device, RAK3172_Baud_t Baud);
-
-/** @brief          Get the baudrate of the module.
- *  @param p_Device RAK3172 device object
- *  @param p_Baud   Pointer to module baudrate
- *  @return         RAK3172_ERR_OK when successful
- *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
- */
-RAK3172_Error_t RAK3172_GetBaud(RAK3172_t& p_Device, RAK3172_Baud_t* p_Baud);
+RAK3172_Error_t RAK3172_GetBaudrateFromDevice(RAK3172_t& p_Device, RAK3172_Baud_t* p_Baudrate);
 
 #endif /* RAK3172_H_ */

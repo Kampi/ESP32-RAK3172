@@ -1,9 +1,9 @@
  /*
  * rak3172_errors.h
  *
- *  Copyright (C) Daniel Kampert, 2022
+ *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 driver for ESP32.
+ *  File info: RAK3172 serial driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -20,6 +20,8 @@
 #ifndef RAK3172_ERRORS_H_
 #define RAK3172_ERRORS_H_
 
+#include <esp_log.h>
+
 #include <stdint.h>
 
 #include <sdkconfig.h>
@@ -33,15 +35,15 @@ typedef uint32_t RAK3172_Error_t;
 /** @brief      Generic error check macro.
  *  @param Func Function that should be checked
  */
-#define RAK3172_ERROR_CHECK(Func)                               do                                                                                                              \
-                                                                {                                                                                                               \
-                                                                    RAK3172_Error_t Error = Func;                                                                               \
-                                                                    if(Error != RAK3172_ERR_OK)                                                                                 \
-                                                                    {                                                                                                           \
-                                                                        ESP_LOGE("RAK3172", "Error check failed in (%s) at line (%u): 0x%X", __FUNCTION__, __LINE__, Error);    \
-                                                                        return Error;                                                                                           \
-                                                                    }                                                                                                           \
-                                                                } while(0);
+#define RAK3172_ERROR_CHECK(Func)       do                                                                                                              \
+                                        {                                                                                                               \
+                                            unsigned int Error = (unsigned int)Func;                                                                    \
+                                            if(Error != RAK3172_ERR_OK)                                                                                 \
+                                            {                                                                                                           \
+                                                ESP_LOGE("RAK3172", "Error check failed in (%s) at line (%u): 0x%X", __FUNCTION__, __LINE__, Error);    \
+                                                return Error;                                                                                           \
+                                            }                                                                                                           \
+                                        } while(0);
 
 /** @brief RAK3172 error base.
  */
@@ -75,12 +77,20 @@ typedef uint32_t RAK3172_Error_t;
  */
 #define RAK3172_ERR_INVALID_RESPONSE    (RAK3172_ERR_BASE + 6)
 
-/** @brief Mo memory for memory allocation available.
+/** @brief No memory for memory allocation available.
  */
 #define RAK3172_ERR_NO_MEM              (RAK3172_ERR_BASE + 7)
 
 /** @brief The device is not connected (LoRaWAN only).
  */
-#define RAK3172_ERR_NOT_CONNECTED       (RAK3172_ERR_BASE + 6)
+#define RAK3172_ERR_NOT_CONNECTED       (RAK3172_ERR_BASE + 8)
+
+/** @brief Device is not in the correct operation mode.
+ */
+#define RAK3172_ERR_INVALID_MODE        (RAK3172_ERR_BASE + 9)
+
+/** @brief Duty cycle violation.
+ */
+#define RAK3172_ERR_RESTRICTED          (RAK3172_ERR_BASE + 10)
 
 #endif /* RAK3172_ERRORS_H_ */

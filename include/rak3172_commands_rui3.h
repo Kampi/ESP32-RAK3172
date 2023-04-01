@@ -1,9 +1,9 @@
  /*
  * rak3172_commands_rui3.h
  *
- *  Copyright (C) Daniel Kampert, 2022
+ *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 driver for ESP32.
+ *  File info: RAK3172 serial driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -20,8 +20,7 @@
 #ifndef RAK3172_COMMANDS_RUI3_H_
 #define RAK3172_COMMANDS_RUI3_H_
 
-#include "Definitions/rak3172_defs.h"
-#include "Definitions/rak3172_errors.h"
+#include "rak3172_defs.h"
 
 /** @brief              Get the version of the AT commands.
  *  @param p_Device     RAK3172 device object

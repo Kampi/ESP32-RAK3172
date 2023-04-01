@@ -1,9 +1,9 @@
  /*
  * rak3172_commands_rui3.cpp
  *
- *  Copyright (C) Daniel Kampert, 2022
+ *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 driver for ESP32.
+ *  File info: RAK3172 serial driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -97,7 +97,7 @@ RAK3172_Error_t RAK3172_Lock(const RAK3172_t& p_Device, std::string Password)
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+PWORD=" + Password));
 
-    uart_write_bytes(p_Device.Interface, "AT+LOCK\r\n", std::string("AT+LOCK\r\n").length());
+    uart_write_bytes(p_Device.UART.Interface, "AT+LOCK\r\n", std::string("AT+LOCK\r\n").length());
 
     return RAK3172_ERR_FAIL;
 }
@@ -109,7 +109,7 @@ RAK3172_Error_t RAK3172_Unlock(const RAK3172_t& p_Device, std::string Password)
         return RAK3172_ERR_INVALID_ARG;
     }
 
-    uart_write_bytes(p_Device.Interface, Password.c_str(), Password.length());
+    uart_write_bytes(p_Device.UART.Interface, Password.c_str(), Password.length());
 
     return RAK3172_ERR_FAIL;
 }

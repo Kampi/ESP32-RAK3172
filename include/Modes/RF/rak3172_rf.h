@@ -1,5 +1,5 @@
  /*
- * rak3172_rf.cpp
+ * rak3172_rf.h
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
@@ -17,14 +17,9 @@
  * Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
 
-#include <sdkconfig.h>
+#ifndef RAK3172_RF_H_
+#define RAK3172_RF_H_
 
-#ifdef CONFIG_RAK3172_MODE_WITH_RF
+#include "rak3172_defs.h"
 
-#include "rak3172.h"
-
-#include "../../Arch/Logging/rak3172_logging.h"
-
-static const char* TAG = "RAK3172_RF";
-
-#endif
+#endif /* RAK3172_RF_H_ */

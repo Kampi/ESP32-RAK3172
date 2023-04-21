@@ -85,11 +85,6 @@ void RAK3172_Deinit(RAK3172_t& p_Device);
  */
 RAK3172_Error_t RAK3172_SetBaudrate(RAK3172_t& p_Device, RAK3172_Baud_t Baudrate);
 
-/** @brief          Prepare the driver for entering sleep mode.
- *  @param p_Device RAK3172 device object
- */
-void RAK3172_PrepareSleep(RAK3172_t& p_Device);
-
 /** @brief          Use this function to perform a quick initialization of the driver after leaving the sleep mode.
  *  @param p_Device RAK3172 device object
  *  @return         RAK3172_ERR_OK when successful

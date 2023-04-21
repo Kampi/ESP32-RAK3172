@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [4.1.1] - 21.04.2023
+
+**Fixed:**
+
+- Fix wrong error handling in 'RAK3172_LoRaWAN_isJoined'
+- Remove 'RAK3172_PrepareSleep' and replace it with 'RAK3172_Deinit'
+- Fix wrong baudrate handling when reinitializing the driver after sleep
+
+**Changed:**
+- Update CHANGELOG
+- Change version number to 4.1.1
+
 ## [4.1.0] - 01.04.2023
 
 **Fixed:**

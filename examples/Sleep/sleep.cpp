@@ -98,7 +98,7 @@ static void applicationTask(void* p_Parameter)
     }
 
 	// Prepare the driver for entering sleep mode.
-	RAK3172_PrepareSleep(_Device);
+    RAK3172_Deinit(_Device);
 
     // Disable the RTC fast memory during sleep.
 	esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);

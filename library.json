@@ -14,7 +14,7 @@
       "-Iinclude",
       "-DRAK3172_LIB_MAJOR=4",
       "-DRAK3172_LIB_MINOR=1",
-      "-DRAK3172_LIB_BUILD=0"
+      "-DRAK3172_LIB_BUILD=1"
     ],
     "includeDir": ".",
     "srcDir": ".",

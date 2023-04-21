@@ -312,7 +312,10 @@ bool RAK3172_LoRaWAN_isJoined(RAK3172_t& p_Device, bool Refresh)
 
     p_Device.LoRaWAN.isJoined = false;
 
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+NJS=?", &Response));
+    if(RAK3172_SendCommand(p_Device, "AT+NJS=?", &Response) != RAK3172_ERR_OK)
+    {
+        return false;
+    }
 
     if(Response.compare("1") == 0)
     {

@@ -4,7 +4,7 @@
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 serial driver.
+ *  File info: Module firmware upgrade driver for the RAK3172.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -175,7 +175,7 @@ static RAK3172_Error_t RAK3172_Ymodem_TransmitIntialPacket(RAK3172_t& p_Device, 
 	RAK3172_ERROR_CHECK(RAK3172_Ymodem_Transmit(p_Device, Header, sizeof(Header), Data, sizeof(Data)));
 
 	// Wait for ACK and 'C'.
-	if(uart_read_bytes(p_Device.UART.Interface, Data, 2, (Timeout * 1000UL) / portTICK_RATE_MS) == -1)
+	if(uart_read_bytes(p_Device.UART.Interface, Data, 2, (Timeout * 1000UL) / portTICK_PERIOD_MS) == -1)
 	{
 		return RAK3172_ERR_INVALID_RESPONSE;
 	}
@@ -223,7 +223,7 @@ static RAK3172_Error_t RAK3172_Ymodem_TransmitPacket(RAK3172_t& p_Device, uint8_
 	RAK3172_ERROR_CHECK(RAK3172_Ymodem_Transmit(p_Device, Header, sizeof(Header), Data, sizeof(Data)));
 
 	// Wait for ACK and 'C'.
-	if(uart_read_bytes(p_Device.UART.Interface, Data, 1, (Timeout * 1000UL) / portTICK_RATE_MS) == -1)
+	if(uart_read_bytes(p_Device.UART.Interface, Data, 1, (Timeout * 1000UL) / portTICK_PERIOD_MS) == -1)
 	{
 		return RAK3172_ERR_INVALID_RESPONSE;
 	}
@@ -273,7 +273,7 @@ static RAK3172_Error_t RAK3172_Ymodem_TransmitFinalPacket(RAK3172_t& p_Device, u
 	// Send the first 'EOT'. The device should response with 'NAK'.
 	Data[0] = YMODEM_EOT;
 	if((uart_write_bytes(p_Device.UART.Interface, Data, 1) != 1) &&
-	   (uart_read_bytes(p_Device.UART.Interface, Data, 1, (Timeout * 1000UL) / portTICK_RATE_MS) == -1)
+	   (uart_read_bytes(p_Device.UART.Interface, Data, 1, (Timeout * 1000UL) / portTICK_PERIOD_MS) == -1)
 	  )
 	{
 		return RAK3172_ERR_FAIL;
@@ -287,7 +287,7 @@ static RAK3172_Error_t RAK3172_Ymodem_TransmitFinalPacket(RAK3172_t& p_Device, u
 	// Send the second 'EOT'. The device should response with 'ACK' and 'C'.
 	Data[0] = YMODEM_EOT;
 	if((uart_write_bytes(p_Device.UART.Interface, Data, 1) != 1) &&
-	   (uart_read_bytes(p_Device.UART.Interface, Data, 2, (Timeout * 1000UL) / portTICK_RATE_MS) == -1)
+	   (uart_read_bytes(p_Device.UART.Interface, Data, 2, (Timeout * 1000UL) / portTICK_PERIOD_MS) == -1)
 	  )
 	{
 		return RAK3172_ERR_FAIL;
@@ -315,7 +315,6 @@ static RAK3172_Error_t RAK3172_Ymodem_Transmit(RAK3172_t& p_Device, const uint8_
 	uint8_t* Data;
 	uint32_t Length;
 	uint32_t BytesToTransmit;
-	RAK3172_Error_t Error;
 
 	RAK3172_ERROR_CHECK(RAK3172_Ymodem_TransmitIntialPacket(p_Device, p_FileName, LengthName));
 
@@ -334,8 +333,7 @@ static RAK3172_Error_t RAK3172_Ymodem_Transmit(RAK3172_t& p_Device, const uint8_
 			BytesToTransmit = BytesToTransmit;
 		}
 
-		Error = RAK3172_Ymodem_TransmitPacket(p_Device, Index, Data, BytesToTransmit);
-		if(Error != RAK3172_ERR_OK)
+		if(RAK3172_Ymodem_TransmitPacket(p_Device, Index, Data, BytesToTransmit) != RAK3172_ERR_OK)
 		{
 			continue;
 		}
@@ -361,6 +359,8 @@ RAK3172_Error_t RAK3172_RunUpdate(RAK3172_t& p_Device, const uint8_t* const p_Da
 		return RAK3172_ERR_INVALID_ARG;
 	}
 
+	Error = RAK3172_ERR_OK;
+
 	// Put the device into DFU mode.
 	RAK3172_SendCommand(p_Device, "AT+BOOT", NULL, &Status);
 	if(Status.find("AT_BUSY_ERROR") != std::string::npos)
@@ -378,7 +378,7 @@ RAK3172_Error_t RAK3172_RunUpdate(RAK3172_t& p_Device, const uint8_t* const p_Da
 	// Leave DFU mode.
 	Error |= RAK3172_SendCommand(p_Device, "AT+RUN");
 
-	return RAK3172_ERR_OK;
+	return Error;
 }
 
 #endif

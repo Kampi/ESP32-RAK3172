@@ -3,7 +3,7 @@
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 serial driver.
+ *  File info: RAK3172 LoRaWAN Class B driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -30,7 +30,7 @@
  *  @param p_Frequency  Pointer to beacon frequency
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                      RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                      RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_GetBeaconFrequency(RAK3172_t& p_Device, RAK3172_DataRate_t* p_Datarate, uint32_t* p_Frequency);
@@ -41,7 +41,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetBeaconFrequency(RAK3172_t& p_Device, RAK3172_
      *  @param p_Time   Pointer to beacon time
      *  @return         RAK3172_ERR_OK when successful
      *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
-     *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+     *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
      *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
      */
     RAK3172_Error_t RAK3172_LoRaWAN_GetBeaconTime(RAK3172_t& p_Device, uint32_t* p_Time);
@@ -54,7 +54,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetBeaconFrequency(RAK3172_t& p_Device, RAK3172_
      *  @param p_Latitude   Pointer to GPS latitude
      *  @return             RAK3172_ERR_OK when successful
      *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
-     *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+     *                      RAK3172_ERR_INVALID_STATE when the interface is not initialized
      *                      RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
      */
     RAK3172_Error_t RAK3172_LoRaWAN_GetGatewayInfo(RAK3172_t& p_Device, std::string* p_NetID, std::string* p_GatewayID, std::string* p_Longitude, std::string* p_Latitude);
@@ -65,7 +65,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetBeaconFrequency(RAK3172_t& p_Device, RAK3172_
  *  @param p_DateTime   Pointer to date and time structure
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                      RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                      RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_GetLocalTime(RAK3172_t& p_Device, struct tm* p_DateTime);
@@ -78,7 +78,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetLocalTime(RAK3172_t& p_Device, struct tm* p_D
  *                      7 means every 128 seconds, which is the maximum ping period.
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                      RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                      RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_SetPeriodicity(RAK3172_t& p_Device, uint8_t Periodicity);
@@ -88,7 +88,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetPeriodicity(RAK3172_t& p_Device, uint8_t Peri
  *  @param p_Periodicity    Pointer to ping slot periodicity.
  *  @return                 RAK3172_ERR_OK when successful
  *                          RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                          RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                          RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                          RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_GetPeriodicity(RAK3172_t& p_Device, uint8_t* p_Periodicity);

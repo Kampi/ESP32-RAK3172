@@ -59,6 +59,30 @@ static void applicationTask(void* p_Parameter)
         ESP_LOGI(TAG, "Joined...");
     }
 
+    Error = RAK3172_LoRaWAN_Transmit(_Device, 1, Payload, sizeof(Payload), true, 3);
+    if(Error == RAK3172_ERR_OK)
+    {
+        RAK3172_Rx_t Message;
+
+        ESP_LOGI(TAG, "Message transmitted...");
+        Error = RAK3172_LoRaWAN_Receive(_Device, &Message);
+        if(Error != RAK3172_ERR_OK)
+        {
+            ESP_LOGE(TAG, "Cannot receive message! Error: 0x%04X", static_cast<unsigned int>(Error));
+        }
+        else
+        {
+            ESP_LOGI(TAG, " RSSI: %i", Message.RSSI);
+            ESP_LOGI(TAG, " SNR: %i", Message.SNR);
+            ESP_LOGI(TAG, " Port: %u", Message.Port);
+            ESP_LOGI(TAG, " Payload: %s", Message.Payload.c_str());
+        }
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Cannot transmit message! Error: 0x%04X", static_cast<unsigned int>(Error));
+    }
+
     while(true)
     {
         std::string NetID;
@@ -66,14 +90,25 @@ static void applicationTask(void* p_Parameter)
         std::string Longitude;
         std::string Latitude;
         RAK3172_DataRate_t Datarate;
+        uint32_t Time;
         uint32_t Frequency;
 
         esp_task_wdt_reset();
 
+        Error = RAK3172_LoRaWAN_GetBeaconTime(_Device, &Time);
+        if(Error == RAK3172_ERR_OK)
+        {
+            ESP_LOGI(TAG, "Time: %u", static_cast<unsigned int>(Time));
+        }
+        else
+        {
+            ESP_LOGE(TAG, "Cannot get beacon time! Error: 0x%04X", static_cast<unsigned int>(Error));
+        }
+
         Error = RAK3172_LoRaWAN_GetBeaconFrequency(_Device, &Datarate, &Frequency);
         if(Error == RAK3172_ERR_OK)
         {
-
+            ESP_LOGI(TAG, "Time: %u", static_cast<unsigned int>(Frequency));
         }
         else
         {
@@ -83,7 +118,10 @@ static void applicationTask(void* p_Parameter)
         Error = RAK3172_LoRaWAN_GetGatewayInfo(_Device, &NetID, &GatewayID, &Longitude, &Latitude);
         if(Error == RAK3172_ERR_OK)
         {
-
+            ESP_LOGI(TAG, "Net ID: %s", NetID.c_str());
+            ESP_LOGI(TAG, "Gateway ID: %s", GatewayID.c_str());
+            ESP_LOGI(TAG, "Longitude: %s", Longitude.c_str());
+            ESP_LOGI(TAG, "Latitude: %s", Latitude.c_str());
         }
         else
         {

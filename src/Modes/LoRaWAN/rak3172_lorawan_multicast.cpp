@@ -3,7 +3,7 @@
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 serial driver.
+ *  File info: RAK3172 LoRaWAN multicast driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -66,7 +66,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_MC_RemoveGroup(RAK3172_t& p_Device, std::string 
         return RAK3172_ERR_INVALID_MODE;
     }
 
-    return RAK3172_SendCommand(p_Device, "AT+ADDMULC=" + DevAddr);
+    return RAK3172_SendCommand(p_Device, "AT+RMVMULC=" + DevAddr);
 }
 
 RAK3172_Error_t RAK3172_LoRaWAN_MC_ListGroup(RAK3172_t& p_Device, RAK3172_MC_Group_t* p_Group)
@@ -110,5 +110,21 @@ RAK3172_Error_t RAK3172_LoRaWAN_MC_ListGroup(RAK3172_t& p_Device, RAK3172_MC_Gro
 
     return RAK3172_ERR_OK;
 }
+
+#ifdef CONFIG_RAK3172_USE_RUI3
+    RAK3172_Error_t RAK3172_LoRaWAN_MC_GetRootKey(RAK3172_t& p_Device, std::string* p_RootKey)
+    {
+        if(p_RootKey == NULL)
+        {
+            return RAK3172_ERR_INVALID_ARG;
+        }
+        else if(p_Device.Mode != RAK_MODE_LORAWAN)
+        {
+            return RAK3172_ERR_INVALID_MODE;
+        }
+
+        return RAK3172_SendCommand(p_Device, "AT+MCROOTKEY=?", p_RootKey);
+    }
+#endif
 
 #endif

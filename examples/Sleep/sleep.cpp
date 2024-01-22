@@ -24,29 +24,49 @@ static const char* TAG 							= "main";
 
 static void applicationTask(void* p_Parameter)
 {
-    if((rtc_get_reset_reason(0) == POWERON_RESET) && (rtc_get_reset_reason(1) == EXT_CPU_RESET))
+    if(rtc_get_reset_reason(0) == POWERON_RESET)
     {
         RAK3172_Error_t Error;
         RAK3172_Info_t Info;
 
-		_Device = RAK3172_DEFAULT_CONFIG(UART_NUM_1, GPIO_NUM_12, GPIO_NUM_14, 9600);
+		_Device = RAK3172_DEFAULT_CONFIG(CONFIG_RAK3172_UART_PORT, CONFIG_RAK3172_UART_RX, CONFIG_RAK3172_UART_TX, CONFIG_RAK3172_UART_BAUD);
         _Device.Info = &Info;
 
         Error = RAK3172_Init(_Device);
         if(Error != RAK3172_ERR_OK)
         {
-            ESP_LOGE(TAG, "Cannot initialize RAK3172! Error: 0x%04X", Error);
+            ESP_LOGE(TAG, "Cannot initialize RAK3172! Error: 0x%04X", static_cast<unsigned int>(Error));
         }
 
         ESP_LOGI(TAG, "Firmware: %s", Info.Firmware.c_str());
         ESP_LOGI(TAG, "Serial number: %s", Info.Serial.c_str());
         ESP_LOGI(TAG, "Current mode: %u", _Device.Mode);
 
-        Error = RAK3172_LoRaWAN_Init(_Device, 16, 3, RAK_JOIN_OTAA, DEVEUI, APPEUI, APPKEY, 'A', RAK_BAND_EU868, RAK_SUB_BAND_NONE);
+        Error = RAK3172_LoRaWAN_Init(_Device, 16, RAK_JOIN_OTAA, DEVEUI, APPEUI, APPKEY, RAK_CLASS_A, RAK_BAND_EU868, RAK_SUB_BAND_NONE);
         if(Error != RAK3172_ERR_OK)
         {
-            ESP_LOGE(TAG, "Cannot initialize RAK3172 LoRaWAN! Error: 0x%04X", Error);
+            ESP_LOGE(TAG, "Cannot initialize RAK3172 LoRaWAN! Error: 0x%04X", static_cast<unsigned int>(Error));
         }
+
+        Error = RAK3172_LoRaWAN_StartJoin(_Device, LORAWAN_JOIN_ATTEMPTS, RAK3172_NO_TIMEOUT, true, false, LORAWAN_MAX_JOIN_INTERVAL_S);
+        if(Error != RAK3172_ERR_OK)
+        {
+            ESP_LOGE(TAG, "Cannot join network! Error: 0x%04X", static_cast<unsigned int>(Error));
+        }
+
+        if(RAK3172_LoRaWAN_isJoined(_Device, true))
+        {
+            ESP_LOGI(TAG, "Joined...");
+        }
+
+        #ifdef CONFIG_RAK3172_USE_AUTO_LP
+            Error = RAK3172_SetPwrMode(_Device, RAK_PWRMODE_STOP2);
+            Error |= RAK3172_EnableAutoLowPower(_Device, true);
+            if(Error != RAK3172_ERR_OK)
+            {
+                ESP_LOGE(TAG, "Cannot enable automatic low power mode! Error: 0x%04X", static_cast<unsigned int>(Error));
+            }
+        #endif
     }
     else if((rtc_get_reset_reason(0) == DEEPSLEEP_RESET) || (rtc_get_reset_reason(1) == DEEPSLEEP_RESET))
     {
@@ -58,23 +78,28 @@ static void applicationTask(void* p_Parameter)
         {
             ESP_LOGI(TAG, "Not joined. Rejoin...");
 
-            Error = RAK3172_LoRaWAN_StartJoin(_Device, LORAWAN_JOIN_ATTEMPTS, RAK3172_NO_TIMEOUT, false, LORAWAN_MAX_JOIN_INTERVAL_S, NULL);
+            Error = RAK3172_LoRaWAN_StartJoin(_Device, LORAWAN_JOIN_ATTEMPTS, RAK3172_NO_TIMEOUT, true, false, LORAWAN_MAX_JOIN_INTERVAL_S);
             if(Error != RAK3172_ERR_OK)
             {
-                ESP_LOGE(TAG, "Cannot join network! Error: 0x%04X", Error);
+                ESP_LOGE(TAG, "Cannot join network! Error: 0x%04X", static_cast<unsigned int>(Error));
             }
         }
 
-        if(RAK3172_LoRaWAN_isJoined(_Device, false))
+        if(RAK3172_LoRaWAN_isJoined(_Device, true))
         {
             char Payload[] = {'{', '}'};
 
             ESP_LOGI(TAG, "Joined...");
 
-            Error = RAK3172_LoRaWAN_Transmit(_Device, 1, Payload, sizeof(Payload), true);
+            #ifdef CONFIG_RAK3172_USE_AUTO_LP
+                Error = RAK3172_LoRaWAN_Transmit(_Device, 1, Payload, sizeof(Payload), false, 0, false);
+            #else
+                Error = RAK3172_LoRaWAN_Transmit(_Device, 1, Payload, sizeof(Payload), false, 0);
+            #endif
+
             if(Error == RAK3172_ERR_INVALID_RESPONSE)
             {
-                ESP_LOGE(TAG, "Cannot transmit message! Error: 0x%04X", Error);
+                ESP_LOGE(TAG, "Cannot transmit message! Error: 0x%04X", static_cast<unsigned int>(Error));
             }
             else
             {
@@ -84,7 +109,7 @@ static void applicationTask(void* p_Parameter)
                 Error = RAK3172_LoRaWAN_Receive(_Device, &Message);
                 if(Error != RAK3172_ERR_OK)
                 {
-                    ESP_LOGE(TAG, "Cannot receive message! Error: 0x%04X", Error);
+                    ESP_LOGE(TAG, "Cannot receive message! Error: 0x%04X", static_cast<unsigned int>(Error));
                 }
                 else
                 {
@@ -97,17 +122,18 @@ static void applicationTask(void* p_Parameter)
         }
     }
 
+    #ifndef CONFIG_RAK3172_USE_AUTO_LP
+        RAK3172_Sleep(_Device);
+    #endif
+
 	// Prepare the driver for entering sleep mode.
     RAK3172_Deinit(_Device);
-
-    // Disable the RTC fast memory during sleep.
-	esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
 
 	// Disable all wakeup sources.
 	esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 
-    // Sleep for 60 seconds.
-	esp_sleep_enable_timer_wakeup(((uint64_t)60) * 1000000ULL);
+    // Sleep for 10 seconds.
+	esp_sleep_enable_timer_wakeup(static_cast<uint64_t>(10) * 1000000ULL);
 
 	// Disable the WiFi interface.
 	esp_wifi_disconnect();

@@ -29,11 +29,13 @@
     #define RAK3172_LOGD(tag, format, ...)                      ESP_LOGD(tag, format, ##__VA_ARGS__)
     #define RAK3172_LOGW(tag, format, ...)                      ESP_LOGW(tag, format, ##__VA_ARGS__)
     #define RAK3172_LOGE(tag, format, ...)                      ESP_LOGE(tag, format, ##__VA_ARGS__)
+    #define RAK3172_LOG_BUFFER_HEX(tag, buffer, buff_len)       ESP_LOG_BUFFER_HEX(tag, buffer, buff_len)
 #else
     #define RAK3172_LOGI(tag, format, ...)
     #define RAK3172_LOGD(tag, format, ...)
     #define RAK3172_LOGW(tag, format, ...)
     #define RAK3172_LOGE(tag, format, ...)
+    #define RAK3172_LOG_BUFFER_HEX(tag, buffer, buff_len)
 #endif
 
 #endif /* RAK3172_LOGGING_H_ */

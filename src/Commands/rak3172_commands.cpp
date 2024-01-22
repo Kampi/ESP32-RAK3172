@@ -25,8 +25,8 @@ static const char* TAG = "RAK3172";
 
 RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Command, std::string* const p_Value, std::string* const p_Status)
 {
-    std::string* Response = NULL;
-    RAK3172_Error_t Error = RAK3172_ERR_OK;
+    std::string* Response;
+    RAK3172_Error_t Error;
 
     if(p_Device.Internal.isBusy)
     {
@@ -38,6 +38,8 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Comma
     {
         return RAK3172_ERR_INVALID_STATE;
     }
+
+    Error = RAK3172_ERR_OK;
 
     // Clear the queue and drop all items.
     xQueueReset(p_Device.Internal.MessageQueue);
@@ -89,7 +91,14 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Comma
     // Transmission is without error when 'OK' as status code and when no event data are received.
     if(Response->find("OK") == std::string::npos)
     {
-        Error = RAK3172_ERR_FAIL;
+        if(Response->find("Command not found") == std::string::npos)
+        {
+            Error = RAK3172_ERR_COMMAND_NOT_FOUND;
+        }
+        else
+        {
+            Error = RAK3172_ERR_FAIL;
+        }
     }
 
     // Copy the status string if needed.
@@ -128,7 +137,7 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t& p_Device, RAK3172_Mode_t Mode)
 {
     std::string Command;
     std::string* Response;
-    RAK3172_Error_t Error = RAK3172_ERR_OK;
+    RAK3172_Error_t Error;
 
     if(p_Device.Internal.isInitialized == false)
     {
@@ -139,6 +148,7 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t& p_Device, RAK3172_Mode_t Mode)
         return RAK3172_ERR_OK;
     }
 
+    Error = RAK3172_ERR_OK;
     p_Device.Internal.isBusy = true;
 
     // Transmit the command.

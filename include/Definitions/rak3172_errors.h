@@ -93,4 +93,16 @@ typedef uint32_t RAK3172_Error_t;
  */
 #define RAK3172_ERR_RESTRICTED          (RAK3172_ERR_BASE + 10)
 
+/** @brief Class B not enabled error. Check your device settings in the network server.
+ */
+#define RAK3172_ERR_CLASS_B_DISABLED    (RAK3172_ERR_BASE + 11)
+
+/** @brief The message was received on the wrong LoRaWAN port.
+ */
+#define RAK3172_ERR_WRONG_PORT          (RAK3172_ERR_BASE + 12)
+
+/** @brief The command isn´t supported by this module or by this module firmware.
+ */
+#define RAK3172_ERR_COMMAND_NOT_FOUND   (RAK3172_ERR_BASE + 13)
+
 #endif /* RAK3172_ERRORS_H_ */

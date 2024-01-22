@@ -3,7 +3,7 @@
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 serial driver.
+ *  File info: RAK3172 LoRaWAN driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -21,8 +21,8 @@
 
 #ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN
 
-#include "../../Arch/Logging/rak3172_logging.h"
 #include "../../Arch/Timer/rak3172_timer.h"
+#include "../../Arch/Logging/rak3172_logging.h"
 
 #ifdef CONFIG_RAK3172_PWRMGMT_ENABLE
     #include "../../Arch/PwrMgmt/rak3172_pwrmgmt.h"
@@ -54,10 +54,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Init(RAK3172_t& p_Device, uint8_t TxPwr, RAK3172
 
     p_Device.Internal.isBusy = false;
 
-    Command = "AT+CLASS=";
-    Command += Class;
-    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, Command));
-
+    RAK3172_ERROR_CHECK(RAK3172_LoRaWAN_SetClass(p_Device, Class));
 	RAK3172_ERROR_CHECK(RAK3172_LoRaWAN_SetADR(p_Device, UseADR));
     RAK3172_ERROR_CHECK(RAK3172_LoRaWAN_SetBand(p_Device, Band));
 
@@ -325,12 +322,7 @@ bool RAK3172_LoRaWAN_isJoined(RAK3172_t& p_Device, bool Refresh)
     return p_Device.LoRaWAN.isJoined;
 }
 
-RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t& p_Device, uint8_t Port, const uint8_t* const p_Buffer, uint16_t Length, uint8_t Retries)
-{
-    return RAK3172_LoRaWAN_Transmit(p_Device, Port, p_Buffer, Length, Retries);
-}
-
-RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t& p_Device, uint8_t Port, const void* const p_Buffer, uint16_t Length, uint8_t Retries, bool Confirmed, RAK3172_Wait_t Wait)
+RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t& p_Device, uint8_t Port, const void* p_Buffer, uint16_t Length, bool Confirmed, uint8_t Retries, bool WaitForTransmit, RAK3172_Wait_t Wait)
 {
     std::string Payload;
     std::string Status;
@@ -363,13 +355,13 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t& p_Device, uint8_t Port, cons
     }
 
     // Encode the payload into an ASCII string.
-    for(uint8_t i = 0x00; i < Length; i++)
+    for(uint8_t i = 0; i < Length; i++)
     {
         sprintf(Buffer, "%02x", ((uint8_t*)p_Buffer)[i]);
         Payload += std::string(Buffer);
     }
 
-    if(Length > 500)
+    if(Payload.size() > 512)
     {
         RAK3172_SendCommand(p_Device, "AT+LPSEND=" + std::to_string(Port) + ":" + std::to_string(Confirmed) + ":" + Payload, NULL, &Status);
     }
@@ -378,6 +370,8 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t& p_Device, uint8_t Port, cons
         RAK3172_ERROR_CHECK(RAK3172_LoRaWAN_SetConfirmation(p_Device, Confirmed));
         RAK3172_SendCommand(p_Device, "AT+SEND=" + std::to_string(Port) + ":" + Payload, NULL, &Status);
     }
+
+    p_Device.Internal.isBusy = true;
 
     // The device is busy. Leave the function with an invalid state error.
     if(Status.find("AT_BUSY_ERROR") != std::string::npos)
@@ -388,13 +382,31 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t& p_Device, uint8_t Port, cons
     {
         return RAK3172_ERR_RESTRICTED;
     }
-    // No transmission error and no confirmation needed.
-    else if((Confirmed == false) && (Status.find("OK") == std::string::npos))
+    else if(Status.find("AT_NO_NETWORK_JOINED") != std::string::npos)
     {
+        return RAK3172_ERR_NOT_CONNECTED;
+    }
+    // No transmission error and no confirmation needed.
+    else if((Confirmed == false) && (Status.find("OK") != std::string::npos))
+    {
+
+        // Wait until the transmission is done.
+        do
+        {
+            if(Wait)
+            {
+                Wait();
+            }
+
+            RAK3172_PwrMagnt_EnterLightSleep(p_Device);
+
+            // We need this delay to prevent a task watchdog reset on ESP32.
+            vTaskDelay(20 / portTICK_PERIOD_MS);
+        } while(p_Device.Internal.isBusy && (WaitForTransmit == true));
+
         return RAK3172_ERR_OK;
     }
 
-    p_Device.Internal.isBusy = true;
     p_Device.LoRaWAN.ConfirmError = false;
 
     // Wait for the confirmation if needed.
@@ -450,6 +462,8 @@ RAK3172_Error_t RAK3172_LoRaWAN_Receive(RAK3172_t& p_Device, RAK3172_Rx_t* p_Mes
     p_Message->SNR = FromQueue->SNR;
     p_Message->Port = FromQueue->Port;
     p_Message->Payload = FromQueue->Payload;
+    p_Message->isMulticast = FromQueue->isMulticast;
+    p_Message->Group = FromQueue->Group;
 
     delete FromQueue;
 
@@ -1155,6 +1169,46 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetJoinMode(const RAK3172_t& p_Device, RAK3172_J
     return RAK3172_ERR_OK;
 }
 
+RAK3172_Error_t RAK3172_LoRaWAN_SetClass(RAK3172_t& p_Device, RAK3172_Class_t Class)
+{
+    std::string Command;
+
+    if(p_Device.Mode != RAK_MODE_LORAWAN)
+    {
+        return RAK3172_ERR_INVALID_MODE;
+    }
+
+    Command = "AT+CLASS=";
+    Command += Class;
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, Command));
+
+    p_Device.LoRaWAN.Class = Class;
+
+    return RAK3172_ERR_OK;
+}
+
+RAK3172_Error_t RAK3172_LoRaWAN_GetClass(RAK3172_t& p_Device, RAK3172_Class_t* const p_Class)
+{
+    std::string Response;
+
+    if(p_Class == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+    else if(p_Device.Mode != RAK_MODE_LORAWAN)
+    {
+        return RAK3172_ERR_INVALID_MODE;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+CLASS=?", &Response));
+
+    *p_Class = static_cast<RAK3172_Class_t>(Response.at(0));
+
+    p_Device.LoRaWAN.Class = *p_Class;
+
+    return RAK3172_ERR_OK;
+}
+
 RAK3172_Error_t RAK3172_LoRaWAN_GetRSSI(const RAK3172_t& p_Device, int* p_RSSI)
 {
     std::string Response;
@@ -1194,5 +1248,26 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetSNR(const RAK3172_t& p_Device, int* p_SNR)
 
     return RAK3172_ERR_OK;
 }
+
+RAK3172_Error_t RAK3172_LoRaWAN_GetConfirmationStatus(const RAK3172_t& p_Device, bool* p_Status)
+{
+    std::string Response;
+
+    if(p_Status == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+    else if(p_Device.Mode != RAK_MODE_LORAWAN)
+    {
+        return RAK3172_ERR_INVALID_MODE;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+CFS=?", &Response));
+
+    *p_Status = static_cast<bool>(std::stoi(Response));
+
+    return RAK3172_ERR_OK;
+}
+
 
 #endif

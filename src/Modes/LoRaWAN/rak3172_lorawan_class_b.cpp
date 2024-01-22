@@ -3,7 +3,7 @@
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 serial driver.
+ *  File info: RAK3172 LoRaWAN Class B driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -57,7 +57,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetBeaconFrequency(RAK3172_t& p_Device, RAK3172_
     {
         return RAK3172_ERR_INVALID_ARG;
     }
-    else if(p_Device.Mode != RAK_MODE_LORAWAN)
+    else if((p_Device.Mode != RAK_MODE_LORAWAN) || (p_Device.LoRaWAN.Class != RAK_CLASS_B))
     {
         return RAK3172_ERR_INVALID_MODE;
     }
@@ -95,12 +95,18 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetBeaconFrequency(RAK3172_t& p_Device, RAK3172_
         {
             return RAK3172_ERR_INVALID_ARG;
         }
-        else if(p_Device.Mode != RAK_MODE_LORAWAN)
+        else if((p_Device.Mode != RAK_MODE_LORAWAN) || (p_Device.LoRaWAN.Class != RAK_CLASS_B))
         {
             return RAK3172_ERR_INVALID_MODE;
         }
 
         RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+BTIME=?", &Response));
+
+        if(Response.find("AT_NO_CLASS_B_ENABLE") != std::string::npos)
+        {
+            return RAK3172_ERR_CLASS_B_DISABLED;
+        }
+
         Index = Response.find("BTIME: ");
         if(Index == std::string::npos)
         {
@@ -121,7 +127,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetBeaconFrequency(RAK3172_t& p_Device, RAK3172_
         {
             return RAK3172_ERR_INVALID_ARG;
         }
-        else if(p_Device.Mode != RAK_MODE_LORAWAN)
+        else if((p_Device.Mode != RAK_MODE_LORAWAN) || (p_Device.LoRaWAN.Class != RAK_CLASS_B))
         {
             return RAK3172_ERR_INVALID_MODE;
         }
@@ -141,7 +147,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetLocalTime(RAK3172_t& p_Device, struct tm* p_D
     {
         return RAK3172_ERR_INVALID_ARG;
     }
-    else if(p_Device.Mode != RAK_MODE_LORAWAN)
+    else if((p_Device.Mode != RAK_MODE_LORAWAN) || (p_Device.LoRaWAN.Class != RAK_CLASS_B))
     {
         return RAK3172_ERR_INVALID_MODE;
     }
@@ -192,7 +198,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetPeriodicity(RAK3172_t& p_Device, uint8_t Peri
     {
         return RAK3172_ERR_INVALID_ARG;
     }
-    else if(p_Device.Mode != RAK_MODE_LORAWAN)
+    else if((p_Device.Mode != RAK_MODE_LORAWAN) || (p_Device.LoRaWAN.Class != RAK_CLASS_B))
     {
         return RAK3172_ERR_INVALID_MODE;
     }
@@ -208,7 +214,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetPeriodicity(RAK3172_t& p_Device, uint8_t* p_P
     {
         return RAK3172_ERR_INVALID_ARG;
     }
-    else if(p_Device.Mode != RAK_MODE_LORAWAN)
+    else if((p_Device.Mode != RAK_MODE_LORAWAN) || (p_Device.LoRaWAN.Class != RAK_CLASS_B))
     {
         return RAK3172_ERR_INVALID_MODE;
     }

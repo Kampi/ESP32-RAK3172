@@ -1,167 +1,60 @@
-menu "RAK3172"
-    config RAK3172_USE_RUI3
-        bool "RUI3 support"
-        default y
+menu "RAK3172-Example"
+    config RAK3172_UART_PORT
+        int "UART port number"
+        range 0 2
+        default 1
         help
-            Enable support for a RUI3 based communication interface.
+            UART communication port number for the driver.
+            See UART documentation for available port numbers.
 
-    config RAK3172_FACTORY_RESET
-        bool "Factory reset"
-        depends on RAK3172_USE_RUI3
-        default y
-        help
-            Perform a factory reset during the device driver initialization.
-
-    menu "Power Management"
-        config RAK3172_PWRMGMT_ENABLE
-            bool "Enable power management"
-            default y
-            help
-                Enable the support for power management functions for the host CPU.
-    endmenu
-
-    menu "Modes"
-        config RAK3172_MODE_WITH_LORAWAN
-            bool "Include LoRaWAN"
-            default n
-            help
-                Enable this option if you want to use the LoRaWAN mode.
-
-        config RAK3172_MODE_WITH_LORAWAN_CLASS_B
-            depends on RAK3172_MODE_WITH_LORAWAN
-            bool "Include class B support for LoRaWAN"
-            default n
-            help
-                Enable this option if you want to use the class B device support for LoRaWAN.
-
-        config RAK3172_MODE_WITH_LORAWAN_MULTICAST
-            depends on RAK3172_MODE_WITH_LORAWAN
-            bool "Include multicast support for LoRaWAN"
-            default n
-            help
-                Enable this option if you want to use the multicast support for LoRaWAN.
-
-        config RAK3172_MODE_WITH_P2P
-            bool "Include P2P"
-            default n
-            help
-                Enable this option if you want to use the LoRa P2P mode.
-
-        config RAK3172_MODE_WITH_UPDATE
+        config RAK3172_USE_AUTO_LP
             depends on RAK3172_USE_RUI3
-            bool "Include DFU functionality (EXPERIMENTAL)"
+            bool "Use automatic low power mode"
             default n
             help
-                Enable this option if you want to use the DFU function mode for the RAK3172 module.
+                Enable this option if you want to use the automatic low power mode option of the module.
 
-        config CONFIG_RAK3172_MODE_WITH_LORAWAN_FOTA
-            select RAK3172_MODE_WITH_LORAWAN_MULTICAST
-            depends on RAK3172_MODE_WITH_LORAWAN
-            bool "Include LoRaWAN FOTA functionality (EXPERIMENTAL)"
-            default n
-            help
-                Enable this option if you want to use the FOTA function mode for the host CPU.
-    endmenu
+    choice
+        prompt "Baud rate"
+        config RAK3172_BAUD_4800
+            bool "4800"
 
-    menu "UART"
-		config RAK3172_UART_IRAM
-			bool "Place ISR in IRAM"
-			default n
+        config RAK3172_BAUD_9600
+            bool "9600"
 
-        config RAK3172_UART_BUFFER_SIZE
-            int "Buffer size"
-            range 256 1024
-            default 512
-            help
-                Buffer size for the UART.
+        config RAK3172_BAUD_19200
+            bool "19200"
 
-        config RAK3172_UART_QUEUE_LENGTH
-            int "Queue length"
-            range 4 16
-            default 8
-            help
-                Queue length for the UART receive buffer.
-    endmenu
+        config RAK3172_BAUD_38400
+            bool "38400"
 
-    menu "Reset"
-        config RAK3172_RESET_USE_HW
-            bool "Hardware reset"
-            default n
-            help
-                Enable this option if you want to use the hardware reset.
+        config RAK3172_BAUD_57600
+            bool "57600"
 
-        config RAK3172_RESET_INVERT
-            bool "Invert"
-            depends on RAK3172_RESET_USE_HW
-            default n
-            help
-                Enable this option if you want to invert the reset (active-high instead of active-low).
+        config RAK3172_BAUD_115200
+            bool "115200"
+    endchoice
 
-        config RAK3172_RESET_USE_PULL
-            bool "Use internal pull-up / pull-down"
-            depends on RAK3172_RESET_USE_HW
-            default n
-            help
-                Enable this option if you want to use an internal pull-up resistor (invert disabled) or an internal pull-down resistor (invert enabled).
+    config RAK3172_UART_BAUD
+        int
+        default 4800 if RAK3172_BAUD_4800
+        default 9600 if RAK3172_BAUD_9600
+        default 19200 if RAK3172_BAUD_19200
+        default 38400 if RAK3172_BAUD_38400
+        default 57600 if RAK3172_BAUD_57600
+        default 115200 if RAK3172_BAUD_115200
 
-        config RAK3172_RESET_PIN
-            int "RAK3172 Reset pin"
-            depends on RAK3172_RESET_USE_HW
-            range 0 32
-            default 15
-            help
-                RAK3172 reset pin.
-    endmenu
+    config RAK3172_UART_RX
+        int "Rx pin"
+        range 0 32
+        default 12
+        help
+            Rx pin used by the UART interface.
 
-    menu "FreeRTOS"
-        config RAK3172_TASK_PRIO
-            int "Receive task priority"
-            range 12 25
-            default 12
-            help
-                Task priority for the UART receive task.
-
-        config RAK3172_TASK_BUFFER_SIZE
-            int "UART Buffer size"
-            range 1024 4096
-            default 1024
-            help
-                Buffer size for the receive UART.
-
-        config RAK3172_TASK_STACK_SIZE
-            int "UART task stack size"
-            range 4096 8192
-            default 4096
-            help
-                Stack size for the receive task.
-
-        config RAK3172_TASK_CORE_USE_AFFINITY
-            bool "Use core affinity"
-            default n
-            help
-                Enable this option if you want to use a specific core for the UART receive task.
-
-        config RAK3172_TASK_CORE
-            int "Receive task core"
-            depends on RAK3172_TASK_CORE_USE_AFFINITY
-            range 0 1
-            default 1
-            help
-                Core used by the UART receive task.
-    endmenu
-
-    menu "Misc"
-        config RAK3172_MISC_ERROR_BASE
-            hex "RAK3172 driver error base definition"
-            range 0 FFFF
-            default 0xA000
-            help
-                Set the error base for the driver.
-
-        config RAK3172_MISC_ENABLE_LOG
-            bool "Enable log output"
-            default y
-            help
-                Enable this option if you need log output from the driver.
-    endmenu
+    config RAK3172_UART_TX
+        int "Tx pin"
+        range 0 32
+        default 14
+        help
+            Tx pin used by the UART interface.
 endmenu

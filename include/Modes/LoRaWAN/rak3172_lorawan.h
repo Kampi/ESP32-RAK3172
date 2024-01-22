@@ -3,7 +3,7 @@
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 serial driver.
+ *  File info: RAK3172 LoRaWAN driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -32,6 +32,14 @@
 
 #ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN_CLASS_B
     #include "rak3172_lorawan_class_b.h"
+#endif
+
+#ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN_FUOTA
+    #include "rak3172_lorawan_fuota.h"
+#endif
+
+#ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN_CLOCK_SYNC
+    #include "rak3172_lorawan_clock_sync.h"
 #endif
 
 /** @brief          Initialize the RAK3172 SoM in LoRaWAN mode.
@@ -119,46 +127,31 @@ RAK3172_Error_t RAK3172_LoRaWAN_StopJoin(const RAK3172_t& p_Device);
  */
 bool RAK3172_LoRaWAN_isJoined(RAK3172_t& p_Device, bool Refresh = true);
 
-/** @brief          Start a LoRaWAN data transmission.
- *                  NOTE: This is a blocking function!
- *  @param p_Device RAK3172 device object
- *  @param Port     LoRaWAN port
- *  @param p_Buffer Pointer to data buffer
- *  @param Length   Length of buffer
- *  @param Retries  Number of confirmed payload retransmissions
- *  @return         RAK3172_ERR_OK when successful
- *                  RAK3172_ERR_INVALID_STATE when the device is busy
- *                  RAK3172_ERR_FAIL when a transmission error occurs
- *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
- *                  RAK3172_ERR_INVALID_RESPONSE when a send confirmation failed or when the device is busy
- *                  RAK3172_ERR_TIMEOUT when a transmit timeout occurs
- *                  RAK3172_ERR_INVALID_STATE when the device is not joined
- *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
+/** @brief                  Start a LoRaWAN data transmission.
+ *                          NOTE: This is a blocking function!
+ *                          NOTE: Long payload is used when the length is greater than 500 bytes. Make sure that long payload is supported
+ *                          by your gateway / LoRaWAN service (i. e. the WisGate Edge Gateways). Please use multiple transfers when not supported.
+ *  @param p_Device         RAK3172 device object
+ *  @param Port             LoRaWAN port
+ *  @param p_Buffer         Pointer to data buffer
+ *  @param Length           Data buffer length
+ *                          NOTE: A length of 256 or more results in a long packet data payload. This command is only supported by WisGate Edge gateways and their internal LoRaWAN server.
+ *  @param Confirmed        (Optional) Enable message confirmation
+ *  @param Retries          (Optional) Number of confirmed payload retransmissions
+ *                          NOTE: Only neccessery if \ref Confirmed is set to ätrue
+ *  @param WaitForTransmit  (Optional) Set to #true to disable the blocking while waiting for a transmit confirmation
+ *                          NOTE: Can be used in combination with automatic sleep mode for the RAK3172 module to reduce the current consumption by allowing the host CPU to enter sleep mode more quickly.
+ *  @param Wait             (Optional) Hook for a custom wait function that is called during each sleep iteration
+ *                          NOTE: The function call is time critical. Prevent long wait periods!
+ *  @return                 RAK3172_ERR_OK when successful
+ *                          RAK3172_ERR_BUSY when the device is busy
+ *                          RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
+ *                          RAK3172_ERR_NOT_CONNECTED when the device is not joined
+ *                          RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
+ *                          RAK3172_ERR_INVALID_RESPONSE when a send confirmation is required, but a confirmation error has occured
+ *                          RAK3172_ERR_RESTRICTED when a duty cycle restriction error has occured
  */
-RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t& p_Device, uint8_t Port, const uint8_t* const p_Buffer, uint16_t Length, uint8_t Retries);
-
-/** @brief              Start a LoRaWAN data transmission.
- *                      NOTE: This is a blocking function!
- *                      NOTE: Long payload is used when the length is greater than 500 bytes. Make sure that long payload is supported
- *                      by your gateway / LoRaWAN service (i. e. the WisGate Edge Gateways). Please use multiple transfers when not supported.
- *  @param p_Device     RAK3172 device object
- *  @param Port         LoRaWAN port
- *  @param p_Buffer     Pointer to data buffer
- *  @param Length       Data buffer length
- *  @param Retries      Number of confirmed payload retransmissions
- *  @param Confirmed    (Optional) Enable message confirmation
- *                      NOTE: Only neccessary when payload is greater than 1024 bytes (long payload)
- *  @param Wait         (Optional) Hook for a custom wait function that is called during each sleep iteration
- *                      NOTE: The function call is time critical. Prevent long wait periods!
- *  @return             RAK3172_ERR_OK when successful
- *                      RAK3172_ERR_BUSY when the device is busy
- *                      RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
- *                      RAK3172_ERR_NOT_CONNECTED when the device is not joined
- *                      RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
- *                      RAK3172_ERR_INVALID_RESPONSE when a send confirmation is required, but a confirmation error has occured
- *                      RAK3172_ERR_RESTRICTED when a duty cycle restriction error has occured
- */
-RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t& p_Device, uint8_t Port, const void* const p_Buffer, uint16_t Length, uint8_t Retries, bool Confirmed = false, RAK3172_Wait_t Wait = NULL);
+RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t& p_Device, uint8_t Port, const void* p_Buffer, uint16_t Length, bool Confirmed = false, uint8_t Retries = 0, bool WaitForTransmit = true, RAK3172_Wait_t Wait = NULL);
 
 /** @brief              Check if a downlink message was received during the last uplink and pop one message from the stack.
  *  @param p_Device     RAK3172 device object
@@ -416,7 +409,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetDuty(const RAK3172_t& p_Device, uint8_t* cons
  *  @param DR       Data rate
  *  @return         ESP_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_SetDataRate(const RAK3172_t& p_Device, RAK3172_DataRate_t DR);
@@ -426,7 +419,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetDataRate(const RAK3172_t& p_Device, RAK3172_D
  *  @param p_DR     Pointer to data rate
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_GetDataRate(const RAK3172_t& p_Device, RAK3172_DataRate_t* const p_DR);
@@ -436,7 +429,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetDataRate(const RAK3172_t& p_Device, RAK3172_D
  *  @param Enable   Enable / Disable ADR
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_SetADR(const RAK3172_t& p_Device, bool Enable);
@@ -446,7 +439,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetADR(const RAK3172_t& p_Device, bool Enable);
  *  @param p_Enable Pointer to adaptive data rate status
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_GetADR(const RAK3172_t& p_Device, bool* const p_Enable);
@@ -456,7 +449,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetADR(const RAK3172_t& p_Device, bool* const p_
  *  @param Mode     Join mode
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_SetJoinMode(const RAK3172_t& p_Device, RAK3172_JoinMode_t Mode);
@@ -466,17 +459,37 @@ RAK3172_Error_t RAK3172_LoRaWAN_SetJoinMode(const RAK3172_t& p_Device, RAK3172_J
  *  @param p_Mode   Pointer to join mode
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_GetJoinMode(const RAK3172_t& p_Device, RAK3172_JoinMode_t* const p_Mode);
+
+/** @brief          Set the LoRaWAN device class.
+ *  @param p_Device RAK3172 device object
+ *  @param Class    Device class
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_SetClass(RAK3172_t& p_Device, RAK3172_Class_t Class);
+
+/** @brief          Get the LoRaWAN device class.
+ *  @param p_Device RAK3172 device object
+ *  @param p_Class  Pointer to device class
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_GetClass(RAK3172_t& p_Device, RAK3172_Class_t* const p_Class);
 
 /** @brief          Get the RSSI value of the last packet.
  *  @param p_Device RAK3172 device object
  *  @param p_RSSI   Pointer to RSSI value
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_GetRSSI(const RAK3172_t& p_Device, int* p_RSSI);
@@ -486,9 +499,19 @@ RAK3172_Error_t RAK3172_LoRaWAN_GetRSSI(const RAK3172_t& p_Device, int* p_RSSI);
  *  @param p_SNR    Pointer to SNR value
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_GetSNR(const RAK3172_t& p_Device, int* p_SNR);
+
+/** @brief          Get the confirmation status of the last message.
+ *  @param p_Device RAK3172 device object
+ *  @param p_Status Pointer to confirmation status
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
+ */
+RAK3172_Error_t RAK3172_LoRaWAN_GetConfirmationStatus(const RAK3172_t& p_Device, bool* p_Status);
 
 #endif /* RAK3172_LORAWAN_H_ */

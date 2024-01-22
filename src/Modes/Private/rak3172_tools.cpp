@@ -1,9 +1,9 @@
  /*
- * rak3172_lorawan_fota.h
+ * rak3172_tools.cpp
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 driver for ESP32.
+ *  File info: Tools collection for RAK3172 driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -17,9 +17,45 @@
  * Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
 
-#ifndef RAK3172_LORAWAN_FOTA_H_
-#define RAK3172_LORAWAN_FOTA_H_
+#include "rak3172_tools.h"
 
-#include "rak3172_defs.h"
+void RAK3172_Tools_Hex2ASCII(std::string Hex, uint8_t* const p_Buffer)
+{
+    uint8_t Offset;
+    uint8_t High = 0;
 
-#endif /* RAK3172_LORAWAN_FOTA_H_ */
+    if((p_Buffer == NULL) || ((Hex.size() % 2) != 0))
+    {
+        return;
+    }
+
+    Offset = 0;
+    for(uint32_t i = 0; i < Hex.size(); i++)
+    {
+        uint8_t Temp = 0;
+
+        if((Hex.at(i) >= '0') && (Hex.at(i) <= '9'))
+        {
+            Temp = static_cast<uint8_t>(Hex.at(i)) - 48;
+        }
+        else if((Hex.at(i) >= 'a') && (Hex.at(i) <= 'f'))
+        {
+            Temp = static_cast<uint8_t>(Hex.at(i)) - 'a' + 10;
+        }
+        else if((Hex.at(i) >= 'A') && (Hex.at(i) <= 'F'))
+        {
+            Temp = static_cast<uint8_t>(Hex.at(i)) - 'A' + 10;
+        }
+
+        // Save the high byte.
+        if((i % 2) == 0)
+        {
+            High = Temp;
+        }
+        // Save the low byte and push the result to the string.
+        else
+        {
+            *(p_Buffer + (Offset++)) = (High << 0x04) + Temp;
+        }
+    }
+}

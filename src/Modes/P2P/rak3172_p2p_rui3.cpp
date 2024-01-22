@@ -3,7 +3,7 @@
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 serial driver.
+ *  File info: RAK3172 P2P RUI3 driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -81,6 +81,27 @@ RAK3172_Error_t RAK3172_P2P_isEncryptionEnabled(const RAK3172_t& p_Device, bool*
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+ENCRY=?", &Value));
 
     *p_Enabled = static_cast<bool>(std::stoi(Value));
+
+    return RAK3172_ERR_OK;
+}
+
+RAK3172_Error_t RAK3172_P2P_SetIQ(RAK3172_t& p_Device, bool Enable)
+{
+    return RAK3172_SendCommand(p_Device, "AT+IQINVER=" + std::to_string(Enable));
+}
+
+RAK3172_Error_t RAK3172_P2P_GetIQ(RAK3172_t& p_Device, bool* const p_Enable)
+{
+    std::string Response;
+
+    if(p_Enable == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+IQINVER=?", &Response));
+
+    *p_Enable = static_cast<bool>(std::stoi(Response));
 
     return RAK3172_ERR_OK;
 }

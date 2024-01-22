@@ -85,6 +85,14 @@ RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t& p_Device, std::string* const p_
 
 RAK3172_Error_t RAK3172_Sleep(const RAK3172_t& p_Device, uint32_t Duration)
 {
+    if(Duration == 0)
+    {
+        // Ignore the error, because the command is not returning anything.
+        RAK3172_SendCommand(p_Device, "AT+SLEEP");
+
+        return RAK3172_ERR_OK;
+    }
+
     return RAK3172_SendCommand(p_Device, "AT+SLEEP=" + std::to_string(Duration));
 }
 
@@ -112,6 +120,32 @@ RAK3172_Error_t RAK3172_Unlock(const RAK3172_t& p_Device, std::string Password)
     uart_write_bytes(p_Device.UART.Interface, Password.c_str(), Password.length());
 
     return RAK3172_ERR_FAIL;
+}
+
+RAK3172_Error_t RAK3172_EnableAutoLowPower(const RAK3172_t& p_Device, bool Enable)
+{
+    return RAK3172_SendCommand(p_Device, "AT+LPM=" + std::to_string(Enable));
+}
+
+RAK3172_Error_t RAK3172_SetPwrMode(RAK3172_t& p_Device, RAK3172_PwrMode_t Mode)
+{
+    return RAK3172_SendCommand(p_Device, "AT+LPMLVL=" + std::to_string(Mode));
+}
+
+RAK3172_Error_t RAK3172_GetPwrMode(RAK3172_t& p_Device, RAK3172_PwrMode_t* const p_Mode)
+{
+    std::string Response;
+
+    if(p_Mode == NULL)
+    {
+        return RAK3172_ERR_INVALID_ARG;
+    }
+
+    RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+LPMLVL=?", &Response));
+
+    *p_Mode = static_cast<RAK3172_PwrMode_t>(std::stoi(Response));
+
+    return RAK3172_ERR_OK;
 }
 
 #endif

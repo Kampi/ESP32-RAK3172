@@ -63,7 +63,7 @@ static void applicationTask(void* p_Parameter)
     {
         esp_task_wdt_reset();
 
-        Error = RAK3172_LoRaWAN_Transmit(_Device, 1, Payload, sizeof(Payload), 3, true);
+        Error = RAK3172_LoRaWAN_Transmit(_Device, 1, Payload, sizeof(Payload), true, 3);
         if(Error == RAK3172_ERR_OK)
         {
             RAK3172_Rx_t Message;

@@ -41,6 +41,60 @@ menu "RAK3172"
             help
                 Enable this option if you want to use the multicast support for LoRaWAN.
 
+        config RAK3172_MODE_WITH_LORAWAN_FUOTA
+            select RAK3172_MODE_WITH_LORAWAN_MULTICAST
+            depends on RAK3172_MODE_WITH_LORAWAN && RAK3172_USE_RUI3
+            bool "Include LoRaWAN FUOTA functionality (EXPERIMENTAL)"
+            default n
+            help
+                Enable this option if you want to use the FUOTA function mode for the host CPU.
+
+        menu "FUOTA"
+            depends on RAK3172_MODE_WITH_LORAWAN_FUOTA
+
+            config RAK3172_MODE_LORAWAN_FUOTA_PACKAGE_VERSION
+                int "Implemented package version"
+                default 1
+
+            config RAK3172_MODE_LORAWAN_FUOTA_PORT
+                int "LoRaWAN port used for the fragmented data transport"
+                default 201
+                range 0 223
+
+            config RAK3172_MODE_LORAWAN_FUOTA_FRAG_MAX_NB
+                int "Maximum number of fragments to handle"
+                default 21
+
+            config RAK3172_MODE_LORAWAN_FUOTA_FRAG_MAX_SIZE
+                int "Size of a fragment in bytes"
+                default 50
+
+            config RAK3172_MODE_LORAWAN_FUOTA_FRAG_MAX_REDUNDANCY
+                int "Maximum number of extra frames that can be handled"
+                default 5
+        endmenu
+
+        config RAK3172_MODE_WITH_LORAWAN_CLOCK_SYNC
+            select RAK3172_MODE_WITH_LORAWAN_MULTICAST
+            depends on RAK3172_MODE_WITH_LORAWAN && RAK3172_USE_RUI3
+            bool "Include LoRaWAN Clock Synchronization functionality (EXPERIMENTAL)"
+            default n
+            help
+                Enable this option if you need clock synchronization. Not recommended for LoRaWAN 1.1 and when the Gateway supports this function via Class B devices.
+
+        menu "Clock Synchronization"
+            depends on RAK3172_MODE_WITH_LORAWAN_CLOCK_SYNC
+
+            config RAK3172_MODE_LORAWAN_CLOCK_SYNC_PACKAGE_VERSION
+                int "Implemented package version"
+                default 1
+
+            config RAK3172_MODE_LORAWAN_CLOCK_SYNC_PORT
+                int "LoRaWAN port used for the clock synchronization"
+                default 202
+                range 0 223
+        endmenu
+
         config RAK3172_MODE_WITH_P2P
             bool "Include P2P"
             default n
@@ -53,14 +107,6 @@ menu "RAK3172"
             default n
             help
                 Enable this option if you want to use the DFU function mode for the RAK3172 module.
-
-        config CONFIG_RAK3172_MODE_WITH_LORAWAN_FOTA
-            select RAK3172_MODE_WITH_LORAWAN_MULTICAST
-            depends on RAK3172_MODE_WITH_LORAWAN
-            bool "Include LoRaWAN FOTA functionality (EXPERIMENTAL)"
-            default n
-            help
-                Enable this option if you want to use the FOTA function mode for the host CPU.
     endmenu
 
     menu "UART"

@@ -95,6 +95,7 @@
                                                                                     .isJoined = false,                                              \
                                                                                     .ConfirmError = false,                                          \
                                                                                     .AttemptCounter = 0,                                            \
+                                                                                    .Class = static_cast<RAK3172_Class_t>('A'),                     \
                                                                                 },                                                                  \
                                                                                 .P2P = {                                                            \
                                                                                     .Active = false,                                                \

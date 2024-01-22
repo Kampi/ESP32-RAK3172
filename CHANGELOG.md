@@ -1,5 +1,52 @@
 # CHANGELOG
 
+## [4.2.0] - 
+
+**Fixed:**
+
+- Fix wrong AT command in `RAK3172_LoRaWAN_MC_RemoveGroup`
+- Fix wrong LoRaWAN multicast group extraction
+- Fix missing `Group` member in `RAK3172_LoRaWAN_Receive`
+- Fix wrong length for long payload in `RAK3172_LoRaWAN_Transmit`
+- Fix missing transmission confirmation in unconfirmed mode in `RAK3172_LoRaWAN_Transmit`
+- Fix different smaller errors
+
+**Added:**
+
+- Add `RAK3172_ERR_WRONG_PORT` error for LoRaWAN
+- Add `RAK3172_ERR_CLASS_B_DISABLED` error for class B devices
+- Add device class to driver object
+- Added `isMulticast` field to `RAK3172_Rx_t` object
+- Added `AT_NO_NETWORK_JOINED` error to `RAK3172_LoRaWAN_Transmit`
+- Add `RAK3172_LoRaWAN_SetClass` and `RAK3172_LoRaWAN_GetClass` function
+- Add arch specific watchdog
+- Add `RAK3172_isBusy` function
+- Add support for the `AT+CFS` command via the `RAK3172_LoRaWAN_GetConfirmationStatus` function
+- Add support for the `AT+LPM` command via the `RAK3172_EnableAutoLowPower` function
+- Add support for the `AT+LPMLVL` command
+- Add support for the `AT+MCROOTKEY` command
+- Add support for the `AT+IQINVER` command
+- Add `RAK3172_ERR_COMMAND_NOT_FOUND` error
+
+**Added (EXPERIMENTAL):**
+
+- Add FUOTA support for the host CPU via LoRaWAN
+- Add clock synchronization support for the host CPU via LoRaWAN
+
+**Changed:**
+
+- Remove RUI3 option in `RAK3172_FactoryReset`
+- Improve error check in class B and multicast driver and add a check for the current device mode
+- Set `Retries` in `RAK3172_LoRaWAN_Transmit` as optional parameter
+- Swap `Retries` and `Confirmed` in `RAK3172_LoRaWAN_Transmit`
+- Remove overloaded `RAK3172_LoRaWAN_Transmit`
+- Clean up CMakeLists.txt
+- Update examples
+- Update documentation
+- Update README
+- Update CHANGELOG
+- Change version number to 4.2.0
+
 ## [4.1.1] - 21.04.2023
 
 **Fixed:**
@@ -9,6 +56,8 @@
 - Fix wrong baudrate handling when reinitializing the driver after sleep
 
 **Changed:**
+
+- Update README
 - Update CHANGELOG
 - Change version number to 4.1.1
 

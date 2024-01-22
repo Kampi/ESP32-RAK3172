@@ -37,6 +37,11 @@ void RAK3172_PwrMagnt_EnterLightSleep(RAK3172_t& p_Device)
     esp_sleep_enable_uart_wakeup(static_cast<uart_port_t>(p_Device.UART.Interface));
     esp_light_sleep_start();
     */
+    //uart_set_wakeup_threshold(static_cast<uart_port_t>(p_Device.UART.Interface), 3);
+    //esp_sleep_enable_uart_wakeup(static_cast<uart_port_t>(p_Device.UART.Interface));
+
+    //esp_sleep_enable_timer_wakeup(10 * 1000UL);
+    //esp_light_sleep_start();
 }
 
 #endif

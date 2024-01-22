@@ -72,6 +72,17 @@ typedef enum
     RAK_MODE_P2P_FSK,                   /**< P2P FSK mode. */
 } RAK3172_Mode_t;
 
+#ifdef CONFIG_RAK3172_USE_RUI3
+    /** @brief RAK3172 power down mode definitions.
+     */
+    typedef enum
+    {
+        RAK_PWRMODE_STOP1   = 1,        /**< STOP1 mode.
+                                             NOTE: On STOP1 mode both UART1 and UART2 can wake up the device from LPM. */
+        RAK_PWRMODE_STOP2,              /**< STOP2 mode. */
+    } RAK3172_PwrMode_t;
+#endif
+
 /** @brief Supported baudrates.
  */
 typedef enum
@@ -182,7 +193,6 @@ typedef enum
 
 /** @brief P2P bandwith definitions.
  */
-
 #ifdef CONFIG_RAK3172_USE_RUI3
     typedef enum
     {
@@ -283,6 +293,8 @@ typedef struct
                                              NOTE: Managed by the driver. */
         uint8_t AttemptCounter;         /**< Attempt counter for the join process.
                                              NOTE: Managed by the driver and only used when RUI3 isn´t used. */
+        RAK3172_Class_t Class;          /**< Current device class.
+                                             NOTE: Managed by the driver. */
     } LoRaWAN;
     struct
     {
@@ -308,6 +320,8 @@ typedef struct
     std::string Payload;                /**< Received payload. */
     int8_t RSSI;                        /**< Receiving RSSI value. */
     int8_t SNR;                         /**< Receiving SNR value. */
+    bool isMulticast;                   /**< #true when a multicast message.
+                                             NOTE: Only used in LoRaWAN mode! */
     uint8_t Port;                       /**< Port number.
                                              NOTE: Only used in LoRaWAN mode! */
     RAK3172_Rx_Group_t Group;           /**< Receive group.
@@ -328,5 +342,59 @@ typedef struct
     uint8_t Periodicity;                /**< LoRaWAN ping periodicity used by this group.
                                              NOTE: Ignored when class is set to 'C' and only values <8 are allowed! */
 } RAK3172_MC_Group_t;
+
+/** @brief RAK3172 fragmented session setup object.
+ */
+typedef struct
+{
+    union
+    {
+        struct
+        {
+            uint8_t McGroupBitMask:4;   /**< Specifies which multicast group addresses are allowed as input to this defragmentation session. */
+            uint8_t FragIndex:2;        /**< Identifies one of the 4 simultaneously possible fragmentation sessions. */
+            uint8_t RFU:2;              /**< */
+        } __attribute__((packed)) Fields;
+        uint8_t Raw;
+    } FragSession;
+    uint16_t NbFrag;                    /**< Specifies the total number of fragments of the data block to be transported during the coming multicast fragmentation session. */
+    uint8_t FragSize;                   /**< The size in byte of each fragment. */
+    union
+    {
+        struct
+        {
+            uint8_t BlockAckDelay:3;    /**< Encodes the amplitude of the random delay that end-devices have to wait between the reception of a
+                                             downlink command sent using multicast and the transmission of their answer. */
+            uint8_t FragAlgo:3;         /**< Encodes the type of fragmentation algorithm used. */
+            uint8_t RFU:2;              /**< */
+        } __attribute__((packed)) Fields;
+        uint8_t Raw;
+    } Control;
+    uint8_t Padding;                    /**< This field encodes the number of padding byte used. */
+    union
+    {
+        uint32_t Raw;
+        uint8_t Fields[4];
+    } Descriptor;                       /**< The descriptor field is a freely allocated 4 bytes field describing the file that is going to be transported through the fragmentation session. */
+} __attribute__((packed)) RAK3172_FragSetup_t;
+
+/** @brief RAK3172 app time object.
+ */
+typedef struct
+{
+    uint32_t DeviceTime;                /**< Current end-device clock and is expressed as the time in seconds since 00:00:00,
+                                             Sunday 6th of January 1980 (start of the GPS epoch) modulo 2^32. */
+    union
+    {
+        struct
+        {
+            uint8_t TokenReq:4;         /**< 4 bits counter initially set to 0. TokenReq is incremented (modulo 16) each
+                                             time the end-device receives and processes successfully an AppTimeAns message. */
+            uint8_t AnsRequired:1;      /**< If set to 1 the end-device expects an answer whether its clock is well synchronized or not. */
+            uint8_t RFU:3;              /**< */
+        } __attribute__((packed)) Fields;
+        uint8_t Raw;
+    } Param;
+} __attribute__((packed)) RAK3172_AppTime_t;
 
 #endif /* RAK3172_DEFS_H_ */

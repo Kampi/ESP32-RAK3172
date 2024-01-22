@@ -3,7 +3,7 @@
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 serial driver.
+ *  File info: RAK3172 P2P RUI3 driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -45,5 +45,21 @@ RAK3172_Error_t RAK3172_P2P_DisableEncryption(RAK3172_t& p_Device);
  *                      RAK3172_ERR_INVALID_MODE when the device is not initialized as P2P device. Please call \ref RAK3172_P2P_Init first
  */
 RAK3172_Error_t RAK3172_P2P_isEncryptionEnabled(const RAK3172_t& p_Device, bool* const p_Enabled);
+
+/** @brief          Set the LoRa P2P IQ inversion.
+ *  @param p_Device RAK3172 device object
+ *  @param Enable   IQ inversion state
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as P2P device. Please call \ref RAK3172_P2P_Init first
+ */
+RAK3172_Error_t RAK3172_P2P_SetIQ(RAK3172_t& p_Device, bool Enable);
+
+/** @brief          Get the LoRa P2P IQ inversion.
+ *  @param p_Device RAK3172 device object
+ *  @param p_Enable Pointer to IQ inversion state
+ *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as P2P device. Please call \ref RAK3172_P2P_Init first
+ */
+RAK3172_Error_t RAK3172_P2P_GetIQ(RAK3172_t& p_Device, bool* const p_Enable);
 
 #endif /* RAK3172_P2P_RUI3_H_ */

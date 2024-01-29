@@ -3,7 +3,7 @@
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 serial driver.
+ *  File info: RAK3172 LoRaWAN multicast driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -27,7 +27,7 @@
  *  @param Group    Multicast group object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_MC_AddGroup(RAK3172_t& p_Device, RAK3172_MC_Group_t Group);
@@ -44,7 +44,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_MC_AddGroup(RAK3172_t& p_Device, RAK3172_MC_Grou
  *                      NOTE: This value will be ignored when class is set to 'C'!
  *  @return             RAK3172_ERR_OK when successful
  *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                      RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                      RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                      RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_MC_AddGroup(RAK3172_t& p_Device, RAK3172_Class_t Class, std::string DevAddr, std::string NwkSKey, std::string AppSKey, uint32_t Frequency, RAK3172_DataRate_t Datarate, uint8_t Periodicity = 0);
@@ -54,7 +54,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_MC_AddGroup(RAK3172_t& p_Device, RAK3172_Class_t
  *  @param Group    Multicast group object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_MC_RemoveGroup(RAK3172_t& p_Device, RAK3172_MC_Group_t Group);
@@ -64,7 +64,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_MC_RemoveGroup(RAK3172_t& p_Device, RAK3172_MC_G
  *  @param Datarate Data rate used by this multicast group
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_MC_RemoveGroup(RAK3172_t& p_Device, std::string DevAddr);
@@ -74,9 +74,21 @@ RAK3172_Error_t RAK3172_LoRaWAN_MC_RemoveGroup(RAK3172_t& p_Device, std::string 
  *  @param p_Group  Pointer to multicast group object
  *  @return         RAK3172_ERR_OK when successful
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
- *                  RAK3172_ERR_INVALID_STATE the when the interface is not initialized
+ *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
 RAK3172_Error_t RAK3172_LoRaWAN_MC_ListGroup(RAK3172_t& p_Device, RAK3172_MC_Group_t* p_Group);
+
+#ifdef CONFIG_RAK3172_USE_RUI3
+    /** @brief              Get the multicast root key from the device.
+     *  @param p_Device     RAK3172 device object
+     *  @param p_RootKey    Pointer to multicast root key
+     *  @return             RAK3172_ERR_OK when successful
+     *                      RAK3172_ERR_INVALID_ARG when an invalid argument was passed
+     *                      RAK3172_ERR_INVALID_STATE when the interface is not initialized
+     *                      RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
+     */
+    RAK3172_Error_t RAK3172_LoRaWAN_MC_GetRootKey(RAK3172_t& p_Device, std::string* p_RootKey);
+#endif
 
 #endif /* RAK3172_LORAWAN_MULTICAST_H_ */

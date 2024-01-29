@@ -1,9 +1,9 @@
  /*
- * rak3172_lorawan_fota.cpp
+ * rak3172_tools.h
  *
  *  Copyright (C) Daniel Kampert, 2023
  *	Website: www.kampis-elektroecke.de
- *  File info: RAK3172 serial driver.
+ *  File info: Tools collection for RAK3172 driver.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -17,12 +17,16 @@
  * Errors and commissions should be reported to DanielKampert@kampis-elektroecke.de
  */
 
-#include <sdkconfig.h>
+#ifndef RAK3172_TOOLS_H_
+#define RAK3172_TOOLS_H_
 
-#if(defined CONFIG_RAK3172_MODE_WITH_LORAWAN) && (defined CONFIG_RAK3172_MODE_WITH_LORAWAN_FOTA)
+#include "rak3172_defs.h"
 
-#include <string.h>
+/** @brief          Convert a hex string into a decimal buffer.
+ *  @param Hex      Input hex string
+ *  @param p_Buffer Output buffer
+ *                  NOTE: The size of the buffer must be large enough to carry all values from the input string!
+ */
+void RAK3172_Tools_Hex2ASCII(std::string Hex, uint8_t* const p_Buffer);
 
-#include "rak3172.h"
-
-#endif
+#endif /* RAK3172_TOOLS_H_ */

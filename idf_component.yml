@@ -1,6 +1,18 @@
-version: "4.2.0"
-description: RAK3172
+version: "4.1.1"
+description: "ESP32 component for RAK3172 LoRa  / LoRaWAN modules"
 url: https://github.com/Kampi/ESP32-RAK3172
+repository: https://github.com/Kampi/ESP32-RAK3172
+license: "MIT"
+tags:
+  - lora
+  - lorawan
+targets:
+  - esp32
+  - esp32c3
+  - esp32c6
+  - esp32s3
+maintainers:
+  - "Daniel Kampert <DanielKampert@kampis-elektroecke.de>"
 dependencies:
   idf:
     version: ">=4.0"

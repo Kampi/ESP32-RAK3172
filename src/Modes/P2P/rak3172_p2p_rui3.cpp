@@ -1,7 +1,7 @@
  /*
  * rak3172_p2p_rui3.cpp
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 P2P RUI3 driver.
  *
@@ -87,6 +87,11 @@ RAK3172_Error_t RAK3172_P2P_isEncryptionEnabled(const RAK3172_t& p_Device, bool*
 
 RAK3172_Error_t RAK3172_P2P_SetIQ(RAK3172_t& p_Device, bool Enable)
 {
+    if((p_Device.Mode != RAK_MODE_P2P) && (p_Device.Mode != RAK_MODE_P2P_FSK))
+    {
+        return RAK3172_ERR_INVALID_MODE;
+    }
+
     return RAK3172_SendCommand(p_Device, "AT+IQINVER=" + std::to_string(Enable));
 }
 
@@ -97,6 +102,10 @@ RAK3172_Error_t RAK3172_P2P_GetIQ(RAK3172_t& p_Device, bool* const p_Enable)
     if(p_Enable == NULL)
     {
         return RAK3172_ERR_INVALID_ARG;
+    }
+    else if((p_Device.Mode != RAK_MODE_P2P) && (p_Device.Mode != RAK_MODE_P2P_FSK))
+    {
+        return RAK3172_ERR_INVALID_MODE;
     }
 
     RAK3172_ERROR_CHECK(RAK3172_SendCommand(p_Device, "AT+IQINVER=?", &Response));

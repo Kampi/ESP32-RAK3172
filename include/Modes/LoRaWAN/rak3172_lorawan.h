@@ -1,7 +1,7 @@
  /*
  * rak3172_lorawan.h
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 LoRaWAN driver.
  *
@@ -118,7 +118,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t& p_Device, uint8_t Attempts 
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument is passed into the function
  *                  RAK3172_ERR_INVALID_MODE when the device is not initialized as LoRaWAN device. Please call \ref RAK3172_LoRaWAN_Init first
  */
-RAK3172_Error_t RAK3172_LoRaWAN_StopJoin(const RAK3172_t& p_Device);
+RAK3172_Error_t RAK3172_LoRaWAN_StopJoin(RAK3172_t& p_Device);
 
 /** @brief          Check if the module has joined the network.
  *  @param p_Device RAK3172 device object

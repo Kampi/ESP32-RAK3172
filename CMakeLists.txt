@@ -43,6 +43,7 @@ if((IDF_TARGET STREQUAL "esp32") OR (IDF_TARGET STREQUAL "esp32c2") OR (IDF_TARG
 	list(APPEND COMPONENT_SRCS "src/Arch/PwrMgmt/rak3172_pwrmgmt.cpp")
 	list(APPEND COMPONENT_SRCS "src/Arch/Flash/rak3172_flash.cpp")
 	list(APPEND COMPONENT_SRCS "src/Arch/UART/rak3172_uart.cpp")
+	list(APPEND COMPONENT_SRCS "src/Arch/GPIO/rak3172_gpio.cpp")
 endif()
 
 idf_component_register(SRCS ${COMPONENT_SRCS}

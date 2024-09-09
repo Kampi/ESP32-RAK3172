@@ -27,9 +27,7 @@
 
 #include "../../Private/rak3172_tools.h"
 
-#include "../../../Arch/Timer/rak3172_timer.h"
-#include "../../../Arch/Logging/rak3172_logging.h"
-#include "../../../Arch/Watchdog/rak3172_watchdog.h"
+#include "../../../Arch/rak3172_arch.h"
 
 #include "Semtech/FragDecoder.h"
 

@@ -10,6 +10,7 @@
 - Fix wrong length for long payload in `RAK3172_LoRaWAN_Transmit`
 - Fix missing transmission confirmation in unconfirmed mode in `RAK3172_LoRaWAN_Transmit`
 - Fix different smaller errors
+- Fix segfault caused by a timeout in UART driver for ESP32 when using module firmware version 1.0.4 and below
 
 **Added:**
 

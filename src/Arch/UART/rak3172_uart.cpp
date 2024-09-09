@@ -41,6 +41,12 @@ static uart_config_t _RAK3172_UART_Config = {
     #endif
 };
 
+#ifdef CONFIG_RAK3172_USE_RUI3
+    static uint32_t _RAK3172_UART_Timeout = 10;
+#else
+    static uint32_t _RAK3172_UART_Timeout = 200;
+#endif
+
 static const char* TAG      = "RAK3172_UART";
 
 /** @brief          UART receive task.
@@ -100,7 +106,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
                         RAK3172_LOGD(TAG, "     Pattern detected at position %u. Use buffered size: %u", static_cast<unsigned int>(PatternPos), static_cast<unsigned int>(BufferedSize));
 
-                        BytesRead = uart_read_bytes(Device->UART.Interface, Device->Internal.RxBuffer, PatternPos, 10);
+                        BytesRead = uart_read_bytes(Device->UART.Interface, Device->Internal.RxBuffer, PatternPos, pdMS_TO_TICKS(_RAK3172_UART_Timeout));
                         if(BytesRead == -1)
                         {
                             uart_flush(Device->UART.Interface);
@@ -258,7 +264,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                         Response->clear();
                                         do
                                         {
-                                            Bytes = uart_read_bytes(Device->UART.Interface, &Data, 1, 10);
+                                            Bytes = uart_read_bytes(Device->UART.Interface, &Data, 1, pdMS_TO_TICKS(_RAK3172_UART_Timeout));
                                             if((Bytes != 0) && (Data != '\r') && (Data != '\n'))
                                             {
                                                 *Response += Data;

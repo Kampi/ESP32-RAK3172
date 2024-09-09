@@ -65,7 +65,7 @@ static void applicationTask(void* p_Parameter)
         RAK3172_Rx_t Message;
 
         ESP_LOGI(TAG, "Message transmitted...");
-        Error = RAK3172_LoRaWAN_Receive(_Device, &Message);
+        Error = RAK3172_LoRaWAN_Receive(_Device, &Message, 30);
         if(Error != RAK3172_ERR_OK)
         {
             ESP_LOGE(TAG, "Cannot receive message! Error: 0x%04X", static_cast<unsigned int>(Error));
@@ -108,7 +108,7 @@ static void applicationTask(void* p_Parameter)
         Error = RAK3172_LoRaWAN_GetBeaconFrequency(_Device, &Datarate, &Frequency);
         if(Error == RAK3172_ERR_OK)
         {
-            ESP_LOGI(TAG, "Time: %u", static_cast<unsigned int>(Frequency));
+            ESP_LOGI(TAG, "Datarate: %u", static_cast<unsigned int>(Datarate));
         }
         else
         {

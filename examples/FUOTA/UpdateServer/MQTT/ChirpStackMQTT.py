@@ -1,3 +1,4 @@
+import time
 import logging
 import paho.mqtt.client as mqtt
 
@@ -34,7 +35,7 @@ class ChirpStackMQTT:
 
     def WaitForMessage(self):
         while(self.__Message == None):
-            pass
+            time.sleep(0.1)
 
         Dummy = self.__Message
         self.__Message = None

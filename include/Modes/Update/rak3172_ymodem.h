@@ -1,7 +1,7 @@
  /*
  * rak3172_ymodem.h
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 serial driver.
  *
@@ -22,7 +22,7 @@
 
 #include "Definitions/rak3172_defs.h"
 
-/** @brief          Deinitialize the RAK3172 driver.
+/** @brief          Run a firmware update on the RAK3172 device.
  *  @param p_Device RAK3172 device object
  *  @param p_Data   Pointer to firmware data
  *  @param Length   Length of firmware data

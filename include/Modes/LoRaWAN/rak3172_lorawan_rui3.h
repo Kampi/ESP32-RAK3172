@@ -1,7 +1,7 @@
  /*
  * rak3172_lorawan_rui3.h
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 LoRaWAN RUI3 driver.
  *

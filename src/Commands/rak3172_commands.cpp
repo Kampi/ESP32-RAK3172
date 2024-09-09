@@ -1,7 +1,7 @@
  /*
  * rak3172_commands.cpp
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 serial driver.
  *
@@ -25,7 +25,7 @@ static const char* TAG = "RAK3172";
 
 RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Command, std::string* const p_Value, std::string* const p_Status)
 {
-    std::string* Response;
+    std::string* Response = NULL;
     RAK3172_Error_t Error;
 
     if(p_Device.Internal.isBusy)
@@ -45,7 +45,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Comma
     xQueueReset(p_Device.Internal.MessageQueue);
 
     // Transmit the command.
-    RAK3172_LOGI(TAG, "Transmit command: %s", Command.c_str());
+    RAK3172_LOGD(TAG, "Transmit command: %s", Command.c_str());
     uart_write_bytes(p_Device.UART.Interface, static_cast<const char*>(Command.c_str()), Command.length());
     uart_write_bytes(p_Device.UART.Interface, "\r\n", 2);
 
@@ -68,7 +68,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Comma
         *p_Value = *Response;
         delete Response;
 
-        RAK3172_LOGI(TAG, "     Value: %s", p_Value->c_str());
+        RAK3172_LOGD(TAG, "     Value: %s", p_Value->c_str());
     }
 
     #ifndef CONFIG_RAK3172_USE_RUI3
@@ -86,12 +86,19 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Comma
         return RAK3172_ERR_TIMEOUT;
     }
 
-    RAK3172_LOGI(TAG, "     Status: %s", Response->c_str());
+    RAK3172_LOGD(TAG, "     Status: %s", Response->c_str());
+
+    if(p_Device.Internal.isRestricted)
+    {
+        delete Response;
+
+        return RAK3172_ERR_RESTRICTED;
+    }
 
     // Transmission is without error when 'OK' as status code and when no event data are received.
     if(Response->find("OK") == std::string::npos)
     {
-        if(Response->find("Command not found") == std::string::npos)
+        if(Response->find("Command not found") != std::string::npos)
         {
             Error = RAK3172_ERR_COMMAND_NOT_FOUND;
         }
@@ -148,7 +155,6 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t& p_Device, RAK3172_Mode_t Mode)
         return RAK3172_ERR_OK;
     }
 
-    Error = RAK3172_ERR_OK;
     p_Device.Internal.isBusy = true;
 
     // Transmit the command.
@@ -172,31 +178,30 @@ RAK3172_Error_t RAK3172_SetMode(RAK3172_t& p_Device, RAK3172_Mode_t Mode)
         goto RAK3172_SetMode_Exit;
     }
 
-    // 'OK' received, so the mode wasn´t change. Leave the function.
-    if(Response->find("OK") != std::string::npos)
-    {
-        delete Response;
-
-        Error = RAK3172_ERR_OK;
-        goto RAK3172_SetMode_Exit;
-    }
-
-    // Otherwise the mode has changed and we have to receive the splash screen.
-    delete Response;
     do
     {
         if(xQueueReceive(p_Device.Internal.MessageQueue, &Response, RAK3172_DEFAULT_WAIT_TIMEOUT / portTICK_PERIOD_MS) == pdFAIL)
         {
             p_Device.Internal.isBusy = false;
         }
+
+        if(Response->find("Current Work Mode: LoRa P2P") != std::string::npos)
+        {
+            p_Device.Mode = RAK_MODE_P2P;
+            Error = RAK3172_ERR_OK;
+        }
+        else if(Response->find("Current Work Mode: LoRa LoRaWAN") != std::string::npos)
+        {
+            p_Device.Mode = RAK_MODE_LORAWAN;
+            Error = RAK3172_ERR_OK;
+        }
         else
         {
-            delete Response;
+            Error = RAK3172_ERR_INVALID_RESPONSE;
         }
     } while(p_Device.Internal.isBusy);
 
-    // The mode was changed. Set the new mode.
-    p_Device.Mode = Mode;
+    delete Response;
 
 RAK3172_SetMode_Exit:
     p_Device.Internal.isBusy = false;

@@ -1,7 +1,7 @@
  /*
  * rak3172_p2p.h
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 P2P driver.
  *
@@ -102,6 +102,7 @@ RAK3172_Error_t RAK3172_P2P_Init(RAK3172_t& p_Device, uint32_t Frequency, RAK317
 
     RAK3172_LOGI(TAG, "Initialize module in P2P mode...");
     RAK3172_ERROR_CHECK(RAK3172_SetMode(p_Device, RAK_MODE_P2P));
+    RAK3172_LOGD(TAG, " Mode: %u", p_Device.Mode);
 
     p_Device.Internal.isBusy = false;
 

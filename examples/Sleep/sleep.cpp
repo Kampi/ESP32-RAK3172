@@ -122,8 +122,10 @@ static void applicationTask(void* p_Parameter)
         }
     }
 
-    #ifndef CONFIG_RAK3172_USE_AUTO_LP
-        RAK3172_Sleep(_Device);
+    #ifdef CONFIG_RAK3172_USE_RUI3
+        #ifndef CONFIG_RAK3172_USE_AUTO_LP
+            RAK3172_Sleep(_Device);
+        #endif
     #endif
 
 	// Prepare the driver for entering sleep mode.

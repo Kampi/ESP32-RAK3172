@@ -26,7 +26,7 @@
 #include <freertos/event_groups.h>
 #include <freertos/queue.h>
 
-#include "../../Arch/Logging/rak3172_logging.h"
+#include "../../Arch/rak3172_arch.h"
 
 #include "rak3172.h"
 

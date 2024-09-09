@@ -54,6 +54,8 @@ lib_deps =
 - [LoRaWAN Fragmented Data Block Transport Specification](https://lora-alliance.org/resource_hub/lorawan-fragmented-data-block-transport-specification-v1-0-0/)
 - [LoRaWAN FUOTA Process](https://lora-alliance.org/wp-content/uploads/2020/11/tr002-fuota_process_summary-v1.0.0.pdf)
 - [LoRaWAN Application Layer Clock Synchronization](https://lora-alliance.org/wp-content/uploads/2020/11/application_layer_clock_synchronization_v1.0.0.pdf)
+- [RAK3172 Firmware Download](https://docs.rakwireless.com/Product-Categories/WisDuo/RAK3172-Module/Datasheet/#firmware)
+- [RAK3172-SiP Firmware Download](https://docs.rakwireless.com/Product-Categories/WisDuo/RAK3172-SiP/Datasheet/#firmware-os)
 
 ## Support me
 

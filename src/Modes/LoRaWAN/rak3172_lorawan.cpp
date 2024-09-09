@@ -21,12 +21,7 @@
 
 #ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN
 
-#include "../../Arch/Timer/rak3172_timer.h"
-#include "../../Arch/Logging/rak3172_logging.h"
-
-#ifdef CONFIG_RAK3172_PWRMGMT_ENABLE
-    #include "../../Arch/PwrMgmt/rak3172_pwrmgmt.h"
-#endif
+#include "../../Arch/rak3172_arch.h"
 
 #include "rak3172.h"
 

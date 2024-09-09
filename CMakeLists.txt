@@ -28,13 +28,9 @@ if(CONFIG_RAK3172_MODE_WITH_LORAWAN)
     endif()
 endif()
 
-if(CONFIG_RAK3172_MODE_WITH_LORAWAN)
+if(CONFIG_RAK3172_MODE_WITH_P2P)
     list(APPEND COMPONENT_SRCS "src/Modes/P2P/rak3172_p2p.cpp")
     list(APPEND COMPONENT_SRCS "src/Modes/P2P/rak3172_p2p_rui3.cpp")
-endif()
-
-if(CONFIG_RAK3172_MODE_WITH_RF)
-    list(APPEND COMPONENT_SRCS "src/Modes/RF/rak3172_rf.cpp")
 endif()
 
 if((IDF_TARGET STREQUAL "esp32") OR (IDF_TARGET STREQUAL "esp32c2") OR (IDF_TARGET STREQUAL "esp32c3") OR (IDF_TARGET STREQUAL "esp32s2") OR (IDF_TARGET STREQUAL "esp32s3"))
@@ -58,4 +54,4 @@ idf_component_register(SRCS ${COMPONENT_SRCS}
 
 target_compile_definitions(${COMPONENT_LIB} PUBLIC RAK3172_LIB_MAJOR=4)
 target_compile_definitions(${COMPONENT_LIB} PUBLIC RAK3172_LIB_MINOR=2)
-target_compile_definitions(${COMPONENT_LIB} PUBLIC RAK3172_LIB_BUILD=0)
+target_compile_definitions(${COMPONENT_LIB} PUBLIC RAK3172_LIB_BUILD=1)

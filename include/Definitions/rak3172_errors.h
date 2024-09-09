@@ -1,7 +1,7 @@
  /*
  * rak3172_errors.h
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 serial driver.
  *

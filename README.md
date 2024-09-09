@@ -9,7 +9,7 @@
   - [Clock Synchronization](#clock-synchronization)
   - [Use with PlatformIO](#use-with-platformio)
   - [Use with esp-idf](#use-with-esp-idf)
-  - [Additional ressources](#additional-ressources)
+  - [Additional resources](#additional-resources)
   - [Support me](#support-me)
   - [Maintainer](#maintainer)
 
@@ -48,7 +48,7 @@ lib_deps =
 - Run `menuconfig` from the root of your project to configure the driver and the examples
 - Build the project
 
-## Additional ressources
+## Additional resources
 
 - [ST AN5554](https://www.st.com/resource/en/application_note/an5554-lorawan-firmware-update-over-the-air-with-stm32cubewl-stmicroelectronics.pdf)
 - [LoRaWAN Fragmented Data Block Transport Specification](https://lora-alliance.org/resource_hub/lorawan-fragmented-data-block-transport-specification-v1-0-0/)
@@ -63,4 +63,4 @@ If you are interested in the RAK3172 modules or in other RAKwireless products, y
 
 ## Maintainer
 
-- [Daniel Kampert](mailto:daniel.kameprt@kampis-elektroecke.de)
+- [Daniel Kampert](mailto:DanielKampert@kampis-elektroecke.de)

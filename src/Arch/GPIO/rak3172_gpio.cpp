@@ -1,7 +1,7 @@
  /*
  * rak3172_gpio.cpp
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: ESP32 GPIO wrapper for the RAK3172 driver.
  *
@@ -34,12 +34,12 @@
 RAK3172_Error_t RAK3172_GPIO_Init(RAK3172_t& p_Device)
 {
     #ifdef CONFIG_RAK3172_RESET_USE_HW
-        _RAK3172_GPIO_Reset_Config.pin_bit_mask = BIT(p_Device.Reset);
+        _RAK3172_GPIO_Reset_Config.pin_bit_mask = 1ULL << p_Device.Reset;
 
         // Configure the pull-up / pull-down resistor.
         #ifdef CONFIG_RAK3172_RESET_USE_PULL
             #ifdef CONFIG_RAK3172_RESET_INVERT
-                _RAK3172_GPIO_Reset_Config.pull_down_en = GPIO_PULLDOWN_ENABLE,
+                _RAK3172_GPIO_Reset_Config.pull_down_en = GPIO_PULLDOWN_ENABLE;
             #else
                 _RAK3172_GPIO_Reset_Config.pull_up_en = GPIO_PULLUP_ENABLE;
             #endif
@@ -51,12 +51,10 @@ RAK3172_Error_t RAK3172_GPIO_Init(RAK3172_t& p_Device)
         }
 
         // Set the reset pin when no pull-up / pull-down resistor should be used.
-        #ifdef CONFIG_RAK3172_RESET_USE_PULL
-            #ifdef CONFIG_RAK3172_RESET_INVERT
-                gpio_set_level(p_Device.Reset, false);
-            #else
-                gpio_set_level(p_Device.Reset, true);
-            #endif
+        #ifdef CONFIG_RAK3172_RESET_INVERT
+            gpio_set_level(p_Device.Reset, false);
+        #else
+            gpio_set_level(p_Device.Reset, true);
         #endif
     #endif
 

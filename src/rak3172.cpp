@@ -1,7 +1,7 @@
  /*
  * rak3172.cpp
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 serial driver.
  *
@@ -125,7 +125,7 @@ RAK3172_Error_t RAK3172_Init(RAK3172_t& p_Device)
             #endif
         #endif
 
-        RAK3172_GPIO_Init();
+        RAK3172_ERROR_CHECK(RAK3172_GPIO_Init(p_Device));
     #else
         RAK3172_LOGI(TAG, "     [ ] Hardware reset");
         RAK3172_LOGI(TAG, "     [x] Software reset");
@@ -327,5 +327,7 @@ RAK3172_Error_t RAK3172_SoftReset(RAK3172_t& p_Device, uint32_t Timeout)
         #endif
 
         RAK3172_LOGI(TAG, "     Successful!");
+
+        return RAK3172_ERR_OK;
     }
 #endif

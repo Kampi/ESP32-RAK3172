@@ -82,7 +82,7 @@ static void applicationTask(void* p_Parameter)
             ESP_LOGI(TAG, " SNR: %i", Message.SNR);
             ESP_LOGI(TAG, " Port: %u", Message.Port);
             ESP_LOGI(TAG, " Channel: %u", Message.Group);
-            ESP_LOGI(TAG, " Multicast: %u", Message.isMulticast);
+            ESP_LOGI(TAG, " Multicast: %s", Message.isMulticast ? "true" : "false");
             ESP_LOGI(TAG, " Payload: %s", Message.Payload.c_str());
         }
 

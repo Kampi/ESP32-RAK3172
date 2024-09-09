@@ -1,7 +1,7 @@
  /*
  * rak3172_logging.h
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: Logging wrapper for the ESP32.
  *

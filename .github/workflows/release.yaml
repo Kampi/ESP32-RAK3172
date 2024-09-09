@@ -1,0 +1,98 @@
+name: Component
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+    branches:
+      - main
+      - dev
+    paths-ignore:
+      - '*.md'
+
+env:
+  # Master branch (main or master). Can be changed for testing
+  master_branch: master
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+
+      - name: ZIP artifact
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip
+          zip -r ${GITHUB_REF_NAME}.zip .
+
+      - name: Upload to Component registry
+        uses: espressif/upload-components-ci-action@v2
+        with:
+          components: "ESP32-RAK3172:."
+          version: ${{ env.VERSION }}
+          namespace: "Kampi"
+          api_token: ${{ secrets.IDF_COMPONENT_REGISTRY_TOKEN }}
+
+      - name: Release
+        uses: docker://antonyurchenko/git-release:v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGELOG_FILE: CHANGELOG.md
+        with:
+          args: |
+            ${GITHUB_REF_NAME}.zip
+  
+  generate_outputs:
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Initialize
+        run: |
+          mkdir -p log
+          echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> "${GITHUB_ENV}"
+
+      - name: Get release version
+        run: |
+          BRANCH_NAME="${GITHUB_REF_NAME}"
+          echo "BRANCH_NAME=${BRANCH_NAME}"
+          BASE_VERSION="${BRANCH_NAME%%_*}"
+
+          IFS='.' read -r MAJOR MINOR BUILD <<< "${BASE_VERSION}"
+
+          echo "MAJOR=${MAJOR}" >> ${GITHUB_ENV}
+          echo "MINOR=${MINOR}" >> ${GITHUB_ENV}
+          echo "BUILD=${BUILD}" >> ${GITHUB_ENV}
+          echo "VERSION=${BASE_VERSION}" >> ${GITHUB_ENV}
+
+      - name: Update version numbers
+        shell: bash
+        run: |
+          echo "Using version: ${{ env.VERSION }}"
+          sed -i -E "s/(RAK3172_LIB_MAJOR=)[0-9]+/\1${{ env.MAJOR }}/" CMakeLists.txt
+          sed -i -E "s/(RAK3172_LIB_MINOR=)[0-9]+/\1${{ env.MINOR }}/" CMakeLists.txt
+          sed -i -E "s/(RAK3172_LIB_BUILD=)[0-9]+/\1${{ env.BUILD }}/" CMakeLists.txt
+          sed -i "s/^## \[Unreleased\]/## [${{ env.VERSION }}] - $(date +'%Y-%m-%d')/" CHANGELOG.md
+          sed -i -E "s/^version: \".*\"/version: \"${{ env.VERSION }}\"/" idf_component.yml
+
+      - name: Push outputs
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          branch: ${{ github.ref_name }}
+          commit_message: Push outputs from CI/CD (${{ env.DATE }})

@@ -10,6 +10,8 @@
 #include "settings/LoRaWAN_Default.h"
 
 static RAK3172_t _Device                        = RAK3172_DEFAULT_CONFIG(CONFIG_RAK3172_UART_PORT, CONFIG_RAK3172_UART_RX, CONFIG_RAK3172_UART_TX, CONFIG_RAK3172_UART_BAUD);
+
+// WARNING: These are example keys only. Replace with your actual multicast group credentials.
 static RAK3172_MC_Group_t _Group = {
     .Class          = RAK_CLASS_C,
     .DevAddr        = "B8DD8FDB",
@@ -39,6 +41,8 @@ static void applicationTask(void* p_Parameter)
     if(Error != RAK3172_ERR_OK)
     {
         ESP_LOGE(TAG, "Cannot initialize RAK3172! Error: 0x%04X", static_cast<unsigned int>(Error));
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
+        esp_restart();
     }
 
     ESP_LOGI(TAG, "Firmware: %s", Info.Firmware.c_str());
@@ -49,6 +53,8 @@ static void applicationTask(void* p_Parameter)
     if(Error != RAK3172_ERR_OK)
     {
         ESP_LOGE(TAG, "Cannot initialize RAK3172 LoRaWAN! Error: 0x%04X", static_cast<unsigned int>(Error));
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
+        esp_restart();
     }
 
     if(RAK3172_LoRaWAN_isJoined(_Device) == false)
@@ -59,6 +65,8 @@ static void applicationTask(void* p_Parameter)
         if(Error != RAK3172_ERR_OK)
         {
             ESP_LOGE(TAG, "Cannot join network! Error: 0x%04X", static_cast<unsigned int>(Error));
+            vTaskDelay(5000 / portTICK_PERIOD_MS);
+            esp_restart();
         }
     }
     else
@@ -90,7 +98,7 @@ static void applicationTask(void* p_Parameter)
             ESP_LOGE(TAG, "Clock sync failed! Error: 0x%X", static_cast<unsigned int>(Error));
         }
 
-        vTaskDelay(10000 / portTICK_PERIOD_MS);
+        vTaskDelay(3600000 / portTICK_PERIOD_MS);
     }
 }
 
@@ -98,7 +106,7 @@ extern "C" void app_main(void)
 {
     ESP_LOGI(TAG, "Starting application...");
 
-    _applicationHandle = xTaskCreateStatic(applicationTask, "applicationTask", sizeof(_applicationStack), NULL, 1, _applicationStack, &_applicationBuffer);
+    _applicationHandle = xTaskCreateStatic(applicationTask, "applicationTask", 8192, NULL, 1, _applicationStack, &_applicationBuffer);
     if(_applicationHandle == NULL)
     {
         ESP_LOGE(TAG, "    Unable to create application task!");

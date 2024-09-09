@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [4.2.0] - 
+## [4.2.1] - 2025-11-09
 
 **Fixed:**
 
@@ -10,14 +10,15 @@
 - Fix wrong length for long payload in `RAK3172_LoRaWAN_Transmit`
 - Fix missing transmission confirmation in unconfirmed mode in `RAK3172_LoRaWAN_Transmit`
 - Fix different smaller errors
+- Fix segfault caused by a timeout in UART driver for ESP32 when using module firmware version 1.0.4 and below
 
 **Added:**
 
 - Add `RAK3172_ERR_WRONG_PORT` error for LoRaWAN
 - Add `RAK3172_ERR_CLASS_B_DISABLED` error for class B devices
 - Add device class to driver object
-- Added `isMulticast` field to `RAK3172_Rx_t` object
-- Added `AT_NO_NETWORK_JOINED` error to `RAK3172_LoRaWAN_Transmit`
+- Add `isMulticast` field to `RAK3172_Rx_t` object
+- Add `AT_NO_NETWORK_JOINED` error to `RAK3172_LoRaWAN_Transmit`
 - Add `RAK3172_LoRaWAN_SetClass` and `RAK3172_LoRaWAN_GetClass` function
 - Add arch specific watchdog
 - Add `RAK3172_isBusy` function
@@ -31,23 +32,23 @@
 **Added (EXPERIMENTAL):**
 
 - Add FUOTA support for the host CPU via LoRaWAN
-- Add clock synchronization support for the host CPU via LoRaWAN
+- Add clock synchronization v1.0.0 support for the host CPU via LoRaWAN
 
 **Changed:**
 
-- Remove RUI3 option in `RAK3172_FactoryReset`
 - Improve error check in class B and multicast driver and add a check for the current device mode
 - Set `Retries` in `RAK3172_LoRaWAN_Transmit` as optional parameter
 - Swap `Retries` and `Confirmed` in `RAK3172_LoRaWAN_Transmit`
-- Remove overloaded `RAK3172_LoRaWAN_Transmit`
 - Clean up CMakeLists.txt
 - Update examples
 - Update documentation
-- Update README
-- Update CHANGELOG
-- Change version number to 4.2.0
 
-## [4.1.1] - 21.04.2023
+**Removed:**
+
+- Remove overloaded `RAK3172_LoRaWAN_Transmit`
+- Remove RUI3 option in `RAK3172_FactoryReset`
+
+## [4.1.1] - 2023-04-21
 
 **Fixed:**
 
@@ -61,7 +62,7 @@
 - Update CHANGELOG
 - Change version number to 4.1.1
 
-## [4.1.0] - 01.04.2023
+## [4.1.0] - 2023-04-01
 
 **Fixed:**
 
@@ -123,7 +124,7 @@
 - Rework CHANGELOG layout
 - Change version number to 4.1.0
 
-## [4.0.0] - 09.09.2022
+## [4.0.0] - 2022-09-09
 
 **Fixed:**
 
@@ -162,7 +163,7 @@
 - Update CHANGELOG
 - Change version number to 4.0.0
 
-## [3.0.0] - 22.05.2022
+## [3.0.0] - 2022-05-22
 
 **Added:**
 
@@ -179,7 +180,7 @@
 - Update CHANGELOG
 - Change version number to 3.0.0
 
-## [2.0.0] - 22.03.2022
+## [2.0.0] - 2022-03-22
 
 **Added:**
 
@@ -195,7 +196,7 @@
 - Update CHANGELOG
 - Change version number to 2.0.0
 
-## [1.0.0] - 19.03.2022
+## [1.0.0] - 2022-05-19
 
 **Added:**
 

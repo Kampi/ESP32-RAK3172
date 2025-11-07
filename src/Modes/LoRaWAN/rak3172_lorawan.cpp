@@ -369,16 +369,17 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t& p_Device, uint8_t Port, cons
         RAK3172_SendCommand(p_Device, "AT+SEND=" + std::to_string(Port) + ":" + Payload, NULL, &Status);
     }
 
+    if(p_Device.Internal.isRestricted)
+    {
+        return RAK3172_ERR_RESTRICTED;
+    }
+
     p_Device.Internal.isBusy = true;
 
     // The device is busy. Leave the function with an invalid state error.
     if(Status.find("AT_BUSY_ERROR") != std::string::npos)
     {
         return RAK3172_ERR_BUSY;
-    }
-    else if(Status.find("Restricted") != std::string::npos)
-    {
-        return RAK3172_ERR_RESTRICTED;
     }
     else if(Status.find("AT_NO_NETWORK_JOINED") != std::string::npos)
     {
@@ -387,7 +388,6 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t& p_Device, uint8_t Port, cons
     // No transmission error and no confirmation needed.
     else if((Confirmed == false) && (Status.find("OK") != std::string::npos))
     {
-
         // Wait until the transmission is done.
         do
         {

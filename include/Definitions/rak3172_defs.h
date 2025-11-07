@@ -268,10 +268,6 @@ typedef struct
     {
         TaskHandle_t Handle;            /**< Handle for the UART receive task.
                                              NOTE: Managed by the driver. */
-        bool isInitialized;             /**< #true when the device driver is initialized.
-                                             NOTE: Managed by the driver. */
-        bool isBusy;                    /**< #true when the device is busy.
-                                             NOTE: Managed by the driver. */
         uint8_t* RxBuffer;              /**< Pointer to receive buffer.
                                              NOTE: Managed by the driver. */
         QueueHandle_t MessageQueue;     /**< Module Rx message queue used by the receiving task.
@@ -282,6 +278,12 @@ typedef struct
                                              NOTE: Managed by the driver. */
         bool isJoinEvent;               /**< #true when a join event has occured.
                                              NOTE: Only used for module firmware without RUI3 interface! */
+        bool isInitialized;             /**< #true when the device driver is initialized.
+                                             NOTE: Managed by the driver. */
+        bool isBusy;                    /**< #true when the device is busy.
+                                             NOTE: Managed by the driver. */
+        bool isRestricted;              /**< #true when the device is in restricted wait state.
+                                             NOTE: Managed by the driver. */
     } Internal;
     struct
     {

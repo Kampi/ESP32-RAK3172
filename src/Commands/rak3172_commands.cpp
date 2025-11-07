@@ -86,7 +86,12 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Comma
         return RAK3172_ERR_TIMEOUT;
     }
 
-    RAK3172_LOGI(TAG, "     Status: %s", Response->c_str());
+    RAK3172_LOGD(TAG, "     Status: %s", Response->c_str());
+
+    if(p_Device.Internal.isRestricted)
+    {
+        return RAK3172_ERR_RESTRICTED;
+    }
 
     // Transmission is without error when 'OK' as status code and when no event data are received.
     if(Response->find("OK") == std::string::npos)

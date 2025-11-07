@@ -134,6 +134,15 @@ static void RAK3172_UART_EventTask(void* p_Arg)
 
                         RAK3172_LOGD(TAG, "     Response: %s", Response->c_str());
 
+                        if(Response->find("Restricted_Wait") != std::string::npos)
+                        {
+                            Device->Internal.isRestricted = true;
+                        }
+                        else
+                        {
+                            Device->Internal.isRestricted = false;
+                        }
+
                         #ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN
                             if((Device->Mode == RAK_MODE_LORAWAN) && (Response->find("EVT") != std::string::npos))
                             {

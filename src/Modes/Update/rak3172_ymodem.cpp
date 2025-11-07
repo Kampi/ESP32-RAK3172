@@ -2,7 +2,7 @@
  /*
  * rak3172_ymodem.cpp
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: Module firmware upgrade driver for the RAK3172.
  *

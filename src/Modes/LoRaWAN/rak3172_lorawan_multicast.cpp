@@ -1,7 +1,7 @@
  /*
  * rak3172_lorawan_multicast.cpp
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 LoRaWAN multicast driver.
  *

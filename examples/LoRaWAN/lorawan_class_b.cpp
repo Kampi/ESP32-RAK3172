@@ -108,7 +108,7 @@ static void applicationTask(void* p_Parameter)
         Error = RAK3172_LoRaWAN_GetBeaconFrequency(_Device, &Datarate, &Frequency);
         if(Error == RAK3172_ERR_OK)
         {
-            ESP_LOGI(TAG, "Time: %u", static_cast<unsigned int>(Frequency));
+            ESP_LOGI(TAG, "Frequency: %u", static_cast<unsigned int>(Frequency));
         }
         else
         {

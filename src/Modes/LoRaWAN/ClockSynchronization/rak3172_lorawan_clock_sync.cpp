@@ -1,7 +1,7 @@
  /*
  * rak3172_lorawan_clock_sync.cpp
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 LoRaWAN clock synchronization driver.
  *
@@ -94,9 +94,10 @@ RAK3172_Error_t RAK3172_LoRaWAN_Clock_SetLocalTime(RAK3172_t& p_Device, struct t
     uint8_t Buffer[6];
     uint32_t Time;
     RAK3172_Rx_t Message;
-    RAK3172_Class_t Class;
+    RAK3172_Class_t PreviousClass = RAK_CLASS_C;
     RAK3172_Error_t Error;
     time_t Dummy;
+    bool RestoreClass = false;
 
     if(p_DateTime == NULL)
     {
@@ -115,8 +116,9 @@ RAK3172_Error_t RAK3172_LoRaWAN_Clock_SetLocalTime(RAK3172_t& p_Device, struct t
         {
             RAK3172_LOGD(TAG, "Reconfigure the device in class C...");
         
-            RAK3172_ERROR_CHECK(RAK3172_LoRaWAN_GetClass(p_Device, &Class));
+            RAK3172_ERROR_CHECK(RAK3172_LoRaWAN_GetClass(p_Device, &PreviousClass));
             RAK3172_ERROR_CHECK(RAK3172_LoRaWAN_SetClass(p_Device, RAK_CLASS_C));
+            RestoreClass = (PreviousClass != RAK_CLASS_C);
         }
 
         if(RAK3172_LoRaWAN_MC_AddGroup(p_Device, p_Group->Class, p_Group->DevAddr, p_Group->NwkSKey, p_Group->AppSKey, p_Group->Frequency, p_Group->Datarate, p_Group->Periodicity) != RAK3172_ERR_OK)
@@ -206,9 +208,9 @@ RAK3172_LoRaWAN_Clock_SetLocalTime_Exit:
     {
         RAK3172_LoRaWAN_MC_RemoveGroup(p_Device, p_Group->DevAddr);
 
-        if(Class != RAK_CLASS_C)
+        if(RestoreClass)
         {
-            RAK3172_LoRaWAN_SetClass(p_Device, Class);
+            RAK3172_LoRaWAN_SetClass(p_Device, PreviousClass);
         }
     }
 
@@ -243,16 +245,17 @@ RAK3172_Error_t RAK3172_LoRaWAN_ClockSync_PackageVersion(RAK3172_t& p_Device)
 
 bool RAK3172_LoRaWAN_ClockSync_isForceResync(RAK3172_t& p_Device, uint8_t* p_NbTransmissions, RAK3172_MC_Group_t* p_Group, uint32_t Timeout)
 {
-    bool Result;
+    bool Result = false;
     uint8_t Command;
     uint8_t Buffer[1];
     RAK3172_Rx_t Message;
-    RAK3172_Class_t Class;
+    RAK3172_Class_t PreviousClass = RAK_CLASS_C;
+    bool RestoreClass = false;
     RAK3172_Error_t Error;
 
     if(p_NbTransmissions == NULL)
     {
-        return RAK3172_ERR_INVALID_ARG;
+        return false;
     }
     else if(p_Device.Mode != RAK_MODE_LORAWAN)
     {
@@ -267,10 +270,11 @@ bool RAK3172_LoRaWAN_ClockSync_isForceResync(RAK3172_t& p_Device, uint8_t* p_NbT
         {
             RAK3172_LOGD(TAG, "Reconfigure the device in class C...");
         
-            if((RAK3172_LoRaWAN_GetClass(p_Device, &Class) != RAK3172_ERR_OK) || (RAK3172_LoRaWAN_SetClass(p_Device, RAK_CLASS_C) != RAK3172_ERR_OK))
+            if((RAK3172_LoRaWAN_GetClass(p_Device, &PreviousClass) != RAK3172_ERR_OK) || (RAK3172_LoRaWAN_SetClass(p_Device, RAK_CLASS_C) != RAK3172_ERR_OK))
             {
                 return false;
             }
+            RestoreClass = (PreviousClass != RAK_CLASS_C);
         }
 
         if(RAK3172_LoRaWAN_MC_AddGroup(p_Device, p_Group->Class, p_Group->DevAddr, p_Group->NwkSKey, p_Group->AppSKey, p_Group->Frequency, p_Group->Datarate, p_Group->Periodicity) != RAK3172_ERR_OK)
@@ -288,7 +292,7 @@ bool RAK3172_LoRaWAN_ClockSync_isForceResync(RAK3172_t& p_Device, uint8_t* p_NbT
         goto RAK3172_LoRaWAN_ClockSync_isForceResync_Exit;
     }
 
-    if(Command != RAK3172_CLOCK_CID_PACKAGE_VERSION_REQ)
+    if(Command != RAK3172_CLOCK_CID_FORCE_RESYNC)
     {
         Result = false;
         goto RAK3172_LoRaWAN_ClockSync_isForceResync_Exit;
@@ -306,9 +310,9 @@ RAK3172_LoRaWAN_ClockSync_isForceResync_Exit:
     {
         RAK3172_LoRaWAN_MC_RemoveGroup(p_Device, p_Group->DevAddr);
 
-        if(Class != RAK_CLASS_C)
+        if(RestoreClass)
         {
-            RAK3172_LoRaWAN_SetClass(p_Device, Class);
+            RAK3172_LoRaWAN_SetClass(p_Device, PreviousClass);
         }
     }
 

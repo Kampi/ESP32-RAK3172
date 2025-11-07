@@ -1,7 +1,7 @@
  /*
  * rak3172_lorawan_fuota.h
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 LoRaWAN FUOTA driver.
  *
@@ -18,7 +18,7 @@
  */
 
 #ifndef RAK3172_LORAWAN_FUOTA_H_
-#define RAK3172_LORAWAN_FOTA_H_
+#define RAK3172_LORAWAN_FUOTA_H_
 
 #include "rak3172_defs.h"
 

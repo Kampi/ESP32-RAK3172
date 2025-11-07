@@ -1,7 +1,7 @@
  /*
  * rak3172_timer.cpp
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: ESP32 Timer wrapper for the RAK3172 driver.
  *

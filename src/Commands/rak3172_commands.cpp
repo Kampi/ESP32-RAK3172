@@ -1,7 +1,7 @@
  /*
  * rak3172_commands.cpp
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 serial driver.
  *
@@ -91,7 +91,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Comma
     // Transmission is without error when 'OK' as status code and when no event data are received.
     if(Response->find("OK") == std::string::npos)
     {
-        if(Response->find("Command not found") == std::string::npos)
+        if(Response->find("Command not found") != std::string::npos)
         {
             Error = RAK3172_ERR_COMMAND_NOT_FOUND;
         }

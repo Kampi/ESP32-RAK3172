@@ -75,7 +75,7 @@ def UnicastSend(Data, DevEUI, Port):
 if(__name__ == "__main__"):
     CurrentState = States.STATE_PREPARE_FRAGMENTS.value
 
-    LogDirectory = args.log + os.path.os.sep + "Update-Logs"
+    LogDirectory = os.path.join(args.log, "Update-Logs")
 
     if(not(os.path.exists(LogDirectory))):
         os.makedirs(LogDirectory)

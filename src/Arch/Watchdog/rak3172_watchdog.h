@@ -1,7 +1,7 @@
  /*
  * rak3172_watchdog.h
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: ESP32 Watchdog wrapper for the RAK3172 driver.
  *
@@ -20,13 +20,16 @@
 #ifndef RAK3172_WATCHDOG_H_
 #define RAK3172_WATCHDOG_H_
 
-#include <esp_task_wdt.h>
-
-/** @brief Reset the watchdog timer.
- */
-inline __attribute__((always_inline)) void RAK3172_WDT_Reset(void)
-{
-    esp_task_wdt_reset();
-}
+#if defined(ESP_PLATFORM)
+    #include <esp_task_wdt.h>
+    /** @brief Reset the ESP‑IDF task watchdog. */
+    inline __attribute__((always_inline)) void RAK3172_WDT_Reset(void)
+    {
+        (void)esp_task_wdt_reset();
+    }
+#else
+    /** @brief Stub for non‑ESP builds. */
+    inline void RAK3172_WDT_Reset(void) {}
+#endif
 
 #endif /* RAK3172_WATCHDOG_H_ */

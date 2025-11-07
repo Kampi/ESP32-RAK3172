@@ -1,7 +1,7 @@
  /*
  * rak3172_uart.h
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: ESP32 UART wrapper for the RAK3172 driver.
  *
@@ -34,10 +34,11 @@ RAK3172_Error_t RAK3172_UART_Init(RAK3172_t& p_Device);
  */
 void RAK3172_UART_Deinit(RAK3172_t& p_Device);
 
-/** @brief          Deinitialize the UART driver.
+/** @brief          Set a new baudrate for the UART driver.
  *  @param p_Device RAK3172 device object
  *  @param Baudrate New baudrate
  *  @return         RAK3172_ERR_OK when successful
+ *                  RAK3172_ERR_INVALID_STATE when the UART driver cannot be reconfigured
  */
 RAK3172_Error_t RAK3172_UART_SetBaudrate(RAK3172_t& p_Device, RAK3172_Baud_t Baudrate);
 

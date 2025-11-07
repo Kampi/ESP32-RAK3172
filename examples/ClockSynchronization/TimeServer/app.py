@@ -20,6 +20,10 @@ class States(Enum):
 SERVER = os.getenv("API_CHIRPSTACK_SERVER")
 API_TOKEN = os.getenv("API_CHIRPSTACK_API_TOKEN")
 
+if(not(SERVER or not API_TOKEN)):
+    sys.stderr.write("API_CHIRPSTACK_SERVER and API_CHIRPSTACK_API_TOKEN must be set.")
+    sys.exit(1)
+
 Parser = argparse.ArgumentParser()
 Parser.add_argument("-lp", "--lora-port", type = int, help = "LoRaWAN port", default = 202)
 Parser.add_argument("-mp", "--mqtt-port", type = int, help = "MQTT port", default = 8583)
@@ -60,7 +64,7 @@ def UnicastSend(Data, DevEUI, Port):
 if(__name__ == "__main__"):
     CurrentState = States.STATE_START.value
 
-    LogDirectory = args.log + os.path.os.sep + "Update-Logs"
+    LogDirectory = args.log + os.path.sep + "Update-Logs"
 
     if(args.number > 7):
         Parser.error("Maximum number of forced transmissions is 7!")
@@ -82,6 +86,9 @@ if(__name__ == "__main__"):
     req.limit = 10
     resp = client.List(req, metadata = Auth_Token)
     UserID = resp.result[1].id
+    if(len(resp.result) < 1):
+        Parser.error("No users returned by ChirpStack API")
+    UserID = resp.result[0].id
 
     client = api.TenantServiceStub(channel)
     req = api.ListTenantsRequest()

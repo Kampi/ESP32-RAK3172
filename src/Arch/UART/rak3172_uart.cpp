@@ -1,7 +1,7 @@
  /*
  * rak3172_uart.cpp
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: ESP32 UART wrapper for the RAK3172 driver.
  *
@@ -39,6 +39,7 @@ static uart_config_t _RAK3172_UART_Config = {
     #else
         .source_clk         = UART_SCLK_DEFAULT,
     #endif
+    .flags                  = 0,
 };
 
 #ifdef CONFIG_RAK3172_USE_RUI3
@@ -437,7 +438,7 @@ RAK3172_Error_t RAK3172_UART_Init(RAK3172_t& p_Device)
     }
 
     #ifdef CONFIG_RAK3172_TASK_CORE_AFFINITY
-        xTaskCreatePinnedToCore(RAK3172_UART_EventTask, "RAK3172-Event", CONFIG_RAK3172_TASK_STACK_SIZE, p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device.Internal.Handle, CONFIG_RAK3172_TASK_CORE);
+        xTaskCreatePinnedToCore(RAK3172_UART_EventTask, "RAK3172-Event", CONFIG_RAK3172_TASK_STACK_SIZE, &p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device.Internal.Handle, CONFIG_RAK3172_TASK_CORE);
     #else
         xTaskCreate(RAK3172_UART_EventTask, "RAK3172-Event", CONFIG_RAK3172_TASK_STACK_SIZE, &p_Device, CONFIG_RAK3172_TASK_PRIO, &p_Device.Internal.Handle);
     #endif
@@ -462,8 +463,12 @@ RAK3172_Error_t RAK3172_UART_Init(RAK3172_t& p_Device)
     return RAK3172_ERR_OK;
 
 RAK3172_UART_Init_Error_4:
-    vTaskSuspend(p_Device.Internal.Handle);
-    vTaskDelete(p_Device.Internal.Handle);
+    if(p_Device.Internal.Handle != NULL)
+    {
+        vTaskSuspend(p_Device.Internal.Handle);
+        vTaskDelete(p_Device.Internal.Handle);
+        p_Device.Internal.Handle = NULL;
+    }
 
 RAK3172_UART_Init_Error_3:
     free(p_Device.Internal.RxBuffer);

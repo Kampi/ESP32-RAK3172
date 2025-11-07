@@ -1,7 +1,7 @@
  /*
  * rak3172_configs.h
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: RAK3172 serial driver.
  *
@@ -54,6 +54,7 @@
                                                                                                         .isJoined = false,                                      \
                                                                                                         .ConfirmError = false,                                  \
                                                                                                         .AttemptCounter = 0,                                    \
+                                                                                                        .Class = RAK_CLASS_A,                                   \
                                                                                                     },                                                          \
                                                                                                     .P2P = {                                                    \
                                                                                                         .Active = false,                                        \
@@ -73,7 +74,7 @@
      */
     #define RAK3172_DEFAULT_CONFIG(UART_Interface, Rx_Pin, Tx_Pin, Baud)    {                                                                       \
                                                                                 .UART = {                                                           \
-                                                                                    .Interface = UART_Interface,                                    \
+                                                                                    .Interface = static_cast<uart_port_t>(UART_Interface),          \
                                                                                     .Rx = static_cast<gpio_num_t>(Rx_Pin),                          \
                                                                                     .Tx = static_cast<gpio_num_t>(Tx_Pin),                          \
                                                                                     .Baudrate = static_cast<RAK3172_Baud_t>(Baud),                  \
@@ -95,7 +96,7 @@
                                                                                     .isJoined = false,                                              \
                                                                                     .ConfirmError = false,                                          \
                                                                                     .AttemptCounter = 0,                                            \
-                                                                                    .Class = static_cast<RAK3172_Class_t>('A'),                     \
+                                                                                    .Class = RAK_CLASS_A,                                           \
                                                                                 },                                                                  \
                                                                                 .P2P = {                                                            \
                                                                                     .Active = false,                                                \

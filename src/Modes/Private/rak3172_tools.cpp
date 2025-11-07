@@ -1,7 +1,7 @@
  /*
  * rak3172_tools.cpp
  *
- *  Copyright (C) Daniel Kampert, 2023
+ *  Copyright (C) Daniel Kampert, 2025
  *	Website: www.kampis-elektroecke.de
  *  File info: Tools collection for RAK3172 driver.
  *
@@ -21,7 +21,7 @@
 
 void RAK3172_Tools_Hex2ASCII(std::string Hex, uint8_t* const p_Buffer)
 {
-    uint8_t Offset;
+    size_t Offset;
     uint8_t High = 0;
 
     if((p_Buffer == NULL) || ((Hex.size() % 2) != 0))
@@ -30,9 +30,9 @@ void RAK3172_Tools_Hex2ASCII(std::string Hex, uint8_t* const p_Buffer)
     }
 
     Offset = 0;
-    for(uint32_t i = 0; i < Hex.size(); i++)
+    for(size_t i = 0; i < Hex.size(); i++)
     {
-        uint8_t Temp = 0;
+        int8_t Temp = 0;
 
         if((Hex.at(i) >= '0') && (Hex.at(i) <= '9'))
         {
@@ -46,6 +46,11 @@ void RAK3172_Tools_Hex2ASCII(std::string Hex, uint8_t* const p_Buffer)
         {
             Temp = static_cast<uint8_t>(Hex.at(i)) - 'A' + 10;
         }
+        else
+        {
+            // Invalid character – abort conversion
+            return;
+        }
 
         // Save the high byte.
         if((i % 2) == 0)
@@ -55,7 +60,7 @@ void RAK3172_Tools_Hex2ASCII(std::string Hex, uint8_t* const p_Buffer)
         // Save the low byte and push the result to the string.
         else
         {
-            *(p_Buffer + (Offset++)) = (High << 0x04) + Temp;
+            *(p_Buffer + (Offset++)) = static_cast<uint8_t>((High << 0x04) + Temp);
         }
     }
 }

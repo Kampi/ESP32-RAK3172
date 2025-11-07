@@ -37,7 +37,7 @@ static uart_config_t _RAK3172_UART_Config = {
             .source_clk     = UART_SCLK_RTC,
         #endif
     #else
-        .source_clk         = UART_SCLK_APB,
+        .source_clk         = UART_SCLK_DEFAULT,
     #endif
 };
 

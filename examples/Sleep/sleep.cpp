@@ -14,6 +14,8 @@
 
 static RTC_NOINIT_ATTR RAK3172_t _Device;
 
+static RTC_NOINIT_ATTR RAK3172_Info_t Info;
+
 static StackType_t _applicationStack[8192];
 
 static StaticTask_t _applicationBuffer;
@@ -27,7 +29,6 @@ static void applicationTask(void* p_Parameter)
     if(rtc_get_reset_reason(0) == POWERON_RESET)
     {
         RAK3172_Error_t Error;
-        RAK3172_Info_t Info;
 
 		_Device = RAK3172_DEFAULT_CONFIG(CONFIG_RAK3172_UART_PORT, CONFIG_RAK3172_UART_RX, CONFIG_RAK3172_UART_TX, CONFIG_RAK3172_UART_BAUD);
         _Device.Info = &Info;

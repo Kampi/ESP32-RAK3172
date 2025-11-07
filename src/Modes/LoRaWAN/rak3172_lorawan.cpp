@@ -203,7 +203,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t& p_Device, uint8_t Attempts,
         p_Device.Internal.isJoinEvent = false;
     #endif
 
-    p_Device.LoRaWAN.AttemptCounter = Attempts + 1;
+    p_Device.LoRaWAN.AttemptCounter = Attempts;
     p_Device.Internal.isBusy = true;
 
     #ifdef CONFIG_RAK3172_USE_RUI3
@@ -228,6 +228,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t& p_Device, uint8_t Attempts,
 
             if(p_Device.LoRaWAN.AttemptCounter == 0)
             {
+                ESP_LOGI(TAG, "No attempts left!");
                 RAK3172_LoRaWAN_StopJoin(p_Device);
 
                 break;
@@ -284,8 +285,10 @@ RAK3172_Error_t RAK3172_LoRaWAN_StartJoin(RAK3172_t& p_Device, uint8_t Attempts,
     return RAK3172_ERR_OK;
 }
 
-RAK3172_Error_t RAK3172_LoRaWAN_StopJoin(const RAK3172_t& p_Device)
+RAK3172_Error_t RAK3172_LoRaWAN_StopJoin(RAK3172_t& p_Device)
 {
+    p_Device.Internal.isBusy = false;
+
     return RAK3172_SendCommand(p_Device, "AT+JOIN=0:0:7:0");
 }
 
@@ -350,7 +353,7 @@ RAK3172_Error_t RAK3172_LoRaWAN_Transmit(RAK3172_t& p_Device, uint8_t Port, cons
     }
 
     // Encode the payload into an ASCII string.
-    for(uint8_t i = 0; i < Length; i++)
+    for(uint16_t i = 0; i < Length; i++)
     {
         sprintf(Buffer, "%02x", ((uint8_t*)p_Buffer)[i]);
         Payload += std::string(Buffer);

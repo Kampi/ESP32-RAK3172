@@ -34,7 +34,7 @@
 RAK3172_Error_t RAK3172_GPIO_Init(RAK3172_t& p_Device)
 {
     #ifdef CONFIG_RAK3172_RESET_USE_HW
-        _RAK3172_GPIO_Reset_Config.pin_bit_mask = BIT(p_Device.Reset);
+        _RAK3172_GPIO_Reset_Config.pin_bit_mask = 1ULL << p_Device.Reset;
 
         // Configure the pull-up / pull-down resistor.
         #ifdef CONFIG_RAK3172_RESET_USE_PULL

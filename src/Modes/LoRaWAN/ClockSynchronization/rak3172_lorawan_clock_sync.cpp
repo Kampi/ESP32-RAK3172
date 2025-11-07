@@ -136,9 +136,9 @@ RAK3172_Error_t RAK3172_LoRaWAN_Clock_SetLocalTime(RAK3172_t& p_Device, struct t
     //      Bits 0-3:   TokenReq
     //      Bits 4:     AnsRequired
     //      Bits 5-7:   RFU
+    _RAK3172_AppTime.Param.Fields.AnsRequired = AnsRequired;
     Buffer[0] = RAK3172_CLOCK_CID_APP_TIME_REQ;
     memcpy(&Buffer[1], reinterpret_cast<const void*>(&_RAK3172_AppTime), sizeof(_RAK3172_AppTime));
-    _RAK3172_AppTime.Param.Fields.AnsRequired = AnsRequired;
     if(RAK3172_LoRaWAN_Transmit(p_Device, CONFIG_RAK3172_MODE_LORAWAN_CLOCK_SYNC_PORT, Buffer, sizeof(Buffer)) != RAK3172_ERR_OK)
     {
         Error = RAK3172_ERR_FAIL;

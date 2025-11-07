@@ -376,7 +376,15 @@ RAK3172_Error_t RAK3172_RunUpdate(RAK3172_t& p_Device, const uint8_t* const p_Da
 	vTaskResume(p_Device.Internal.Handle);
 
 	// Leave DFU mode.
-	Error |= RAK3172_SendCommand(p_Device, "AT+RUN");
+	if(Error == RAK3172_ERR_OK)
+	{
+		Error = RAK3172_SendCommand(p_Device, "AT+RUN");
+	}
+	else
+	{
+		// Attempt to exit DFU mode but preserve transmission error
+		RAK3172_SendCommand(p_Device, "AT+RUN");
+	}
 
 	return Error;
 }

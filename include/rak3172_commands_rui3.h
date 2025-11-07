@@ -85,7 +85,7 @@ RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t& p_Device, std::string* const p_
  *                  RAK3172_ERR_INVALID_ARG when an invalid argument was passed
  *                  RAK3172_ERR_INVALID_STATE when the interface is not initialized
  */
-RAK3172_Error_t RAK3172_Sleep(const RAK3172_t& p_Device, uint32_t Duration = 0);
+RAK3172_Error_t RAK3172_Sleep(RAK3172_t& p_Device, uint32_t Duration = 0);
 
 /** @brief          Lock the device UART.
  *  @param p_Device RAK3172 device object

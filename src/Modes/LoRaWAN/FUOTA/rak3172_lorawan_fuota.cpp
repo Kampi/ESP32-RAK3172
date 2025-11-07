@@ -79,7 +79,8 @@ RAK3172_Error_t RAK3172_LoRaWAN_FUOTA_Run(RAK3172_t& p_Device, RAK3172_MC_Group_
     RAK3172_Rx_t Message;
     RAK3172_Error_t Error;
     RAK3172_FragSetup_t FragSetup;
-    RAK3172_Class_t Class;
+    RAK3172_Class_t originalClass = p_Device.LoRaWAN.Class;
+    bool restoreClass = false;
 
     if(p_Device.Mode != RAK_MODE_LORAWAN)
     {
@@ -93,8 +94,8 @@ RAK3172_Error_t RAK3172_LoRaWAN_FUOTA_Run(RAK3172_t& p_Device, RAK3172_MC_Group_
         if(p_Device.LoRaWAN.Class != RAK_CLASS_C)
         {
             RAK3172_LOGD(TAG, "Reconfigure the device in class C...");
-        
-            RAK3172_ERROR_CHECK(RAK3172_LoRaWAN_GetClass(p_Device, &Class));
+
+            restoreClass = true;
             RAK3172_ERROR_CHECK(RAK3172_LoRaWAN_SetClass(p_Device, RAK_CLASS_C));
         }
 
@@ -284,19 +285,19 @@ RAK3172_Error_t RAK3172_LoRaWAN_FUOTA_Run(RAK3172_t& p_Device, RAK3172_MC_Group_
         Now = RAK3172_Timer_GetMilliseconds();
     }
 
+RAK3172_LoRaWAN_FUOTA_Run_Exit:
     if(FragMemory != NULL)
     {
         free(FragMemory);
     }
 
-RAK3172_LoRaWAN_FUOTA_Run_Exit:
     if(p_Group != NULL)
     {
         RAK3172_LoRaWAN_MC_RemoveGroup(p_Device, p_Group->DevAddr);
 
-        if(Class != RAK_CLASS_C)
+        if(restoreClass)
         {
-            RAK3172_LoRaWAN_SetClass(p_Device, Class);
+            RAK3172_LoRaWAN_SetClass(p_Device, originalClass);
         }
     }
 

@@ -12,12 +12,6 @@ from enum import Enum
 from chirpstack_api import api
 from datetime import datetime as dt
 
-'''
-TODO:
-- Header transmission
-- Clock synchronization
-'''
-
 class States(Enum):
     STATE_SYNC_CLOCK                = 0
     STATE_PREPARE_FRAGMENTS         = 1
@@ -31,6 +25,10 @@ class States(Enum):
 
 SERVER = os.getenv("API_CHIRPSTACK_SERVER")
 API_TOKEN = os.getenv("API_CHIRPSTACK_API_TOKEN")
+
+if(not(SERVER and API_TOKEN)):
+    sys.stderr.write("API_CHIRPSTACK_SERVER and API_CHIRPSTACK_API_TOKEN must be set.")
+    sys.exit(1)
 
 Parser = argparse.ArgumentParser()
 Parser.add_argument("-lp", "--lora-port", type = int, help = "LoRaWAN port", default = 201)

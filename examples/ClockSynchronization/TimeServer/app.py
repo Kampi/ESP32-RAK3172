@@ -10,7 +10,6 @@ import argparse
 from enum import Enum
 from datetime import datetime
 from chirpstack_api import api
-from datetime import datetime as dt
 
 class States(Enum):
     STATE_START     	            = 0
@@ -20,7 +19,7 @@ class States(Enum):
 SERVER = os.getenv("API_CHIRPSTACK_SERVER")
 API_TOKEN = os.getenv("API_CHIRPSTACK_API_TOKEN")
 
-if(not(SERVER or not API_TOKEN)):
+if(not(SERVER and API_TOKEN)):
     sys.stderr.write("API_CHIRPSTACK_SERVER and API_CHIRPSTACK_API_TOKEN must be set.")
     sys.exit(1)
 
@@ -71,7 +70,7 @@ if(__name__ == "__main__"):
 
     if(not(os.path.exists(LogDirectory))):
         os.makedirs(LogDirectory)
-    logging.basicConfig(filename = LogDirectory + os.path.sep + "{}.log".format(dt.now().strftime("%Y%d%m")), level = logging.INFO, format = "%(asctime)-15s :: %(name)-20s :: %(message)-15s")
+    logging.basicConfig(filename = LogDirectory + os.path.sep + "{}.log".format(datetime.now().strftime("%Y%d%m")), level = logging.INFO, format = "%(asctime)-15s :: %(name)-20s :: %(message)-15s")
     Logger = logging.getLogger("ClockSync-app")
 
     if(args.terminal):

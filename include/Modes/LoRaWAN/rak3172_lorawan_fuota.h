@@ -22,7 +22,7 @@
 
 #include "rak3172_defs.h"
 
-/** @brief              
+/** @brief              Run the FUOTA (Firmware Update Over The Air) process.
  *                      NOTE: Make sure that you are using the latest version of the RUI3 firmware (min. 4.0.5). Otherwise the function might not work!
  *  @param p_Device     RAK3172 device object
  *  @param p_Group      (Optional) Use a multicast group

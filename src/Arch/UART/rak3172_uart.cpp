@@ -158,7 +158,8 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                     else if(Response->find("JOIN FAILED") != std::string::npos)
                                 #endif
                                 {
-                                    RAK3172_LOGD(TAG, " Not joined...");
+                                    RAK3172_LOGI(TAG, " Not joined...");
+                                    RAK3172_LOGI(TAG, "  Attempts left: %u", static_cast<unsigned int>(Device->LoRaWAN.AttemptCounter));
 
                                     if(Device->LoRaWAN.AttemptCounter > 0)
                                     {
@@ -513,8 +514,11 @@ RAK3172_Error_t RAK3172_UART_SetBaudrate(RAK3172_t& p_Device, RAK3172_Baud_t Bau
     _RAK3172_UART_Config.baud_rate = Baudrate;
     if(RAK3172_UART_Init(p_Device) != RAK3172_ERR_OK)
     {
-        _RAK3172_UART_Config.baud_rate = p_Device.UART.Baudrate;
+        const uint32_t Previous = p_Device.UART.Baudrate;
+        _RAK3172_UART_Config.baud_rate = Previous;
         RAK3172_ERROR_CHECK(RAK3172_UART_Init(p_Device));
+
+        return RAK3172_ERR_FAIL;
     }
 
     p_Device.UART.Baudrate = Baudrate;

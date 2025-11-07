@@ -23,13 +23,13 @@
 #if defined(ESP_PLATFORM)
     #include <esp_task_wdt.h>
     /** @brief Reset the ESP‑IDF task watchdog. */
-    inline __attribute__((always_inline)) void RAK3172_WDT_Reset(void)
+    inline __attribute__((always_inline)) int  RAK3172_WDT_Reset(void)
     {
-        (void)esp_task_wdt_reset();
+        return esp_task_wdt_reset();
     }
 #else
     /** @brief Stub for non‑ESP builds. */
-    inline void RAK3172_WDT_Reset(void) {}
+    inline int RAK3172_WDT_Reset(void) {}
 #endif
 
 #endif /* RAK3172_WATCHDOG_H_ */

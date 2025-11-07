@@ -83,8 +83,10 @@ RAK3172_Error_t RAK3172_GetHWID(const RAK3172_t& p_Device, std::string* const p_
     return RAK3172_SendCommand(p_Device, "AT+HWID=?", p_ID);
 }
 
-RAK3172_Error_t RAK3172_Sleep(const RAK3172_t& p_Device, uint32_t Duration)
+RAK3172_Error_t RAK3172_Sleep(RAK3172_t& p_Device, uint32_t Duration)
 {
+    RAK3172_LoRaWAN_StopJoin(p_Device);
+
     if(Duration == 0)
     {
         RAK3172_Error_t Error = RAK3172_SendCommand(p_Device, "AT+SLEEP");

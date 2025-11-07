@@ -1,3 +1,5 @@
 desktop.ini
 *.log
 .vscode
+
+__pycache__

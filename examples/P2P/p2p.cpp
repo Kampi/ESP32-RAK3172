@@ -85,7 +85,7 @@ static void applicationTask(void* p_Parameter)
             ESP_LOGI(TAG, "Not listening...");
         }
 
-        vTaskDelay(1000 / portTICK_RATE_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
 

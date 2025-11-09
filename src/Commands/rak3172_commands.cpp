@@ -45,7 +45,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Comma
     xQueueReset(p_Device.Internal.MessageQueue);
 
     // Transmit the command.
-    RAK3172_LOGI(TAG, "Transmit command: %s", Command.c_str());
+    RAK3172_LOGD(TAG, "Transmit command: %s", Command.c_str());
     uart_write_bytes(p_Device.UART.Interface, static_cast<const char*>(Command.c_str()), Command.length());
     uart_write_bytes(p_Device.UART.Interface, "\r\n", 2);
 
@@ -68,7 +68,7 @@ RAK3172_Error_t RAK3172_SendCommand(const RAK3172_t& p_Device, std::string Comma
         *p_Value = *Response;
         delete Response;
 
-        RAK3172_LOGI(TAG, "     Value: %s", p_Value->c_str());
+        RAK3172_LOGD(TAG, "     Value: %s", p_Value->c_str());
     }
 
     #ifndef CONFIG_RAK3172_USE_RUI3

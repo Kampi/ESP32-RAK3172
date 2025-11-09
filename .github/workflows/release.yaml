@@ -7,11 +7,13 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+'
     branches:
       - main
+      - dev
     paths-ignore:
       - '*.md'
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
@@ -22,39 +24,52 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Determine release version
+      - name: Get release version
         id: version
         run: |
-          TAG=$(git describe --tags --abbrev=0)
-          VERSION=$(echo "$TAG" | sed 's/^v//')
-          MAJOR=$(echo $VERSION | cut -d. -f1)
-          MINOR=$(echo $VERSION | cut -d. -f2)
-          BUILD=$(echo $VERSION | cut -d. -f3)
+          tag="$(git describe --tags --abbrev=0 || echo "")"
 
-          echo "MAJOR=$MAJOR" >> $GITHUB_ENV
-          echo "MINOR=$MINOR" >> $GITHUB_ENV
-          echo "BUILD=$BUILD" >> $GITHUB_ENV
+          MAJOR=$(echo "${tag}" | cut -d. -f1)
+          MINOR=$(echo "${tag}" | cut -d. -f2)
+          BUILD=$(echo "${tag}" | cut -d. -f3)
+
+          VERSION="${MAJOR}.${MINOR}.${BUILD}"
+
+          echo "MAJOR=${MAJOR}" >> $GITHUB_ENV
+          echo "MINOR=${MINOR}" >> $GITHUB_ENV
+          echo "BUILD=${BUILD}" >> $GITHUB_ENV
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
       - name: Update version numbers
         shell: bash
-        working-directory: BeeLight/firmware/app
         run: |
-          sed -i -E "s/(RAK3172_LIB_MAJOR=)[0-9]+/\1$MAJOR/" CMakeLists.txt
-          sed -i -E "s/(RAK3172_LIB_MINOR=)[0-9]+/\1$MINOR/" CMakeLists.txt
-          sed -i -E "s/(RAK3172_LIB_BUILD=)[0-9]+/\1$BUILD/" CMakeLists.txt
+          echo "Version: ${{ env.VERSION }}"
+          sed -i -E "s/(RAK3172_LIB_MAJOR=)[0-9]+/\1${{ env.MAJOR }}/" CMakeLists.txt
+          sed -i -E "s/(RAK3172_LIB_MINOR=)[0-9]+/\1${{ env.MINOR }}/" CMakeLists.txt
+          sed -i -E "s/(RAK3172_LIB_BUILD=)[0-9]+/\1${{ env.BUILD }}/" CMakeLists.txt
+          sed -i "s/^## \[Unreleased\]/## [${{ env.VERSION }}] - $(date +'%Y-%m-%d')/" CHANGELOG.md
+          sed -i -E "s/^version: \".*\"/version: \"${{ env.VERSION }}\"/" idf_component.yml
 
       - name: ZIP artifact
         shell: bash
         run: |
-          apt-get update
-          apt-get install -y zip
-          zip -r release.zip ...
+          sudo apt-get update
+          sudo apt-get install -y zip
+          zip -r release.zip .
+
+      - name: Upload to Component registry
+        uses: espressif/upload-components-ci-action@v2
+        with:
+          components: "ESP32-RAK3172:."
+          version: ${{ env.VERSION }}
+          namespace: "Kampi"
+          api_token: ${{ secrets.IDF_COMPONENT_REGISTRY_TOKEN }}
 
       - name: Release
         uses: docker://antonyurchenko/git-release:v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CHANGELOG_FILE: ./CHANGELOG.md
+          CHANGELOG_FILE: CHANGELOG.md
         with:
           args: |
             release.zip

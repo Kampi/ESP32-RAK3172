@@ -32,7 +32,7 @@
 **Added (EXPERIMENTAL):**
 
 - Add FUOTA support for the host CPU via LoRaWAN
-- Add clock synchronization support for the host CPU via LoRaWAN
+- Add clock synchronization v1.0.0 support for the host CPU via LoRaWAN
 
 **Changed:**
 

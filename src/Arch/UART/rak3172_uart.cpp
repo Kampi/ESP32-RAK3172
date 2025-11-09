@@ -146,7 +146,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                         #ifdef CONFIG_RAK3172_MODE_WITH_LORAWAN
                             if((Device->Mode == RAK_MODE_LORAWAN) && (Response->find("EVT") != std::string::npos))
                             {
-                                RAK3172_LOGI(TAG, "Event: %s", Response->c_str());
+                                RAK3172_LOGD(TAG, "Event: %s", Response->c_str());
 
                                 // Join was successful.
                                 if(Response->find("JOINED") != std::string::npos)
@@ -168,7 +168,7 @@ static void RAK3172_UART_EventTask(void* p_Arg)
                                 #endif
                                 {
                                     RAK3172_LOGI(TAG, " Not joined...");
-                                    RAK3172_LOGI(TAG, "  Attempts left: %u", static_cast<unsigned int>(Device->LoRaWAN.AttemptCounter));
+                                    RAK3172_LOGI(TAG, "  Attempts left: %u", static_cast<unsigned int>(Device->LoRaWAN.AttemptCounter) - 1);
 
                                     if(Device->LoRaWAN.AttemptCounter > 0)
                                     {

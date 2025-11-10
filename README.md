@@ -1,5 +1,8 @@
 # ESP32 driver for [RAK3172](https://store.rakwireless.com/products/wisduo-lpwan-module-rak3172) LoRa SoM
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/license/mit/)
+[![Build](https://github.com/Kampi/ESP32-RAK3172/actions/workflows/release.yaml/badge.svg)](https://github.com/Kampi/ESP32-RAK3172/actions/workflows/release.yaml)
+
 ## Table of Contents
 
 - [ESP32 driver for RAK3172 LoRa SoM](#esp32-driver-for-rak3172-lora-som)

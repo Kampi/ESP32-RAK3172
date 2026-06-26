@@ -81,7 +81,7 @@ static RAK3172_Error_t RAK3172_LoRaWAN_Clock_ReceiveCommand(RAK3172_t& p_Device,
     }
 
     // The first byte is always the command.
-    RAK3172_Tools_Hex2ASCII(p_Message->Payload.substr(0, 2), p_Command);
+    RAK3172_Tools_Hex2ASCII(std::string(p_Message->Payload.substr(0, 2)), p_Command);
     p_Message->Payload.erase(0, 2);
 
     return RAK3172_ERR_OK;

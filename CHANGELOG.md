@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [Unreleased]
+
+**Fixed:**
+
+- Fix compilation issue in `RAK3172_LoRaWAN_Clock_ReceiveCommand`
+
+**Changed:**
+
+- Change support to esp-idf v6 only
+
 ## [4.2.1] - 2025-11-09
 
 **Fixed:**

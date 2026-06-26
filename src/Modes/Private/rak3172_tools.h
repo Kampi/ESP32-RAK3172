@@ -29,6 +29,6 @@
  *  @param p_Buffer Output buffer
  *                  NOTE: The size of the buffer must be large enough to carry all values from the input string!
  */
-void RAK3172_Tools_Hex2ASCII(std::string& Hex, uint8_t* const p_Buffer);
+void RAK3172_Tools_Hex2ASCII(std::string Hex, uint8_t* const p_Buffer);
 
 #endif /* RAK3172_TOOLS_H_ */

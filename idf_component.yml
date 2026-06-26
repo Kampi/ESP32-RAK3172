@@ -15,4 +15,4 @@ maintainers:
   - "Daniel Kampert <DanielKampert@kampis-elektroecke.de>"
 dependencies:
   idf:
-    version: ">=4.0"
+    version: ">=6.0"

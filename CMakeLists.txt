@@ -46,7 +46,7 @@ idf_component_register(SRCS ${COMPONENT_SRCS}
                        INCLUDE_DIRS ${COMPONENT_ADD_INCLUDEDIRS}
 
                        # Only public requires, because the header files includes them
-                       REQUIRES freertos driver
+                       REQUIRES freertos driver esp_driver_uart esp_driver_gpio
 
                        # The private requires are only used by the driver
                        PRIV_REQUIRES ${COMPONENT_PRIV_REQUIRES}

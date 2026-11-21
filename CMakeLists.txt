@@ -54,4 +54,4 @@ idf_component_register(SRCS ${COMPONENT_SRCS}
 
 target_compile_definitions(${COMPONENT_LIB} PUBLIC RAK3172_LIB_MAJOR=4)
 target_compile_definitions(${COMPONENT_LIB} PUBLIC RAK3172_LIB_MINOR=2)
-target_compile_definitions(${COMPONENT_LIB} PUBLIC RAK3172_LIB_BUILD=1)
+target_compile_definitions(${COMPONENT_LIB} PUBLIC RAK3172_LIB_BUILD=2)

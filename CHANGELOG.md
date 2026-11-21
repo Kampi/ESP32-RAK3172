@@ -1,10 +1,12 @@
 # CHANGELOG
 
-## [Unreleased]
+## [4.2.2] - 2026-11-21
 
 **Fixed:**
 
 - Fix compilation issue in `RAK3172_LoRaWAN_Clock_ReceiveCommand`
+- Fix compilation with esp-idf v6 (missing `rx_glitch_filt_thresh` in the UART configuration)
+- Enforce LF line endings with `.gitattributes`
 
 **Changed:**
 

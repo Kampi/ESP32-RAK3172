@@ -1,5 +1,5 @@
-version: "4.2.1"
-description: "ESP32 component for RAK3172 LoRa  / LoRaWAN modules"
+version: "4.2.2"
+description: "ESP32 component for RAK3172 LoRa / LoRaWAN modules"
 url: https://github.com/Kampi/ESP32-RAK3172
 repository: https://github.com/Kampi/ESP32-RAK3172
 license: "MIT"

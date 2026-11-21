@@ -30,6 +30,7 @@ static uart_config_t _RAK3172_UART_Config = {
     .stop_bits              = UART_STOP_BITS_1,
     .flow_ctrl              = UART_HW_FLOWCTRL_DISABLE,
     .rx_flow_ctrl_thresh    = 0,
+    .rx_glitch_filt_thresh  = 0,
     #if(defined CONFIG_PM_ENABLE) && (defined CONFIG_IDF_TARGET_ESP32)
         #ifdef SOC_UART_SUPPORT_REF_TICK
             .source_clk     = UART_SCLK_REF_TICK,

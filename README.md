@@ -8,6 +8,7 @@
 - [ESP32 driver for RAK3172 LoRa SoM](#esp32-driver-for-rak3172-lora-som)
   - [Table of Contents](#table-of-contents)
   - [About](#about)
+  - [Requirements](#requirements)
   - [FUOTA](#fuota)
   - [Clock Synchronization](#clock-synchronization)
   - [Use with PlatformIO](#use-with-platformio)
@@ -20,7 +21,11 @@
 
 ESP32 driver for the UART based RAK3172 LoRaWAN / LoRa P2P SoM.
 
-> Binary mode with RUI3 API isn´t supported yet!
+> Binary mode with RUI3 API isn't supported yet!
+
+## Requirements
+
+- esp-idf v6.0 or newer (PlatformIO: `espressif32` 8.0.0 or newer). Use version 4.2.1 for older esp-idf versions.
 
 ## FUOTA
 
@@ -36,7 +41,7 @@ Clock Synchronization is provided for devices with LoRaWAN < 1.1.
 
 ```sh
 lib_deps =
-    https://github.com/Kampi/ESP32-RAK3172.git
+    https://github.com/Kampi/ESP32-RAK3172.git#4.2.2
 ```
 
 - Copy the `Kconfig` file into the `src` directory
